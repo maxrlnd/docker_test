@@ -13,8 +13,21 @@
 # Outputs:
 #   ...
 
+# Setting input values to defaults in excel file (temporary placeholder)
+kHayLbs <- 22
+kOthLbs <- 0
+p.hay <- 100  # This should be a user input variable
+p.oth <- 0  # This should be a user input variable
+days.feed <- 180  # This needs to be calculated separately!!
+herd <- 600 # User input variable
+
+# Source functions
+source("R/feed.R")
+
 # Ancillary source scripts
 
-# Library functions
 
 # Main Script
+
+# Option 1: Buy additional feed
+feed.cost <- CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, days.feed, herd)  # Calculates additional costs to feed herd
