@@ -13,21 +13,33 @@
 # Outputs:
 #   ...
 
-# Setting input values to defaults in excel file (temporary placeholder)
-kHayLbs <- 22
-kOthLbs <- 0
-p.hay <- 100  # This should be a user input variable
-p.oth <- 0  # This should be a user input variable
-days.feed <- 180  # This needs to be calculated separately!!
-herd <- 600 # User input variable
+# Source variable assignment script
+source("R/vars.R")
 
 # Source functions
 source("R/feed.R")
 
-# Ancillary source scripts
 
 
-# Main Script
+#### Main Script ####
+
+# Calculate days of drought adaptation action
+days.act <- CalculateDaysAction(act.st.yr,act.st.m,act.end.yr,act.end.m)
 
 # Option 1: Buy additional feed
+days.feed <- days.act  # Assumes that feeding days are equivalent to drought adaptation action days
 feed.cost <- CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, days.feed, herd)  # Calculates additional costs to feed herd
+
+# Option 2: Truck pairs to rented pasture
+days.rent <- days.act # Assumes that pasture rental days are equivalent to drought adaptation action days
+cost.rentpast <- CalculateRentPastCost(n.miles = n.miles, truck.cost = truck.cost, past.rent = past.rent,
+                                       days.rent = days.rent, oth.cost = oth.cost, max.wt = max.wt,
+                                       cow.wt = cow.wt, calf.wt = calf.wt, herd = herd)
+rev.rentpast <- CalculateRentPastRevenue(wn.wt = wn.wt, calf.loss = calf.loss, calf.wt.adj = calf.wt.adj, 
+                                         calf.sell = calf.sell, herd = herd, p.wn.yr1 = p.wn.yr1)
+
+# Option 3: Sell pairs and replace cows
+rev.sellprs.yr1 <- CalculateSellPrsRevenueYr1(herd = herd, calf.sell = calf.sell, wn.wt = wn.wt, 
+                                              p.wn.yr1 = p.wn.yr1, wn.succ = wn.succ, calf.wt = calf.wt, 
+                                              p.calf.t0 = p.calf.t0, p.cow = p.cow)
+cost.sellprs.yr1 <- CalculateSellPrsCostYr1(op.cost.yr1 = op.cost.yr1, herd = herd, sell.cost = sell.cost)
