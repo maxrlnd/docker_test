@@ -393,7 +393,7 @@ CalculateSellPrsCostYr1 <- function(op.cost.yr1, herd, sell.cost) {
   return(cost.sellprs.yr1)
 }
 
-CalculateSellPrsRevenueYr1 <- function(herd, calf.sell, wn.wt, p.wn.yr1, wn.succ, calf.wt, p.calf.t0, p.cow) 
+CalculateSellPrsRevenueYr1 <- function(herd, calf.sell, wn.wt, p.wn.yr1, wn.succ, calf.wt, p.calf.t0, p.cow){ 
 "
  Function: CalculateSellPairsCost
  Description: Calculates the change in revenues due to selling pairs and replacing cows
@@ -427,3 +427,113 @@ CalculateSellPrsRevenueYr1 <- function(herd, calf.sell, wn.wt, p.wn.yr1, wn.succ
   return(rev.sellprs.yr1)
 }
 
+insMat<-function(tgrd,yy,clv,acres,pfactor,insPurchase){
+  
+  "
+
+  Generates a matrix representing insurance 
+  premium payments and indemnities for a 
+  specified grid cell over a five-year interval. 
+
+  tgrd: target grid cell 
+
+  yy: starting year
+  
+  clv: coverage level
+
+  acres: insured acres
+
+  pfactor: land productivity factor 
+
+  insPurchase: a matrix representing 
+    insurance allocation to two-month 
+    intervals, with rows written in the
+    format [mm,amt]
+  "
+  
+  ## Generate insurance info
+  fiveYears=matrix(0,5,3) #empty matrix - year, indemnity, producer premium x number years 
+  fiveYears[,1]=seq(yyr[1],yyr[1]+4) #populate years
+  #**PARALLELIZE THIS??**#
+  for(yy in yyr){
+    
+    fiveYears[which(fiveYears[,1]==yy),]=c(yy,
+                                           unlist(
+                                             dcInfo(
+                                               dc=droughtCalculator(
+                                                 yy=yy,
+                                                 clv=clv,
+                                                 acres=acres,
+                                                 pfactor=pfactor,
+                                                 insPurchase=insPurchase
+                                                 ),
+                                               tgrd=tgrd)[c("prodPrem","indemtot")]
+                                             )
+                                           )
+  }
+  
+  return(fiveYears)
+  
+}
+
+foragePWt<-function(stgg,zonewt,stzone,styear){
+  
+  "
+  Returns a weight representing
+  annual forage potential for a 
+  given gridcell or station 
+  gauge's annual precip record. 
+
+  To build monthly weights, generates a typology
+  of years 1948-2015 (k-medoids) based on 
+  monthly precip values observed at the 
+  station. 
+  
+  To assemble the weights:
+    
+    Use the product of deviation in precip from
+    long-term (1948-2015) average * zone weights
+    for months occurring before & during the 
+    decision month. 
+    
+    For months occurring after 
+    the decision month, use the product of group 
+    average deviation from the long-term 
+    average * zone weight.
+    
+  This approach roughly approximates a 'best guess'
+  scenario based on rain gauge observations -
+  what should my precip for the remainder of the year
+  look like given what I know by the decision month? 
+
+  **EVENTUALLY NEEDS INPUTS FOR 
+    STATE**
+  "
+  
+  ## Subset zone weights and prep index 
+  zonewt=zonewt[stzone,] # subset weights by station/grid zone
+  yprecip=stgg[stgg$Year==styear,][,-1] # monthly precip amounts for start year
+  ave=stgg[stgg$Year=="AVE",][,-1] # average precip since 1948
+  pidx=yprecip/ave # Monthly precip "index"
+  
+  ## Group years in period of record by monthly precip
+  cper=stgg[1:which(stgg$Year==2015),] # subset by period 1948-2015
+  cper_clust=pamk(cper[,-1]) # Find optimal groups of years, k = 2-10
+  yy_group=cper_clust[[1]]$clustering[which(cper$Year==styear)] # Group membership for target year
+  yy_ave=colMeans(cper[which(cper_clust[[1]]$clustering==yy_group),][,-1]) # Group mean vector
+  yidx=yy_ave/ave # Expected index values for year (group mean vector / long-term average)
+  
+  # Generate forage potential weights 
+  # not sure why the rows are subsetting as lists!
+  foragewt=unlist(c((zonewt*pidx)[1:dr_start],(zonewt*yidx)[(dr_start+1):12]))
+  
+  # Compute annual forage potential weight for zone
+  stfwt=sum(foragewt) 
+  
+  return(stfwt)
+  
+}
+
+calfDroughtWeight<-function(calf_wean,calf_currently,stfwt){
+  return(calf_currently+(stfwt*(calf_wean-calf_currently)))
+}
