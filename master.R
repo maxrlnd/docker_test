@@ -1,7 +1,7 @@
 # Copyright (c) 2016 Trisha Shrum, Joseph Tuccillo
 #
 # Authors Comment: This model is jointly developed at the University of 
-#  Colorado Earth Lab based on work by Adam ??, Joseph Tuccillo, Kelly Carney, 
+#  Colorado Earth Lab based on work by Adam McCurdy, Joseph Tuccillo, Kelly Carney, 
 #  Bill Travis, Jeffrey Tranel, Rod Sharp, and John Deering.
 #
 # Description: This script implements a simulation of drought adaptation
@@ -17,9 +17,7 @@
 source("R/vars.R")
 
 # Source functions
-source("R/feed.R")
-
-
+source("R/support_functions.R")
 
 #### Main Script ####
 
