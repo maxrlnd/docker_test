@@ -11,7 +11,7 @@ kHayLbs <- 22
 kOthLbs <- 0
 p.hay <- 100  # This should be a user input variable
 p.oth <- 0  # This should be a user input variable
-herd <- 600 # User input variable
+herd <- 600  # User input variable
 n.miles <- 300
 truck.cost <- 4.00
 past.rent <- 16.49
@@ -28,9 +28,19 @@ wn.succ <- 0.94
 p.calf.t0 <- 1.45
 p.cow <- 850
 
+## Other Information
+loan.int <- 0.065  # interest rate for borrowed money (%/year)
+
+## Option 3 Variables: Sell pairs and replace cows
+op.cost.yr1 <- -100  # Change in operating costs in year 1 per cow ($/cow/year). Negative value represents reduced costs
+op.cost.yr2 <- 5000  # Change in operating costs in year 2 per year ($/year)
+op.cost.yr3up <- 5000  # Change in operating costs in years 3 and up per year ($/year)
+sell.cost <- 20  # Selling cost per cow ($/cow) NOTE: DO WE COUNT SELLING COSTS IN A NORMAL YEAR? ARE THESE ADDITIONAL?
+replc.cost <- 850  # Cost of replacing the cow ($/cow)
+
 ## Target grid cell
-tgrd=25002 # target grid cell 
-tgrd_pt=rastPt[rastPt@data$layer==tgrd,] # SpatialPoints representation of target gridcell
+tgrd = 25002  # target grid cell 
+tgrd_pt = rastPt[rastPt@data$layer == tgrd, ]  # SpatialPoints representation of target gridcell
 
 ## set target insurance years
 # yyr=2002:2006 # all five years
