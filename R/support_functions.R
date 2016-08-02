@@ -427,7 +427,7 @@ CalculateSellPrsRevenueYr1 <- function(herd, calf.sell, wn.wt, p.wn.yr1, wn.succ
   return(rev.sellprs.yr1)
 }
 
-insMat<-function(tgrd,yy,clv,acres,pfactor,insPurchase){
+insMat<-function(tgrd,yyr,clv,acres,pfactor,insPurchase){
   
   "
 
