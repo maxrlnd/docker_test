@@ -1,6 +1,5 @@
 # Copyright (c) 2016 Trisha Shrum, Joseph Tuccillo
-#
-# Authors Comment: This model is jointly developed at the University of 
+## Authors Comment: This model is jointly developed at the University of 
 #  Colorado Earth Lab based on work by Adam McCurdy, Joseph Tuccillo, Kelly Carney, 
 #  Bill Travis, Jeffrey Tranel, Rod Sharp, and John Deering.
 #
@@ -13,13 +12,20 @@
 # Outputs:
 #   ...
 
-# Source functions
-source("R/support_functions.R")
+# Clear environment
+rm(list=ls())
 
 # Source variable assignment script
 source("R/vars.R")
 
+# Source functions
+source("R/support_functions.R")
+
+
 #### Main Script ####
+
+# Calculate No-Drought Revenues
+exp.sales <- CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = wn.wt, p.wn.yr1 = p.wn.yr1)
 
 # Compute insurance premiums and indemnities
 if (!is.null(insp)){
@@ -34,6 +40,7 @@ i = 1 # Current year - assuming year 1 for now, should be iterated
 # Calculate days of drought adaptation action
 days.act <- CalculateDaysAction(act.st.yr,act.st.m,act.end.yr,act.end.m)
 
+# For each option, we calculate the **CHANGE** in costs and the **CHANGE** in revenues relative to the no drought baseline.
 # Option 1: Buy additional feed
 days.feed <- days.act  # Assumes that feeding days are equivalent to drought adaptation action days
 feed.cost <- CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, days.feed, herd) + rma.ins[,2][i] # Calculates additional costs to feed herd
