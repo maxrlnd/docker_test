@@ -238,6 +238,26 @@ dcInfo<-function(dc,tgrd){
   
 }
 
+CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn.yr1) {
+  "
+  Function: CalculateExpSales
+  Description: Calculates expected calf revenues for non-drought year
+
+  Inputs:
+    herd = Size of herd (head of cows, does not include calves)
+    calf.sell = Average percentage of calves sold (%)
+    wn.wt = Average weight at weaning (pounds)
+    p.wn.yr1 = Expected sale price of calves in year 1 ($/pound)
+
+  Outputs:
+    exp.sales = Expected revenues from calf sales for a non-drought year
+  "
+  
+  exp.sales <- herd * calf.sell * wn.wt * p.wn.yr1
+  return(exp.sales)
+}
+
+
 CalculateDaysAction <- function(act.st.yr, act.st.m, act.end.yr, act.end.m) {
 
 	"
@@ -282,10 +302,11 @@ CalculateDaysAction <- function(act.st.yr, act.st.m, act.end.yr, act.end.m) {
   return(days.act)
 }
 
-CalculateFeedCost <- function(kHayLbs, kOthLbs, p.hay,p.oth, days.feed, herd) {
+#### Option 1: Buy feed ####
 
+CalculateFeedCost <- function(kHayLbs, kOthLbs, p.hay,p.oth, days.feed, herd) {
 	"
-	 Function: CalculateFeedCost
+ Function: CalculateFeedCost
  Description: Calculating the costs of purchasing additional feed
 
  Inputs:
@@ -304,6 +325,16 @@ CalculateFeedCost <- function(kHayLbs, kOthLbs, p.hay,p.oth, days.feed, herd) {
   return(feed.cost)
 }
 
+CalculateFeedRevenue <- function() {
+  "
+  Function: CalculateFeedRevenue
+  Description: Calculates the change in revenue from buying feed. This is assumed to be 0, so this is trivial.
+  "
+  return(0)
+}
+
+#### Option 2: Rent Pasture ####
+
 CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days.rent, max.wt, cow.wt, calf.wt, herd) {
 "
  Function: CalculatePastureRentCost
@@ -320,6 +351,7 @@ CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days
   cow.wt = Average cow weight (pounds)
   calf.wt = Average 'current' weight of calves before trucking to rented pasture (pounds)
   herd = Size of herd (head of cows, does not include calves)
+  loan.int = interest rate for borrowed money (%/year)
 
  Outputs:
   cost.rentpast = Total costs of using renting pasture including transport costs ($/year)
@@ -334,8 +366,9 @@ CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days
   # Cost of renting pasture
   tot.past.rent <- past.rent / 30 * days.rent * herd
   
-  # Total costs including transport, rent, and other costs (DOES NOT INCLUDE LOAN INTEREST)
-  cost.rentpast <- tot.truck.cost + tot.past.rent + oth.cost
+  # Total costs including transport, rent, and other costs
+  cost.rentpast.woint <- tot.truck.cost + tot.past.rent + oth.cost
+  cost.rentpast <- cost.rentpast.woint * (1 + loan.int)
   
   return(cost.rentpast)
 }
@@ -362,40 +395,63 @@ CalculateRentPastRevenue <- function(wn.wt, calf.loss, calf.wt.adj, calf.sell, h
   # Selling weight after accounting for weight loss due to transport stress
   actual.sell.wt <- wn.wt * (1 + calf.wt.adj)
   
-  # Expected calf revenues for non-drought year
-  exp.sales <- herd * calf.sell * wn.wt * p.wn.yr1
-  
   # Change in expected revenues
   rev.rentpast <- exp.sales - actual.calf.sales * actual.sell.wt * p.wn.yr1
   return(rev.rentpast)
 }
 
+#### Option 3: Sell Pairs & Replace ####
+# Currently, each year is calculated separately with a different function. 
+# This is inefficient and should be combined into one function with a vector of costs/revenues for each year
+
 CalculateSellPrsCostYr1 <- function(op.cost.yr1, herd, sell.cost) {
 "
- Function: CalculateSellPairsCost
+ Function: CalculateSellPrsCostYr1
  Description: Calculates the change in costs due to selling pairs and replacing cows
  NOTE: It is assumed that cows are replaced on last day of the second year after they are sold. 
   For example, cows sold in 2011 are replaced on 12/31/2013.
 
  Inputs:
-  op.cost.yr1 = Change in operating costs in year 1 per cow ($/cow)
-  op.cost.yr2 = Change in operating costs in year 2 per cow ($/cow)
-  op.cost.yr3up = Change in operating costs in years 3 and up per cow ($/cow)
+  op.cost.yr1 = Change in operating costs in year 1 per cow ($/cow/year)
   sell.cost = Selling cost per cow ($/cow) NOTE: DO WE COUNT SELLING COSTS IN A NORMAL YEAR? ARE THESE ADDITIONAL?
   replc.cost = Cost of replacing the cow ($/cow)
   herd = Size of herd (head of cows, does not include calves)
 
  Outputs:
-  
+  cost.sellprs.yr1 = Change in operating costs in year 1 from selling pairs in year 1
 "
   # Yr 1 change in operating costs includes change in operating cost from not having the herd and the additional cost to sell cows
   cost.sellprs.yr1 <- op.cost.yr1 * herd + sell.cost * herd  
   return(cost.sellprs.yr1)
 }
 
+CalculateSellPrsCostYr2 <- function(op.cost.yr1, herd, sell.cost) {
+  "
+  Function: CalculateSellPrsCostYr2
+  Description: Calculates the change in costs due to selling pairs and replacing cows for year 2
+  NOTE: It is assumed that cows are replaced on last day of the second year after they are sold. 
+  For example, cows sold in 2011 are replaced on 12/31/2013.
+  NOTE: When we make this model dynamic, we should collapse this into one function for all years
+  
+  Inputs:
+  op.cost.yr2 = Change in operating costs in year 2 per year ($/year)
+  op.cost.yr3up = Change in operating costs in years 3 and up per year ($/year)
+  sell.cost = Selling cost per cow ($/cow) NOTE: DO WE COUNT SELLING COSTS IN A NORMAL YEAR? ARE THESE ADDITIONAL?
+  replc.cost = Cost of replacing the cow ($/cow)
+  herd = Size of herd (head of cows, does not include calves)
+  
+  Outputs:
+  
+  "
+  # Yr 1 change in operating costs includes change in operating cost from not having the herd and the additional cost to sell cows
+  cost.sellprs.yr1 <- op.cost.yr1 * herd + sell.cost * herd  
+  return(cost.sellprs.yr1)
+}
+
+
 CalculateSellPrsRevenueYr1 <- function(herd, calf.sell, wn.wt, p.wn.yr1, wn.succ, calf.wt, p.calf.t0, p.cow){ 
 "
- Function: CalculateSellPairsCost
+ Function: CalculateSellPrsRevenueYr1 
  Description: Calculates the change in revenues due to selling pairs and replacing cows
  NOTE: It is assumed that cows are replaced on last day of the second year after they are sold. 
   For example, cows sold in 2011 are replaced on 12/31/2013.
@@ -427,7 +483,7 @@ CalculateSellPrsRevenueYr1 <- function(herd, calf.sell, wn.wt, p.wn.yr1, wn.succ
   return(rev.sellprs.yr1)
 }
 
-insMat<-function(tgrd,yy,clv,acres,pfactor,insPurchase){
+insMat<-function(tgrd,yyr,clv,acres,pfactor,insPurchase){
   
   "
 
