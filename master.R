@@ -13,6 +13,9 @@
 # Outputs:
 #   ...
 
+# Clear environment
+rm(list=ls())
+
 # Source variable assignment script
 source("R/vars.R")
 
@@ -21,9 +24,13 @@ source("R/support_functions.R")
 
 #### Main Script ####
 
+# Calculate No-Drought Revenues
+exp.sales <- CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = wn.wt, p.wn.yr1 = p.wn.yr1)
+
 # Calculate days of drought adaptation action
 days.act <- CalculateDaysAction(act.st.yr,act.st.m,act.end.yr,act.end.m)
 
+# For each option, we calculate the **CHANGE** in costs and the **CHANGE** in revenues relative to the no drought baseline.
 # Option 1: Buy additional feed
 days.feed <- days.act  # Assumes that feeding days are equivalent to drought adaptation action days
 feed.cost <- CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, days.feed, herd)  # Calculates additional costs to feed herd
