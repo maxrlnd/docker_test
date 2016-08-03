@@ -372,8 +372,8 @@ CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days
   tot.past.rent <- past.rent / 30 * days.rent * herd
   
   # Total costs including transport, rent, and other costs
-  cost.rentpast.woint <- tot.truck.cost + tot.past.rent + oth.cost
-  cost.rentpast <- cost.rentpast.woint * (1 + loan.int)
+  cost.rentpast.woint <- ifelse(days.rent > 0, tot.truck.cost + tot.past.rent + oth.cost, 0)
+  cost.rentpast <- ifelse(days.rent > 0, cost.rentpast.woint * (1 + loan.int), 0)
   
   return(cost.rentpast)
 }
@@ -406,9 +406,6 @@ CalculateRentPastRevenue <- function(base.sales, wn.wt, calf.loss, calf.wt.adj, 
 }
 
 #### Option 3: Sell Pairs & Replace ####
-# Currently, each year is calculated separately with a different function. 
-# This is inefficient and should be combined into one function with a vector of costs/revenues for each year
-
 CalculateSellPrsCost <- function(op.cost.yr1, herd, sell.cost, base.op.cost, fixed.op.cost, p.cow.rplc) {
   "
   Function: CalculateSellPrsCostYr1
@@ -428,9 +425,10 @@ CalculateSellPrsCost <- function(op.cost.yr1, herd, sell.cost, base.op.cost, fix
   cost.sellprs = 5x1 vector of changes in operating costs for years 1 through 5 from selling pairs in year 1 and replacing them at the end of year 3
   "
   cost.sellprs <- NULL
-  cost.sellprs[1] <- op.cost.yr1 * herd + sell.cost * herd  # Yr 1 change in operating costs includes change in operating cost from not having the herd and the additional cost to sell cows
+  # cost.sellprs[1] <- op.cost.yr1 * herd + sell.cost * herd  # CORRECT CODE!!! # Yr 1 change in operating costs includes change in operating cost from not having the herd and the additional cost to sell cows
+  cost.sellprs[1] <- op.cost.yr1 * herd  # INCORRECT CODE (replicates excel's exclusion of herd selling costs)
   cost.sellprs[2] <- -1 * base.op.cost + fixed.op.cost  # Yr 2 change in operating costs includes change in operating cost from not having the herd plus the fixed 'herdless' operating costs
-  cost.sellprs[3] <- -1 * base.op.cost + fixed.op.cost + herd * p.cow.rplc  # Yr 3 change in operating costs includes change in operating cost from not having the herd plus the fixed 'herdless' operating costs and the cost of replacing the herd
+  cost.sellprs[3] <- -1 * base.op.cost + fixed.op.cost  # Yr 3 change in operating costs includes change in operating cost from not having the herd plus the fixed 'herdless' operating costs 
   cost.sellprs[4:5] <- 0  # Yr 4 & 5 change in op costs are assumed to be 0
   
   return(cost.sellprs)
@@ -442,7 +440,8 @@ CalculateSellPrsRev <- function(base.sales, herd, wn.wt, p.wn, wn.succ, calf.wt,
   Description: Calculates the change in revenues due to selling pairs and replacing cows for years 1 through 3
   NOTE: It is assumed that cows are replaced on last day of the second year after they are sold. 
   For example, cows sold in 2011 are replaced on 12/31/2013.
-  
+  Test:   CalculateSellPrsRev(base.sales, herd, wn.wt, p.wn, wn.succ, calf.wt, p.calf.t0, p.cow, invst.int, cull)
+
   Inputs:
   base.sales = Calf sales in a normal year ($/year)
   wn.wt = Average weight at weaning (pounds)
@@ -456,7 +455,7 @@ CalculateSellPrsRev <- function(base.sales, herd, wn.wt, p.wn, wn.succ, calf.wt,
   cull = Number of cows culled in a normal year (cows)
   
   Outputs:
-  rev.sellprs = 5x1 vector of changes in revenue for years 1 through 5. (Years 4 and 5 are assumed to be 0.) 
+  rev.sellprs = 5x1 vector of changes in revenue for years 1 through 5. (Years 4 and 5 are assumed to be 0.)
   "
   # Actual calf sales for years 1 through 3
   calf.sales <- NULL
@@ -483,8 +482,9 @@ CalculateSellPrsRev <- function(base.sales, herd, wn.wt, p.wn, wn.succ, calf.wt,
   }
   
   base.sales.123 <- base.sales[1:3]  # Subsetting base sales to the first 3 years
-  rev.sellprs <- -1* base.sales.123 + calf.sales + cow.sales + int.inc
-  for (i in 4:5) {
+  # rev.sellprs <- -1* base.sales.123 + calf.sales + int.inc  # CORRECT CODE (includes interest) # Changes in revenues for years 1 through 3
+  rev.sellprs <- -1* base.sales.123 + calf.sales  # INCORRECT CODE (excel replication)
+  for (i in 4:5) {  # Changes in revenues for years 4 through 5
     rev.sellprs[i] <- 0
   }
   
