@@ -26,7 +26,7 @@ source("R/vars.R")
 
 # Calculate No-Drought Revenues (expected sale price, year 1)
 base.sales <- unlist(lapply(1:5,function(i){
-  CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = wn.wt, p.wn.yr1 = p.wn[i])
+  CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = expected.wn.wt, p.wn.yr1 = p.wn[i])
 }))
 
 base.op.cost = CalculateBaseOpCosts(herd = herd, cow.cost = cow.cost)
@@ -44,32 +44,36 @@ base.rev = base.sales + rma.ins[,3] # increment base revenue with indemnity
 
 ####No Drought####
 
-baseOutcome=cbind(base.sales,base.op.cost)
+baseOutcome=cbind(base.sales,base.op.cost) # with insurance
+baseOutcome_ins=cbind(base.rev,base.cost) # without insurance
 
 ####Drought Occurs####
 # For each option, we calculate the **CHANGE** in costs
 # and the **CHANGE** in revenues relative to the no drought baseline.
 
 ## No adaptive action
-#this computation should be wrapped into a function!!
-forage.weights=unlist(lapply(seq(yyr,yyr+4),function(i){
-  foragePWt(stgg,zonewt,stzone,i)
+
+#Baseline drought revenues
+base.sales_drought <- unlist(lapply(1:5,function(i){
+  CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = wn.wt[i], p.wn.yr1 = p.wn[i])
 }))
-calf_weights_ann=unlist(lapply(forage.weights,function(i){ # annual calf weights
-  calfDroughtWeight(calf_wean,calf_currently,i)
-}))
-noAdaptOutcome=cbind(herd*calf.sell*calf_weights_ann*p.wn,
+
+noAdaptOutcome=cbind(base.sales_drought,
+                 base.op.cost)
+noAdaptOutcome_ins=cbind(base.sales_drought+rma.ins[,3],
                  base.cost)
 
 # Calculate days of drought adaptation action
 days.act <- CalculateDaysAction(act.st.yr,act.st.m,act.end.yr,act.end.m)
 
 ## Option 1: Buy additional feed
-days.feed <- days.act  # Assumes that feeding days are equivalent to drought adaptation action days
+# Assumes that feeding days are equivalent to drought adaptation action days
+# 'days.feed' is vectorized to represent feed purchases in the first year only
+days.feed <- c(days.act,rep(0,4))  
 
 # Calculate additional costs to feed herd
 feed.cost <- unlist(lapply(1:5,function(i){
-  CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, days.feed, herd) + base.cost[i]
+  CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, days.feed[i], herd) + base.cost[i]
   })) 
 feedOutcome=cbind(base.rev,feed.cost+base.cost) # generate outcome matrix: col1 - revenue, col2 - cost
 

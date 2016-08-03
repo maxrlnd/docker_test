@@ -1,23 +1,24 @@
-# Load Libraries
-library(pracma)
-library("tseries")
-require(lubridate)
-require(dplyr)
+## Load Libraries
+# libraries commented out might be needed
+# as the project is further developed...
+# library(pracma)
+# library("tseries")
+# require(lubridate)
+# require(dplyr)
 library(raster)
-library("ncdf4")
-library("rgdal")
-library("fields")
+# library("ncdf4")
+# library("rgdal")
+# library("fields")
 library(data.table)
-library(spdep)
+# library(spdep)
 library(ggplot2)
-library("rasterVis")
-library("RSelenium")
-library("trend")
-library(rgeos)
-library("maptools")
-library(rgdal)
+# library(rasterVis)
+# library("RSelenium")
+# library("trend")
+# library(rgeos)
+# library("maptools")
 library(readxl)
-library(fpc)
+# library(fpc)
 
 load("data/grid_base.RData") # Load base grid data
 load("data/insurance_base.RData") # Load base insurance data
@@ -552,7 +553,7 @@ insMat<-function(tgrd,yyr,clv,acres,pfactor,insPurchase){
   
 }
 
-foragePWt<-function(stgg,zonewt,stzone,styear){
+foragePWt<-function(stgg,zonewt,stzone,styear,decision=F){
   
   "
   Returns a weight representing
@@ -560,30 +561,46 @@ foragePWt<-function(stgg,zonewt,stzone,styear){
   given gridcell or station 
   gauge's annual precip record. 
 
-  To build monthly weights, generates a typology
-  of years 1948-2015 (k-medoids) based on 
-  monthly precip values observed at the 
-  station. 
-  
-  To assemble the weights:
+  By default, computes the sum of weighted product of 
+  forage potential and long-term precipitation deviation
+  from average for a given year relative to a grid cell
+  or station gauge's period of record.
+
+  A 'decision making under uncertainty' mode is also 
+  available (when 'decision' is set to TRUE): 
+
+    To build monthly weights, generates a typology
+    of years 1948-2015 (k-medoids) based on 
+    monthly precip values observed at the 
+    station. 
     
-    Use the product of deviation in precip from
-    long-term (1948-2015) average * zone weights
-    for months occurring before & during the 
-    decision month. 
-    
-    For months occurring after 
-    the decision month, use the product of group 
-    average deviation from the long-term 
-    average * zone weight.
-    
-  This approach roughly approximates a 'best guess'
-  scenario based on rain gauge observations -
-  what should my precip for the remainder of the year
-  look like given what I know by the decision month? 
+    To assemble the weights:
+      
+      Use the product of deviation in precip from
+      long-term (1948-2015) average * zone weights
+      for months occurring before & during the 
+      decision month. 
+      
+      For months occurring after 
+      the decision month, use the product of group 
+      average deviation from the long-term 
+      average * zone weight.
+      
+    This approach roughly approximates a 'best guess'
+    scenario based on rain gauge observations -
+    what should my precip for the remainder of the year
+    look like given what I know by the decision month? 
 
   **EVENTUALLY NEEDS INPUTS FOR 
     STATE**
+
+    stgg: station gauge or grid cell precip record 
+    stzone: state zone 
+    zonewt: weights for state zone
+    styear: year of interest
+    decision: use 'decision under uncertainty' mode 
+      (default FALSE)
+
   "
   
   ## Subset zone weights and prep index 
@@ -592,16 +609,24 @@ foragePWt<-function(stgg,zonewt,stzone,styear){
   ave=stgg[stgg$Year=="AVE",][,-1] # average precip since 1948
   pidx=yprecip/ave # Monthly precip "index"
   
-  ## Group years in period of record by monthly precip
-  cper=stgg[1:which(stgg$Year==2015),] # subset by period 1948-2015
-  cper_clust=pamk(cper[,-1]) # Find optimal groups of years, k = 2-10
-  yy_group=cper_clust[[1]]$clustering[which(cper$Year==styear)] # Group membership for target year
-  yy_ave=colMeans(cper[which(cper_clust[[1]]$clustering==yy_group),][,-1]) # Group mean vector
-  yidx=yy_ave/ave # Expected index values for year (group mean vector / long-term average)
+  if(decision){ #"decision making under uncertainty" mode
   
-  # Generate forage potential weights 
-  # not sure why the rows are subsetting as lists!
-  foragewt=unlist(c((zonewt*pidx)[1:dr_start],(zonewt*yidx)[(dr_start+1):12]))
+    ## Group years in period of record by monthly precip
+    cper=stgg[1:which(stgg$Year==2015),] # subset by period 1948-2015
+    cper_clust=pamk(cper[,-1]) # Find optimal groups of years, k = 2-10
+    yy_group=cper_clust[[1]]$clustering[which(cper$Year==styear)] # Group membership for target year
+    yy_ave=colMeans(cper[which(cper_clust[[1]]$clustering==yy_group),][,-1]) # Group mean vector
+    yidx=yy_ave/ave # Expected index values for year (group mean vector / long-term average)
+    
+    # Generate forage potential weights 
+    # not sure why the rows are subsetting as lists!
+    foragewt=unlist(c((zonewt*pidx)[1:dr_start],(zonewt*yidx)[(dr_start+1):12]))
+  
+  }else{ #default: long-term precip & zone weights
+    
+    foragewt=zonewt*pidx
+    
+  }
   
   # Compute annual forage potential weight for zone
   stfwt=sum(foragewt) 
@@ -610,6 +635,25 @@ foragePWt<-function(stgg,zonewt,stzone,styear){
   
 }
 
-calfDroughtWeight<-function(calf_wean,calf_currently,stfwt){
-  return(calf_currently+(stfwt*(calf_wean-calf_currently)))
+# calfDroughtWeight<-function(calf_wean,calf_currently,stfwt){
+  ###DEPRECATED###
+#   return(calf_currently+(stfwt*(calf_wean-calf_currently)))
+# }
+
+calfWeanWeight<-function(styr){
+  
+  "
+  Compute calf weights based on station/grid cell 
+  forage potential for a five-year period.
+  "
+  
+  forage.weights=unlist(lapply(seq(styr,styr+4),function(i){
+    foragePWt(stgg,zonewt,stzone,i)
+  }))
+  calf_weights_ann=unlist(lapply(forage.weights,function(i){ # annual calf weights
+    calfDroughtWeight(calf_wean,calf_currently,i)
+  }))
+  
+  return(calf_weights_ann)
+  
 }
