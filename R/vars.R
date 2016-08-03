@@ -7,6 +7,7 @@ act.st.yr <- 1
 act.st.m <- 6
 act.end.yr <- 1
 act.end.m <- 12
+drought.action = ifelse(1:5 %in% act.st.yr:act.end.yr,1,0)
 kHayLbs <- 22
 kOthLbs <- 0
 p.hay <- 100  # This should be a user input variable
@@ -20,13 +21,16 @@ max.wt <- 40000
 cow.wt <- 1200
 calf.wt <- 375
 wn.wt <- 600
-calf.loss <- 2 
-calf.wt.adj <- -0.1 
+calf.loss <- ifelse(drought.action==1,2,0) 
+calf.wt.adj <- ifelse(drought.action==1,-0.1,0)
 calf.sell <- 0.75
-p.wn.yr1 <- 1.31
+p.wn <- c(1.31,1.25,1.25,1.25,1.25) # previously 'p.wn.yr1', now vectorized for iteration
 wn.succ <- 0.94
 p.calf.t0 <- 1.45
 p.cow <- 850
+cow.cost = 500
+purchase.insurance = 1 # dummy - purchase insurance (1) or do not (0)
+invst.int = 0.0125
 
 ## Other Information
 loan.int <- 0.065  # interest rate for borrowed money (%/year)
@@ -55,8 +59,10 @@ insp=rbind(c(3,0.5),c(5,0.5)) # insurance purchase
 
 ## Precip, Forage Potential, and Calf Weight variables
 styear=yyr[1] # Starting "drought" year
-dr_start=6 # Drought adaptive action starts
-dr_end=8 # Drought action ends 
+# dr_start=6 # Drought adaptive action starts
+dr_start=act.st.m # Drought adaptive action starts
+# dr_end=8 # Drought action ends 
+dr_end=act.end.m # Drought action ends 
 calf_currently=375 # Average calf weight "currently"
 calf_wean=600 # Expected average calf weight "at weaning"
 stzone=3 # state forage zone
