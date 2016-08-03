@@ -396,7 +396,7 @@ CalculateRentPastRevenue <- function(base.sales, wn.wt, calf.loss, calf.wt.adj, 
   rev.rentpast = Change in revenue due to mortality and weight loss from trucking to rented pasture
 "
   # Number of calves sold after accounting for calf mortality in transport 
-  actual.calf.sales.num <- herd * calf.sell - cfalf.loss
+  actual.calf.sales.num <- herd * calf.sell - calf.loss
   
   # Selling weight after accounting for weight loss due to transport stress
   actual.sell.wt <- wn.wt * (1 + calf.wt.adj)
