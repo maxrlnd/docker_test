@@ -3,6 +3,7 @@
 #  a workable interface
 
 # Setting input values to defaults in excel file (temporary placeholder)
+styr=2002 # starting year in five-year period 
 act.st.yr <- 1
 act.st.m <- 6
 act.end.yr <- 1
@@ -20,7 +21,9 @@ oth.cost <- 300
 max.wt <- 40000
 cow.wt <- 1200
 calf.wt <- 375
-wn.wt <- 600
+expected.wn.wt <- 600 # expected calf weight at weaning
+# wn.wt <- calfWeanWeight(styr) # dynamic by year based on precip/forage
+wn.wt <- c(calfWeanWeight(styr)[1],rep(expected.wn.wt,4)) # year 1 only based on precip/forage
 calf.loss <- ifelse(drought.action==1,2,0) 
 calf.wt.adj <- ifelse(drought.action==1,-0.1,0)
 calf.sell <- 0.75
