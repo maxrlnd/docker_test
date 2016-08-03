@@ -635,10 +635,9 @@ foragePWt<-function(stgg,zonewt,stzone,styear,decision=F){
   
 }
 
-# calfDroughtWeight<-function(calf_wean,calf_currently,stfwt){
-  ###DEPRECATED###
-#   return(calf_currently+(stfwt*(calf_wean-calf_currently)))
-# }
+calfDroughtWeight<-function(expected.wn.wt,calf.wt,stfwt){
+  return(calf.wt+(stfwt*(expected.wn.wt-calf.wt)))
+}
 
 calfWeanWeight<-function(styr){
   
@@ -651,7 +650,7 @@ calfWeanWeight<-function(styr){
     foragePWt(stgg,zonewt,stzone,i)
   }))
   calf_weights_ann=unlist(lapply(forage.weights,function(i){ # annual calf weights
-    calfDroughtWeight(calf_wean,calf_currently,i)
+    calfDroughtWeight(expected.wn.wt,calf.wt,i)
   }))
   
   return(calf_weights_ann)

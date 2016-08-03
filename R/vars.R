@@ -2,6 +2,20 @@
 # NOTE: Currently, the default values are taken from the excel model. Eventually this will be replaced by
 #  a workable interface
 
+## Zone Weights 
+stzone=3 # state forage zone
+# multiple operations since reading from
+# external file that may be replaced
+zonewt=read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx",sheet="Drought Calculator",skip = 5)[5:8,]
+zonewt=sapply(data.frame(zonewt[,which(names(zonewt)=="Jan"):which(names(zonewt)=="Dec")]),as.numeric)
+
+## Station precip gauge
+# multiple operations since reading from
+# external file that may be replaced
+stgg=data.frame(read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx","CPER Precip",skip = 1))
+stgg=stgg[,-which(names(stgg) %in% c("TOTAL","Var.15"))]
+stgg=stgg[stgg$Year %in% c(1948:2016,"AVE"),]
+
 # Setting input values to defaults in excel file (temporary placeholder)
 styr=2002 # starting year in five-year period 
 act.st.yr <- 1
@@ -66,19 +80,6 @@ styear=yyr[1] # Starting "drought" year
 dr_start=act.st.m # Drought adaptive action starts
 # dr_end=8 # Drought action ends 
 dr_end=act.end.m # Drought action ends 
-calf_currently=375 # Average calf weight "currently"
+# calf_currently=375 # Average calf weight "currently"
 calf_wean=600 # Expected average calf weight "at weaning"
-stzone=3 # state forage zone
 
-## Zone Weights 
-# multiple operations since reading from
-# external file that may be replaced
-zonewt=read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx",sheet="Drought Calculator",skip = 5)[5:8,]
-zonewt=sapply(data.frame(zonewt[,which(names(zonewt)=="Jan"):which(names(zonewt)=="Dec")]),as.numeric)
-
-## Station precip gauge
-# multiple operations since reading from
-# external file that may be replaced
-stgg=data.frame(read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx","CPER Precip",skip = 1))
-stgg=stgg[,-which(names(stgg) %in% c("TOTAL","Var.15"))]
-stgg=stgg[stgg$Year %in% c(1948:2016,"AVE"),]
