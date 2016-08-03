@@ -39,32 +39,47 @@ if (purchase.insurance==1){
   rma.ins = cbind(yyr[1]:yyr[1]+4,matrix(0,5,2))
 }
 
-base.cost = base.op.cost + rma.ins[,2] # increment base operating costs with producer premium
-base.rev = base.sales + rma.ins[,3] # increment base revenue with indemnity
+# Base Values: Indicate average year costs and revenues without insurance
+base.cost <- base.op.cost  # assumes without insurance, cow costs are the only costs for the producer
+base.rev <- base.sales  # assumes that without insurance, calf sales are only revenue. INTEREST MUST BE TAKEN INTO ACCOUNT.  
+base.prof <- base.rev - base.cost
+
+base.cost.ins <- base.op.cost + rma.ins[,2] # increment base operating costs with producer premium
+#base.rev.ins <- base.sales + rma.ins[,3] # increment base revenue with indemnity
+#base.prof.ins <- base.rev.ins - base.cost.ins
 
 ####No Drought####
 
-baseOutcome=cbind(base.sales,base.op.cost) # with insurance
-baseOutcome_ins=cbind(base.rev,base.cost) # without insurance
-
+out.nodrght <- OptionOutput(opt = "nodrght",
+                            nodrought = TRUE, 
+                            rev.calf = base.sales, 
+                            cost.op = rep(base.op.cost,5), 
+                            rma.ins = rma.ins, 
+                            int.invst = invst.int, 
+                            int.loan = loan.int)
+  
 ####Drought Occurs####
 # For each option, we calculate the **CHANGE** in costs
 # and the **CHANGE** in revenues relative to the no drought baseline.
 
-## No adaptive action
+# Calculate days of drought adaptation action
+days.act <- CalculateDaysAction(act.st.yr,act.st.m,act.end.yr,act.end.m)
 
-#Baseline drought revenues
-base.sales_drought <- unlist(lapply(1:5,function(i){
+
+##### Option 0: No adaptation ####
+# drought revenues
+noadpt.rev.calf <- unlist(lapply(1:5,function(i){
   CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = wn.wt[i], p.wn.yr1 = p.wn[i])
 }))
 
-noAdaptOutcome=cbind(base.sales_drought,
-                 base.op.cost)
-noAdaptOutcome_ins=cbind(base.sales_drought+rma.ins[,3],
-                 base.cost)
+out.noadpt <- OptionOutput(opt = "noadpt",
+                           rev.calf = noadpt.rev.calf, 
+                           cost.op = rep(base.op.cost,5), 
+                           cost.adpt = 0, 
+                           rma.ins = rma.ins, 
+                           int.invst = invst.int, 
+                           int.loan = loan.int)
 
-# Calculate days of drought adaptation action
-days.act <- CalculateDaysAction(act.st.yr,act.st.m,act.end.yr,act.end.m)
 
 ## Option 1: Buy additional feed
 # Assumes that feeding days are equivalent to drought adaptation action days
@@ -73,9 +88,10 @@ days.feed <- c(days.act,rep(0,4))
 
 # Calculate additional costs to feed herd
 feed.cost <- unlist(lapply(1:5,function(i){
-  CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, days.feed[i], herd) + base.cost[i]
+  CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, days.feed[i], herd) 
   })) 
-feedOutcome=cbind(base.rev,feed.cost+base.cost) # generate outcome matrix: col1 - revenue, col2 - cost
+out.feed <- cbind(base.rev, feed.cost + base.cost, base.rev - (feed.cost + base.cost))  # generate outcome matrix: col1 - revenue, col2 - cost
+out.feed.ins <- cbind(base.rev, feed.cost + base.cost.ins, base.rev - (feed.cost + base.cost.ins))
 
 ## Option 2: Truck pairs to rented pasture
 days.rent <- days.act # Assumes that pasture rental days are equivalent to drought adaptation action days
@@ -90,13 +106,13 @@ rentOutcome = t(matrix(unlist(rentpast),2,5)) # convert list to matrix
 
 
 ## Option 3: Sell pairs and replace cows
-# cost.sellprs.yr1 <- CalculateSellPrsCostYr1(op.cost.yr1 = op.cost.yr1, herd = herd, sell.cost = sell.cost) + rma.ins[,2][i]
-# rev.sellprs.yr1 <- CalculateSellPrsRevenueYr1(herd = herd, calf.sell = calf.sell, wn.wt = wn.wt, 
-#                                               p.wn.yr1 = p.wn[i], wn.succ = wn.succ, calf.wt = calf.wt, 
-#                                               p.calf.t0 = p.calf.t0, p.cow = p.cow, exp.sales = exp.sales) + rma.ins[,3][i]
-lapply(1:5,function(i){
-  c(CalculateSellPrsRevenueYr1(herd = herd, calf.sell = calf.sell, wn.wt = wn.wt, 
-                               p.wn.yr1 = p.wn[i], wn.succ = wn.succ, calf.wt = calf.wt, 
-                               p.calf.t0 = p.calf.t0, p.cow = p.cow, exp.sales = exp.sales,invst.int = invst.int) + base.rev,
-    CalculateSellPrsCostYr1(op.cost.yr1 = op.cost.yr1, herd = herd, sell.cost = sell.cost) + base.cost)
-})
+# This function does need to lapply. It takes a vector of inputs and returns a vector of outputs                                   
+sellprs <- c(CalculateSellPrsRev(base.sales = base.sales, herd = herd, 
+                                 wn.wt = wn.wt, p.wn = p.wn, wn.succ = wn.succ, 
+                                 calf.wt = calf.wt, p.calf.t0, p.cow, invst.int, 
+                                 cull) + base.rev, 
+             CalculateSellPrsCost(op.cost.yr1 = op.cost.yr1, herd = herd, 
+                                  sell.cost = sell.cost, 
+                                  base.op.cost = base.op.cost, 
+                                  fixed.op.cost = fixed.op.cost, 
+                                  p.cow.rplc = p.cow.rplc) + base.cost)
