@@ -252,11 +252,11 @@ CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn.yr1) {
     p.wn.yr1 = Expected sale price of calves in year 1 ($/pound)
 
   Outputs:
-    exp.sales = Expected revenues from calf sales for a non-drought year
+    base.sales = Expected revenues from calf sales for a non-drought year
   "
   
-  exp.sales <- herd * calf.sell * wn.wt * p.wn.yr1
-  return(exp.sales)
+  base.sales <- herd * calf.sell * wn.wt * p.wn.yr1
+  return(base.sales)
 }
 
 CalculateBaseOpCosts <- function(herd, cow.cost) {
@@ -373,13 +373,13 @@ CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days
   tot.past.rent <- past.rent / 30 * days.rent * herd
   
   # Total costs including transport, rent, and other costs
-  cost.rentpast.woint <- tot.truck.cost + tot.past.rent + oth.cost
-  cost.rentpast <- cost.rentpast.woint * (1 + loan.int)
+  cost.rentpast.woint <- ifelse(days.rent > 0, tot.truck.cost + tot.past.rent + oth.cost, 0)
+  cost.rentpast <- ifelse(days.rent > 0, cost.rentpast.woint * (1 + loan.int), 0)
   
   return(cost.rentpast)
 }
 
-CalculateRentPastRevenue <- function(wn.wt, calf.loss, calf.wt.adj, calf.sell, herd, p.wn.yr1) {
+CalculateRentPastRevenue <- function(base.sales, wn.wt, calf.loss, calf.wt.adj, calf.sell, herd, p.wn.yr1) {
 "
  CalculateRentPastRevenue 
  Description: Calculates the change in revenues due to trucking pairs to rented pastures
@@ -396,113 +396,101 @@ CalculateRentPastRevenue <- function(wn.wt, calf.loss, calf.wt.adj, calf.sell, h
   rev.rentpast = Change in revenue due to mortality and weight loss from trucking to rented pasture
 "
   # Number of calves sold after accounting for calf mortality in transport 
-  actual.calf.sales.num <- herd * calf.sell - calf.loss
+  actual.calf.sales.num <- herd * calf.sell - cfalf.loss
   
   # Selling weight after accounting for weight loss due to transport stress
   actual.sell.wt <- wn.wt * (1 + calf.wt.adj)
   
   # Change in expected revenues
-  rev.rentpast <- -1 * exp.sales + actual.calf.sales.num * actual.sell.wt * p.wn.yr1
+  rev.rentpast <- -1 * base.sales + actual.calf.sales.num * actual.sell.wt * p.wn.yr1
   return(rev.rentpast)
 }
 
 #### Option 3: Sell Pairs & Replace ####
-# Currently, each year is calculated separately with a different function. 
-# This is inefficient and should be combined into one function with a vector of costs/revenues for each year
-
-CalculateSellPrsCostYr1 <- function(op.cost.yr1, herd, sell.cost) {
-"
- Function: CalculateSellPrsCostYr1
- Description: Calculates the change in costs due to selling pairs and replacing cows
- NOTE: It is assumed that cows are replaced on last day of the second year after they are sold. 
+CalculateSellPrsCost <- function(op.cost.yr1, herd, sell.cost, base.op.cost, fixed.op.cost, p.cow.rplc) {
+  "
+  Function: CalculateSellPrsCostYr1
+  Description: Calculates the change in costs due to selling pairs and replacing cows for years 1 through 3
+  NOTE: It is assumed that cows are replaced on last day of the second year after they are sold. 
   For example, cows sold in 2011 are replaced on 12/31/2013.
-
- Inputs:
+  
+  Inputs:
   op.cost.yr1 = Change in operating costs in year 1 per cow ($/cow/year)
   sell.cost = Selling cost per cow ($/cow) NOTE: DO WE COUNT SELLING COSTS IN A NORMAL YEAR? ARE THESE ADDITIONAL?
-  replc.cost = Cost of replacing the cow ($/cow)
   herd = Size of herd (head of cows, does not include calves)
-
- Outputs:
-  cost.sellprs.yr1 = Change in operating costs in year 1 from selling pairs in year 1
-"
-  # Yr 1 change in operating costs includes change in operating cost from not having the herd and the additional cost to sell cows
-  cost.sellprs.yr1 <- op.cost.yr1 * herd + sell.cost * herd  
-  return(cost.sellprs.yr1)
-}
-
-CalculateSellPrsCostYr2 <- function(base.op.cost, fixed.op.cost) {
-  "
-  Function: CalculateSellPrsCostYr2
-  Description: Calculates the change in costs in year 2 due to selling pairs and replacing cows
-  NOTE: It is assumed that cows are replaced on last day of the second year after they are sold. 
-  For example, cows sold in 2011 are replaced on 12/31/2013.
-  NOTE: When we make this model dynamic, we should collapse this into one function for all years
-  
-  Inputs:
   base.op.cost = Baseline annaul cost of operating ranch with full herd ($/year)
   fixed.op.cost = Fixed operating costs for a year without a herd ($/year)
+  p.cow.rplc = Price to replace cows ($/cow)
   
   Outputs:
-  cost.sellprs.yr2
+  cost.sellprs = 5x1 vector of changes in operating costs for years 1 through 5 from selling pairs in year 1 and replacing them at the end of year 3
   "
-  # Yr 2 change in operating costs includes change in operating cost from not having the herd plus the fixed 'herdless' operating costs
-  cost.sellprs.yr2 <- -1 * base.op.cost + fixed.op.cost 
-  return(cost.sellprs.yr2)
+  cost.sellprs <- NULL
+  # cost.sellprs[1] <- op.cost.yr1 * herd + sell.cost * herd  # CORRECT CODE!!! # Yr 1 change in operating costs includes change in operating cost from not having the herd and the additional cost to sell cows
+  cost.sellprs[1] <- op.cost.yr1 * herd  # INCORRECT CODE (replicates excel's exclusion of herd selling costs)
+  cost.sellprs[2] <- -1 * base.op.cost + fixed.op.cost  # Yr 2 change in operating costs includes change in operating cost from not having the herd plus the fixed 'herdless' operating costs
+  cost.sellprs[3] <- -1 * base.op.cost + fixed.op.cost  # Yr 3 change in operating costs includes change in operating cost from not having the herd plus the fixed 'herdless' operating costs 
+  cost.sellprs[4:5] <- 0  # Yr 4 & 5 change in op costs are assumed to be 0
+  
+  return(cost.sellprs)
 }
 
-CalculateSellPrsCostYr3 <- function(base.op.cost, fixed.op.cost) {
+CalculateSellPrsRev <- function(base.sales, herd, wn.wt, p.wn, wn.succ, calf.wt, p.calf.t0, p.cow, invst.int, cull) { 
   "
-  Function: CalculateSellPrsCostYr3
-  Description: Calculates the change in costs in year 3 due to selling pairs and replacing cows
+  Function: CalculateSellPrsRev
+  Description: Calculates the change in revenues due to selling pairs and replacing cows for years 1 through 3
   NOTE: It is assumed that cows are replaced on last day of the second year after they are sold. 
   For example, cows sold in 2011 are replaced on 12/31/2013.
-  NOTE: When we make this model dynamic, we should collapse this into one function for all years
-  
+  Test:   CalculateSellPrsRev(base.sales, herd, wn.wt, p.wn, wn.succ, calf.wt, p.calf.t0, p.cow, invst.int, cull)
+
   Inputs:
-  base.op.cost = Baseline annaul cost of operating ranch with full herd ($/year)
-  fixed.op.cost = Fixed operating costs for a year without a herd ($/year)
-  
-  Outputs:
-  cost.sellprs.yr3
-  "
-  # Yr 3 change in operating costs includes change in operating cost from not having the herd plus the fixed 'herdless' operating costs
-  cost.sellprs.yr3 <- -1 * base.op.cost + fixed.op.cost 
-  return(cost.sellprs.yr3)
-}
-
-CalculateSellPrsRevenueYr1 <- function(exp.sales, herd, calf.sell, wn.wt, p.wn.yr1, wn.succ, calf.wt, p.calf.t0, p.cow, invst.int){ 
-"
- Function: CalculateSellPrsRevenueYr1 
- Description: Calculates the change in revenues due to selling pairs and replacing cows
- NOTE: It is assumed that cows are replaced on last day of the second year after they are sold. 
-  For example, cows sold in 2011 are replaced on 12/31/2013.
-
- Inputs:
-  calf.sell = Average percentage of calves sold (%)
+  base.sales = Calf sales in a normal year ($/year)
   wn.wt = Average weight at weaning (pounds)
-  p.wn.yr1 = Expected sale price of calves in year 1 ($/pound)
   p.wn.t0 = Current sale price calves ($/pound)
+  p.wn = Vector of expected sale prices of calves in years 1-5 ($/pound)
   herd = Size of herd (head of cows, does not include calves)
   wn.succ = Average percentage of cows that successfully wean calves (%)
   calf.wt = Average 'current' weight of calves (pounds)
   p.cow = Current sale price of cow ($/cow)
   invst.int = Interest rate for investments (%/year)
+  cull = Number of cows culled in a normal year (cows)
   
- Outputs:
-
-"
-  # Actual calf sales for year 1
-  calf.sales.yr1 <- herd * wn.succ * calf.wt * p.calf.t0 
+  Outputs:
+  rev.sellprs = 5x1 vector of changes in revenue for years 1 through 5. (Years 4 and 5 are assumed to be 0.)
+  "
+  # Actual calf sales for years 1 through 3
+  calf.sales <- NULL
+  for (i in 1:3) {
+    ifelse(i == 1, calf.sales[i] <- herd * wn.succ * calf.wt * p.calf.t0, calf.sales[i] <- 0)
+  }
   
-  # Cow sales in year 1
-  cow.sales <- p.cow * herd
+  # Cow sales (sell in year 1, no sales in years 2 and 3)
+  cow.sales <- c(p.cow * (herd - cull), 0, 0)
+  cow.sales.nocull <- c(p.cow * herd, 0, 0)  # Cow sales not including a reduction from normally culled cows
   
-  # Change in year 1 revenue from expected, including interest from cow sales
-  rev.sellprs.yr1 <- -1 * exp.sales + calf.sales.yr1 + cow.sales * (1 + invst.int)
-  return(rev.sellprs.yr1)
+  # Interest income from cow sales
+  pr <- c(cow.sales.nocull[1],0,0,0)  # Investment principle. Incorrect carry over from excel file. Change to cow.sales
+  int.inc <- NULL
+  for (i in 1:3) {
+    if (i == 1) {
+      int.inc[i] <- pr[i] * invst.int / 365 * days.act
+      pr[i + 1] <- pr[i] + int.inc[i]
+    }
+    else {
+      int.inc[i] <- pr[i] * invst.int
+      pr[i + 1] <- pr[i] + int.inc[i]
+    }
+  }
+  
+  base.sales.123 <- base.sales[1:3]  # Subsetting base sales to the first 3 years
+  # rev.sellprs <- -1* base.sales.123 + calf.sales + int.inc  # CORRECT CODE (includes interest) # Changes in revenues for years 1 through 3
+  rev.sellprs <- -1* base.sales.123 + calf.sales  # INCORRECT CODE (excel replication)
+  for (i in 4:5) {  # Changes in revenues for years 4 through 5
+    rev.sellprs[i] <- 0
+  }
+  
+  return(rev.sellprs)
 }
-
 
 insMat<-function(tgrd,yyr,clv,acres,pfactor,insPurchase){
   
