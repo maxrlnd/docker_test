@@ -611,11 +611,46 @@ calfWeanWeight<-function(styr){
     calfDroughtWeight(expected.wn.wt,calf.wt,i)
   }))
   
-  return(calf_weights_ann)
-  
+  calf_weights_ann
 }
 
-OptionOutput <- function(opt, nodrought = FALSE, rev.calf, rev.oth = NULL, cost.op, rma.ins, int.invst, int.loan) {
+CalcCowAssets <- function(herd, p.cow, sell.year = NA, replace.year = NA) {
+  # Function: CapitalAssets
+  # Description: Caluclated the cow assets for each year.
+  
+  # Inputs:
+  #  herd
+  #  p.cow
+  #  sell.year = Single numeric value. Equal to t where year 1 is t=1.
+  #  replace.year = Single numeric value. Equal to t where year 1 is t=1.
+  
+  # Output:
+  #  5x1 vector of cow assets for each year
+  
+  cow.assets <- rep(NA,5)
+  
+  if(is.na(sell.year)) {
+    cow.assets[1:5] <- herd * p.cow
+    return(cow.assets)
+  }
+
+  if(sell.year > 0 & is.na(replace.year)) {
+    cow.assets[1:sell.year] <- herd * p.cow  # Allows for sale of herd outside of year 1
+    cow.assets[sell.year:5] <- 0  # Replaces sell year with 0, leaves prior years with herd, all subsequent years with no herd 
+    return(cow.assets)
+  }  
+  
+  if(sell.year > 0 & replace.year > 0 ) {
+    cow.assets[1:sell.year] <- herd * p.cow  # Allows for sale of herd outside of year 1
+    cow.assets[sell.year:(replace.year-1)] <- 0  # Replaces sell year with 0, leaves prior years with herd
+    cow.assets[replace.year:5] <- herd * p.cow  # After replacing, assumes no additional sales
+    return(cow.assets)
+  }
+}
+
+
+OptionOutput <- function(opt, nodrought = FALSE, rev.calf, rev.oth = NULL, 
+                         cost.op, rma.ins, int.invst, int.loan, assets.cow) {
   # Function: OptOutput
   # Desciption: Takes in cost and revenue variables and outputs data.frame with 
   # all relevant outcome variables
@@ -659,9 +694,12 @@ OptionOutput <- function(opt, nodrought = FALSE, rev.calf, rev.oth = NULL, cost.
   profit <- rev.tot - cost.tot
   taxes <- ifelse(profit > 0, profit * (0.124+0.15+0.04), 0)  # taxes only if positive profits. i wonder if EITC applies here?
   aftax.inc <- profit - taxes
-  cap.sales <- rep(NA, 11)
-  cap.taxes <- rep(NA, 11)
-  assets.cow <- rep(NA, 11)
+  
+  cap.sales <- c(0, rep(cow.sales, 2))  # assumes sale of cows is only capital sales
+  cap.purch <- c(0, rep(cow.repl, 2))  # assumes purchase of replacement cows is only capital purchase
+  
+  cap.taxes <- if(rep(NA, 11)
+  assets.cow <- assets.cow
   assets.cash <- rep(NA, 11)
   net.wrth <- rep(NA, 11)
   
@@ -669,3 +707,5 @@ OptionOutput <- function(opt, nodrought = FALSE, rev.calf, rev.oth = NULL, cost.
                cost.ins, cost.int, cost.tot, profit, taxes, aftax.inc,
                cap.sales, cap.taxes, assets.cow, assets.cash, net.wrth)
 }  
+
+int <- function(out, cow.sales, )

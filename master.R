@@ -49,6 +49,9 @@ base.cost.ins <- base.op.cost + rma.ins[,2] # increment base operating costs wit
 #base.rev.ins <- base.sales + rma.ins[,3] # increment base revenue with indemnity
 #base.prof.ins <- base.rev.ins - base.cost.ins
 
+# Base Cow Assets: No sell/replace
+base.assets.cow <- CalcCowAssets(herd = herd, p.cow = p.cow)
+
 ####No Drought####
 
 out.nodrght <- OptionOutput(opt = "nodrght",
@@ -57,7 +60,8 @@ out.nodrght <- OptionOutput(opt = "nodrght",
                             cost.op = rep(base.op.cost,5), 
                             rma.ins = rma.ins, 
                             int.invst = invst.int, 
-                            int.loan = loan.int)
+                            int.loan = loan.int
+                            assets.cow = base.assets.cow)
   
 ####Drought Occurs####
 # For each option, we calculate the **CHANGE** in costs
@@ -77,7 +81,8 @@ out.noadpt <- OptionOutput(opt = "noadpt",
                            cost.op = rep(base.op.cost,5), 
                            rma.ins = rma.ins, 
                            int.invst = invst.int, 
-                           int.loan = loan.int)
+                           int.loan = loan.int
+                           assets.cow = base.assets.cow)
 
 
 ## Option 1: Buy additional feed
@@ -89,7 +94,8 @@ feed.cost <- CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, days.feed, herd) 
 out.feed <- OptionOutput(opt = "feed", 
                          rev.calf = base.sales, 
                          cost.op = feed.cost, 
-                         rma.ins = rma.ins)
+                         rma.ins = rma.ins,
+                         assets.cow = base.assets.cow)
 
 ## Option 2: Truck pairs to rented pasture
 days.rent <- days.act # Assumes that pasture rental days are equivalent to drought adaptation action days
@@ -118,7 +124,8 @@ out.rentpast <- OptionOutput(opt = "rentpast",
                              cost.op = cost.op.rentpast, 
                              rma.ins = rma.ins, 
                              int.invst = invst.int, 
-                             int.loan = loan.int)
+                             int.loan = loan.int,
+                             assets.cow = base.assets.cow)
 
 ## Option 3: Sell pairs and replace cows
 
@@ -134,12 +141,15 @@ cost.op.sellprs <- CalculateSellPrsCost(op.cost.adj = op.cost.adj,
                                         base.op.cost = base.op.cost, 
                                         herdless.op.cost = herdless.op.cost)
 
+sellprs.assets.cow <- CalcCowAssets(herd = herd, p.cow = p.cow, sell.year = 1, replace.year = 3)
+
 out.sellprs <- OptionOutput(opt = "sellprs",
                             rev.calf = calf.rev.sellprs, 
                             cost.op = cost.op.sellprs, 
                             rma.ins = rma.ins, 
                             int.invst = invst.int, 
-                            int.loan = loan.int)
+                            int.loan = loan.int,
+                            assets.cow = sellprs.assets.cow)
 
 ## Option 4: Sell pairs and don't replace
 
@@ -147,12 +157,15 @@ calf.rev.sellprs.norepl <- c(calf.rev.sellprs[1],rep(0,4))
 
 cost.op.sellprs.norepl <- c(cost.op.sellprs[1],rep(herdless.op.cost,4))
 
+sellprs.norepl.assets.cow <- CalcCowAssets(herd = herd, p.cow = p.cow, sell.year = 1)
+
 out.sellprs.norepl <- OptionOutput(opt = "sellprs.norepl",
                                    rev.calf = calf.rev.sellprs.norepl, 
                                    cost.op = cost.op.sellprs.norepl, 
                                    rma.ins = rma.ins, 
                                    int.invst = invst.int, 
-                                   int.loan = loan.int)
+                                   int.loan = loan.int,
+                                   assets.cow = sellprs.norepl.assets.cow)
 
 ## Bringing outcome df's from each option together
 outcomes <- rbind(out.nodrght, out.noadpt, out.feed, out.rentpast, out.sellprs, out.sellprs.norepl)
