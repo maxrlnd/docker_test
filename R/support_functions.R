@@ -368,12 +368,12 @@ CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days
   
   # Total costs including transport, rent, and other costs
   cost.rentpast.woint <- ifelse(days.rent > 0, tot.truck.cost + tot.past.rent + oth.cost, 0)
-  cost.rentpast <- ifelse(days.rent > 0, cost.rentpast.woint * (1 + loan.int), 0)
+  cost.rentpast <- ifelse(days.rent > 0, cost.rentpast.woint * (1 + loan.int / 365 * days.rent), 0)  # I think we should not include interest here unless it is also included in other adaptation costs
   
   return(cost.rentpast)
 }
 
-CalculateRentPastRevenue <- function(wn.wt, calf.loss, calf.wt.adj, calf.sell, herd, p.wn) {
+CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, calf.sell, herd, p.wn) {
 "
  CalculateRentPastRevenue 
  Description: Calculates calf sale revenues after trucking pairs to rented pastures
@@ -393,7 +393,7 @@ CalculateRentPastRevenue <- function(wn.wt, calf.loss, calf.wt.adj, calf.sell, h
   calf.sales.num <- herd * calf.sell - calf.loss
   
   # Selling weight after accounting for weight loss due to transport stress
-  sell.wt <- wn.wt * (1 + calf.wt.adj)
+  sell.wt <- expected.wn.wt * (1 + calf.wt.adj)
   
   # Expected calf sale revenues
   rev.rentpast <- calf.sales.num * sell.wt * p.wn
@@ -713,7 +713,7 @@ CalcCapTaxes <- function(cap.sales, cap.purch, cap.tax.rate, drought.emrg = 1)  
       cap.taxes[i+1] <- cap.sales[i] * cap.tax.rate  # then the capital taxes can be delayed by one year
     }
     if(cap.sales[i] > 0 & cap.purch[i] == 0 & cap.purch[i+1] == 0 & cap.purch[i+2] == 0 & drought.emrg == 0) {  # if herd is sold and not replaced by the end of the 2nd year after the purchase and there is not a declared drought emergency
-      cap.taxes[i+1] <- cap.sales * cap.tax.rate  # then the capital taxes can be delayed by one year
+      cap.taxes[i] <- cap.sales[i] * cap.tax.rate  # then the capital taxes can be delayed by one year
     }  
   }
   cap.taxes
@@ -812,7 +812,7 @@ OptionOutput <- function(t, opt, nodrought = FALSE, rev.calf, rev.oth = NULL, co
       out.ins$rev.int[i] <- 0
     }
     if(out.ins$assets.cash[i - 1] < 0) {
-      out.ins$cost.int[i] <- out.ins$assets.cash[i - 1] * (loan.int)
+      out.ins$cost.int[i] <- -1 * (out.ins$assets.cash[i - 1] * (loan.int))
     } else {
       out.ins$cost.int[i] <- 0
     }
@@ -839,7 +839,7 @@ OptionOutput <- function(t, opt, nodrought = FALSE, rev.calf, rev.oth = NULL, co
       out.noins$rev.int[i] <- 0
     }
     if(out.noins$assets.cash[i - 1] < 0) {
-      out.noins$cost.int[i] <- out.noins$assets.cash[i - 1] * (loan.int)
+      out.noins$cost.int[i] <- -1 * (out.noins$assets.cash[i - 1] * (loan.int))
     } else {
       out.noins$cost.int[i] <- 0
     }
