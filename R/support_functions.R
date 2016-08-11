@@ -419,8 +419,8 @@ CalculateSellPrsCost <- function(op.cost.adj, herd, sell.cost, base.op.cost, her
   cost.sellprs = 5x1 vector of changes in operating costs for years 1 through 5 from selling pairs in year 1 and replacing them at the end of year 3
   "
   cost.sellprs <- NULL
-  # cost.sellprs[1] <- base.op.cost - op.cost.adj * herd + sell.cost * herd  # CORRECT CODE!!! # Yr 1 operating costs includes a reduction in operating cost from not having the herd and the additional cost to sell cows
-  cost.sellprs[1] <- base.op.cost + op.cost.adj * herd  # INCORRECT CODE (replicates excel's exclusion of herd selling costs)
+  cost.sellprs[1] <- base.op.cost + op.cost.adj * herd + sell.cost * herd  # CORRECT CODE!!! # Yr 1 operating costs includes a reduction in operating cost from not having the herd and the additional cost to sell cows
+  # cost.sellprs[1] <- base.op.cost + op.cost.adj * herd  # INCORRECT CODE (replicates excel's exclusion of herd selling costs)
   cost.sellprs[2] <- herdless.op.cost  # fixed 'herdless' operating costs
   cost.sellprs[3] <- herdless.op.cost  # fixed 'herdless' operating costs 
   cost.sellprs[4:5] <- base.op.cost  # Yr 4 & 5 change in op costs are assumed to be normal
