@@ -48,6 +48,8 @@ p.cow <- 850
 cow.cost = 500
 purchase.insurance = 1 # dummy - purchase insurance (1) or do not (0)
 invst.int = 0.0125
+cap.tax.rate <- 0.15
+t <- 5  # number of years in the model
 
 ## Other Information
 loan.int <- 0.065  # interest rate for borrowed money (%/year)

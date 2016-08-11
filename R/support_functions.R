@@ -4,7 +4,7 @@
 # library(pracma)
 # library("tseries")
 # require(lubridate)
-# require(dplyr)
+library(dplyr)
 library(raster)
 # library("ncdf4")
 # library("rgdal")
@@ -611,11 +611,83 @@ calfWeanWeight<-function(styr){
     calfDroughtWeight(expected.wn.wt,calf.wt,i)
   }))
   
-  return(calf_weights_ann)
-  
+  calf_weights_ann
 }
 
-OptionOutput <- function(opt, nodrought = FALSE, rev.calf, rev.oth = NULL, cost.op, rma.ins, int.invst, int.loan) {
+CalcCowAssets <- function(herd, p.cow, sell.year = NA, replace.year = NA) {
+  # Function: CapitalAssets
+  # Description: Caluclated the cow assets for each year.
+  
+  # Inputs:
+  #  herd
+  #  p.cow
+  #  sell.year = Single numeric value. Equal to t where year 1 is t=1.
+  #  replace.year = Single numeric value. Equal to t where year 1 is t=1.
+  
+  # Output:
+  #  6x1 vector of cow assets for each year, including t=0
+  
+  cow.assets <- rep(NA,5)
+  
+  if(is.na(sell.year)) {
+    cow.assets[1:5] <- herd * p.cow
+    cow.assets <- c(herd * p.cow, cow.assets)  # Adding time 0 cow assets to make a 6x1 vector
+    return(cow.assets)
+  }
+
+  if(sell.year > 0 & is.na(replace.year)) {
+    cow.assets[1:sell.year] <- herd * p.cow  # Allows for sale of herd outside of year 1
+    cow.assets[sell.year:5] <- 0  # Replaces sell year with 0, leaves prior years with herd, all subsequent years with no herd 
+    cow.assets <- c(herd * p.cow, cow.assets)  # Adding time 0 cow assets to make a 6x1 vector
+    return(cow.assets)
+  }  
+  
+  if(sell.year > 0 & replace.year > 0 ) {
+    cow.assets[1:sell.year] <- herd * p.cow  # Allows for sale of herd outside of year 1
+    cow.assets[sell.year:(replace.year-1)] <- 0  # Replaces sell year with 0, leaves prior years with herd
+    cow.assets[replace.year:5] <- herd * p.cow  # After replacing, assumes no additional sales
+    cow.assets <- c(herd * p.cow, cow.assets)  # Adding time 0 cow assets to make a 6x1 vector
+    return(cow.assets)
+  }
+}
+
+CalcCapTaxes <- function(cap.sales, cap.purch, cap.tax.rate, drought.emrg = 1)  {
+  # Function: CalcCapTaxes
+  # Description: Calculates capital taxes on herd sales. Tax treatment is 
+  # different depending on whether herd is sold and replaced by the end of the
+  # third year or if the herd is sold and not replaced during a drought emergency.
+  # Assumes that the entire herd is sold and replaced at the same rate. 
+  # Not sure how the tax code treats changes in prices. This abstracts away from that. 
+  # The price dynamics could matter here, but for now we are leaving them out.
+  #
+  # Inputs: 
+  #  cap.sales
+  #  cap.purch
+  #  cap.tax.rate
+  #  drought.emrg = Binary variable to indicate whether drought emergency was in place when the herd was sold. 
+  #    currently set to a default of 1. This only matters if the herd is sold and not replaced.
+  #
+  # Outputs:
+  #  cap.taxes <- 5x1 vector of capital taxes
+  
+  n <- length(cap.sales)
+  cap.taxes <- rep(0,n)  # default value of 0 for capital taxes
+  
+  # If herd is sold and replaced within 2 years, then there are no capital taxes
+  
+  # If herd is sold and not replaced within 2 years:
+  for (i in 1:n) {
+    if(cap.sales[i] > 0 & cap.purch[i] == 0 & cap.purch[i+1] == 0 & cap.purch[i+2] == 0 & drought.emrg == 1) {  # if herd is sold and not replaced by the end of the 2nd year after the purchase and there is a drought emergency
+      cap.taxes[i+1] <- cap.sales[i] * cap.tax.rate  # then the capital taxes can be delayed by one year
+    }
+    if(cap.sales[i] > 0 & cap.purch[i] == 0 & cap.purch[i+1] == 0 & cap.purch[i+2] == 0 & drought.emrg == 0) {  # if herd is sold and not replaced by the end of the 2nd year after the purchase and there is not a declared drought emergency
+      cap.taxes[i+1] <- cap.sales * cap.tax.rate  # then the capital taxes can be delayed by one year
+    }  
+  }
+  cap.taxes
+}
+
+OptionOutput <- function(t, opt, nodrought = FALSE, rev.calf, rev.oth = NULL, cost.op, rma.ins, int.invst, int.loan, start.cash, assets.cow) {
   # Function: OptOutput
   # Desciption: Takes in cost and revenue variables and outputs data.frame with 
   # all relevant outcome variables
@@ -630,42 +702,113 @@ OptionOutput <- function(opt, nodrought = FALSE, rev.calf, rev.oth = NULL, cost.
   # rma.ins = 5x3 matrix of insurance year, premium, and payouts
   # cost.op = 5x1 vector of operating costs for years 1 through 5, including any adaptation costs
   
-  opt <- rep(opt, 11)
-  t <- c(0,rep(1:5,2))
-  ins <- c(0,rep(1,5),rep(0,5))
+  n <- (t + 1) * 2   # sets length as years plus 1 for initial year, times 2 for insurance and no insurance
+  option <- rep(opt, n)
+  yr <- c(0, 1:t, 0, 1:t)
+  ins <- c(rep(1, t+1), rep(0, t+1))
   
-  rev.calf <- c(0,rep(rev.calf, 2))
-  cost.op <- c(0, rep(cost.op, 2))
+  rev.calf <- c(0, rev.calf, 0, rev.calf)
+  cost.op <- c(0, cost.op, 0, cost.op)
+  
+  rma.ins[, 2] <- rma.ins[1,2]  # HACKING INSURANCE PREMIUM FOR ALL YEARS. REMOVE WHEN JOE closes ticket #44
+  cost.ins <- c(0, rma.ins[, 2], 0, rep(0, t))  # insurance for 2:6, no insurance for 8:12
   
   if(nodrought == FALSE) {
-    rev.ins <- c(0, rma.ins[, 3], rep(0, 5))  # potential payout for 2:6, no payout for 7:11
+    rev.ins <- c(0, rma.ins[, 3], 0, rep(0, t))  # potential payout for 2:6, no payout for 8:12
   } else {
-    rev.ins <- rep(0,11) # no drought, no payout
+    rev.ins <- rep(0, n) # no drought, no payout
   }
   
-  cost.ins <- c(0, rma.ins[, 2], rep(0,5))  # insurance for 2:6, no insurance for 7:11
+  assets.cow <- rep(assets.cow, 2) 
   
-  rev.int <- c(0, rep(0, 10)) #PLACEHOLDER. NOT CURRENTLY CALCULATING INTEREST
-  cost.int <- c(0, rep(0, 10))  # PLACEHOULDER. NOT CURRENTLY CALCULATING INTEREST
-  
+  # Assumes sale/purchase of cows is only capital sales/purchase
+  cap.sales <- c(0, rep(NA, t), 0, rep(NA, t))
+  cap.purch <- c(0, rep(NA, t), 0, rep(NA, t))
+  for (i in 2:n) {
+    if(assets.cow[i] > assets.cow[i-1]) {
+      cap.sales[i] <- 0 
+      cap.purch[i] <- assets.cow[i] - assets.cow[i-1]
+    }
+    if(assets.cow[i] < assets.cow[i - 1]) {
+      cap.sales[i] <- assets.cow[i-1] - assets.cow[i] 
+      cap.purch[i] <- 0
+    }
+    if(assets.cow[i] == assets.cow[i - 1]) {
+      cap.sales[i] <- 0
+      cap.purch[i] <- 0
+    }
+  }
+
+  cap.taxes <- CalcCapTaxes(cap.sales = cap.sales, cap.purch = cap.purch, cap.tax.rate = cap.tax.rate)
+
   if(!is.null(rev.oth)) {  # if other revenues are passed through, then they are included in total revenues
-    rev.oth <- c(0, rep(rev.oth, 2))
-    rev.tot <- rev.calf + rev.ins + rev.int + rev.oth
+    rev.oth <- c(0, rev.oth, 0, rev.oth)
+    rev.tot.noint <- rev.calf + rev.ins + rev.oth
   } else {
-    rev.tot <- rev.calf + rev.ins + rev.int
+    rev.tot.noint <- rev.calf + rev.ins 
   }
   
-  cost.tot <- cost.op + cost.ins + cost.int
-  profit <- rev.tot - cost.tot
-  taxes <- ifelse(profit > 0, profit * (0.124+0.15+0.04), 0)  # taxes only if positive profits. i wonder if EITC applies here?
-  aftax.inc <- profit - taxes
-  cap.sales <- rep(NA, 11)
-  cap.taxes <- rep(NA, 11)
-  assets.cow <- rep(NA, 11)
-  assets.cash <- rep(NA, 11)
-  net.wrth <- rep(NA, 11)
+  out <- data.frame(opt, t, ins, rev.calf, rev.ins, rev.tot.noint, cost.op, cost.ins, cap.sales, cap.purch, cap.taxes, assets.cow)
   
-  out <- cbind(opt, t, ins, rev.calf, rev.ins, rev.int, rev.tot, cost.op, 
-               cost.ins, cost.int, cost.tot, profit, taxes, aftax.inc,
-               cap.sales, cap.taxes, assets.cow, assets.cash, net.wrth)
+  #WARNING: UGLY UGLY CODE AHEAD. Get a handle on dplyr and revisit.
+  #Split into ins and non-insurance; calculate interest income, profits, and cash assets; then put back together
+  out.ins <- out[out$ins==1, ]
+  out.noins <- out[out$ins==0,]
+  
+  out.ins$int.rev <- c(0, rep(NA, t))
+  out.ins$int.cost <- c(0, rep(NA, t))
+  out.ins$tot.rev <- c(0, rep(NA, t))
+  out.ins$tot.cost <- c(0, rep(NA, t))
+  out.ins$profit <- c(0, rep(NA, t))
+  out.ins$taxes <- c(0, rep(NA, t))
+  out.ins$aftax.inc <- c(0, rep(NA, t))
+  out.ins$cash.assets <- rep(start.cash, t+1)
+  for (i in 2:(t+1)) {
+    if(out.ins$cash.assets[i - 1] > 0) {
+      out.ins$int.rev[i] <- out.ins$cash.assets[i - 1] * (invst.int)
+    } else {
+      out.ins$int.rev[i] <- 0
+    }
+    if(out.ins$cash.assets[i - 1] < 0) {
+      out.ins$int.cost[i] <- out.ins$cash.assets[i - 1] * (loan.int)
+    } else {
+      out.ins$int.cost[i] <- 0
+    }
+    out.ins$tot.rev[i] <- out.ins$int.rev[i] + out.ins$rev.tot.noint[i]
+    out.ins$tot.cost[i] <- out.ins$int.cost[i] + out.ins$cost.op[i] + out.ins$cost.ins[i]
+    out.ins$profit[i] <- out.ins$tot.rev[i] - out.ins$tot.cost[i]
+    out.ins$taxes[i] <- ifelse(out.ins$profit[i] > 0, out.ins$profit[i] * (0.124+0.15+0.04), 0)  # taxes only if positive profits. i wonder if EITC applies here?
+    out.ins$aftax.inc[i] <- out.ins$profit[i] - out.ins$taxes[i]
+    out.ins$cash.assets[i] <- out.ins$cash.assets[i-1] + out.ins$aftax.inc[i] + out.ins$cap.sales[i] - out.ins$cap.purch[i] - out.ins$cap.taxes[i]
+  }
+  
+  out.noins$int.rev <- c(0, rep(NA, t))
+  out.noins$int.cost <- c(0, rep(NA, t))
+  out.noins$tot.rev <- c(0, rep(NA, t))
+  out.noins$tot.cost <- c(0, rep(NA, t))
+  out.noins$profit <- c(0, rep(NA, t))
+  out.noins$taxes <- c(0, rep(NA, t))
+  out.noins$aftax.inc <- c(0, rep(NA, t))
+  out.noins$cash.assets <- rep(start.cash, t+1)
+  for (i in 2:(t+1)) {
+    if(out.noins$cash.assets[i - 1] > 0) {
+      out.noins$int.rev[i] <- out.noins$cash.assets[i - 1] * (invst.int)
+    } else {
+      out.noins$int.rev[i] <- 0
+    }
+    if(out.noins$cash.assets[i - 1] < 0) {
+      out.noins$int.cost[i] <- out.noins$cash.assets[i - 1] * (loan.int)
+    } else {
+      out.noins$int.cost[i] <- 0
+    }
+    out.noins$tot.rev[i] <- out.noins$int.rev[i] + out.noins$rev.tot.noint[i]
+    out.noins$tot.cost[i] <- out.noins$int.cost[i] + out.noins$cost.op[i] + out.noins$cost.ins[i]
+    out.noins$profit[i] <- out.noins$tot.rev[i] - out.noins$tot.cost[i]
+    out.noins$taxes[i] <- ifelse(out.noins$profit[i] > 0, out.noins$profit[i] * (0.124+0.15+0.04), 0)  # taxes only if positive profits. i wonder if EITC applies here?
+    out.noins$aftax.inc[i] <- out.noins$profit[i] - out.noins$taxes[i]
+    out.noins$cash.assets[i] <- out.noins$cash.assets[i-1] + out.noins$aftax.inc[i] + out.noins$cap.sales[i] - out.noins$cap.purch[i] - out.noins$cap.taxes[i]
+  }
+  
+  out <- rbind(out.ins, out.noins)
 }  
+

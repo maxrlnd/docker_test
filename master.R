@@ -25,7 +25,7 @@ source("R/vars.R")
 #### Main Script ####
 
 # Calculate No-Drought Revenues from Calf Sales (aka base sales)
-base.sales <- unlist(lapply(1:5,function(i){
+base.sales <- unlist(lapply(1:t,function(i){
   CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = expected.wn.wt, p.wn.yr1 = p.wn[i])
 }))
 
@@ -37,7 +37,7 @@ if (purchase.insurance==1){
   rma.ins = insMat(tgrd = tgrd,yyr = yyr,clv = clv,acres = acres,
                    pfactor = pfactor,insPurchase  =  insp)
 }else{ # if purchase.insurance set to 0 (no insurance), simply set prem/indem = 0
-  rma.ins = cbind(yyr[1]:yyr[1]+4,matrix(0,5,2))
+  rma.ins = cbind(yyr[1]:yyr[1]+(t-1),matrix(0,t,2))
 }
 
 # Base Values: Indicate average year costs and revenues without insurance
@@ -49,15 +49,21 @@ base.cost.ins <- base.op.cost + rma.ins[,2] # increment base operating costs wit
 #base.rev.ins <- base.sales + rma.ins[,3] # increment base revenue with indemnity
 #base.prof.ins <- base.rev.ins - base.cost.ins
 
+# Base Cow Assets: No sell/replace
+base.assets.cow <- CalcCowAssets(herd = herd, p.cow = p.cow)
+
 ####No Drought####
 
-out.nodrght <- OptionOutput(opt = "nodrght",
+out.nodrght <- OptionOutput(t = 5,
+                            opt = "nodrght",
                             nodrought = TRUE, 
                             rev.calf = base.sales, 
-                            cost.op = rep(base.op.cost,5), 
+                            cost.op = rep(base.op.cost,t), 
                             rma.ins = rma.ins, 
                             int.invst = invst.int, 
-                            int.loan = loan.int)
+                            int.loan = loan.int,
+                            start.cash = 0,
+                            assets.cow = base.assets.cow)
   
 ####Drought Occurs####
 # For each option, we calculate the **CHANGE** in costs
@@ -68,16 +74,19 @@ days.act <- CalculateDaysAction(act.st.yr, act.st.m, act.end.yr, act.end.m, drou
 
 ## Option 0: No adaptation ##
 # drought revenues
-noadpt.rev.calf <- unlist(lapply(1:5,function(i){
+noadpt.rev.calf <- unlist(lapply(1:t,function(i){
   CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = wn.wt[i], p.wn.yr1 = p.wn[i])
 }))
 
-out.noadpt <- OptionOutput(opt = "noadpt",
+out.noadpt <- OptionOutput(t = 5,
+                           opt = "noadpt",
                            rev.calf = noadpt.rev.calf, 
-                           cost.op = rep(base.op.cost,5), 
+                           cost.op = rep(base.op.cost,t), 
                            rma.ins = rma.ins, 
                            int.invst = invst.int, 
-                           int.loan = loan.int)
+                           int.loan = loan.int,
+                           start.cash = 0,
+                           assets.cow = base.assets.cow)
 
 
 ## Option 1: Buy additional feed
@@ -86,10 +95,15 @@ days.feed <- days.act  # Assumes that feeding days are equivalent to drought ada
 # Calculate operating costs including costs to buy feed
 feed.cost <- CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, days.feed, herd) + base.op.cost
 
-out.feed <- OptionOutput(opt = "feed", 
+out.feed <- OptionOutput(t = 5,
+                         opt = "feed", 
                          rev.calf = base.sales, 
                          cost.op = feed.cost, 
-                         rma.ins = rma.ins)
+                         rma.ins = rma.ins,
+                         int.invst = invst.int,
+                         int.loan = loan.int,
+                         start.cash = 0,
+                         assets.cow = base.assets.cow)
 
 ## Option 2: Truck pairs to rented pasture
 days.rent <- days.act # Assumes that pasture rental days are equivalent to drought adaptation action days
@@ -113,12 +127,15 @@ cost.op.rentpast <- CalculateRentPastCost(n.miles = n.miles,
                                           calf.wt = calf.wt, 
                                           herd = herd) + base.op.cost
 
-out.rentpast <- OptionOutput(opt = "rentpast",
+out.rentpast <- OptionOutput(t = t,
+                             opt = "rentpast",
                              rev.calf = calf.rev.rentpast, 
                              cost.op = cost.op.rentpast, 
                              rma.ins = rma.ins, 
                              int.invst = invst.int, 
-                             int.loan = loan.int)
+                             int.loan = loan.int,
+                             start.cash = 0,
+                             assets.cow = base.assets.cow)
 
 ## Option 3: Sell pairs and replace cows
 
@@ -134,25 +151,35 @@ cost.op.sellprs <- CalculateSellPrsCost(op.cost.adj = op.cost.adj,
                                         base.op.cost = base.op.cost, 
                                         herdless.op.cost = herdless.op.cost)
 
-out.sellprs <- OptionOutput(opt = "sellprs",
+sellprs.assets.cow <- CalcCowAssets(herd = herd, p.cow = p.cow, sell.year = 1, replace.year = 3)
+
+out.sellprs <- OptionOutput(t = t,
+                            opt = "sellprs",
                             rev.calf = calf.rev.sellprs, 
                             cost.op = cost.op.sellprs, 
                             rma.ins = rma.ins, 
                             int.invst = invst.int, 
-                            int.loan = loan.int)
+                            int.loan = loan.int,
+                            start.cash = 0,
+                            assets.cow = sellprs.assets.cow)
 
 ## Option 4: Sell pairs and don't replace
 
-calf.rev.sellprs.norepl <- c(calf.rev.sellprs[1],rep(0,4))
+calf.rev.sellprs.norepl <- c(calf.rev.sellprs[1],rep(0,(t-1)))
 
-cost.op.sellprs.norepl <- c(cost.op.sellprs[1],rep(herdless.op.cost,4))
+cost.op.sellprs.norepl <- c(cost.op.sellprs[1],rep(herdless.op.cost,(t-1)))
 
-out.sellprs.norepl <- OptionOutput(opt = "sellprs.norepl",
+sellprs.norepl.assets.cow <- CalcCowAssets(herd = herd, p.cow = p.cow, sell.year = 1)
+
+out.sellprs.norepl <- OptionOutput(t = t,
+                                   opt = "sellprs.norepl",
                                    rev.calf = calf.rev.sellprs.norepl, 
                                    cost.op = cost.op.sellprs.norepl, 
                                    rma.ins = rma.ins, 
                                    int.invst = invst.int, 
-                                   int.loan = loan.int)
+                                   int.loan = loan.int,
+                                   start.cash = 0,
+                                   assets.cow = sellprs.norepl.assets.cow)
 
 ## Bringing outcome df's from each option together
 outcomes <- rbind(out.nodrght, out.noadpt, out.feed, out.rentpast, out.sellprs, out.sellprs.norepl)
