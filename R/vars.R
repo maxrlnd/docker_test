@@ -65,9 +65,9 @@ tgrd = 25002  # target grid cell
 tgrd_pt = rastPt[rastPt@data$layer == tgrd, ]  # SpatialPoints representation of target gridcell
 
 ## set target insurance years
-# yyr=2002:2006 # all five years
+yyr=2002:2006 # all five years
 # yyr=c(2002:2003,2005) # we can also set this for individual years
-yyr=2002 # or just one year - the "one year, one drought" model
+# yyr=2002 # or just one year - the "one year, one drought" model
 
 ## set insurance variables
 clv=0.9 # insurance coverage level (0.7 - 0.9 in increments of 0.05)
