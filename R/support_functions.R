@@ -748,7 +748,7 @@ OptionOutput <- function(t, opt, nodrought = FALSE, rev.calf, rev.oth = NULL, co
     rev.tot.noint <- rev.calf + rev.ins 
   }
   
-  out <- data.frame(opt, t, ins, rev.calf, rev.ins, rev.tot.noint, cost.op, cost.ins, cap.sales, cap.purch, cap.taxes, assets.cow)
+  out <- data.frame(opt, yr, ins, rev.calf, rev.ins, rev.tot.noint, cost.op, cost.ins, cap.sales, cap.purch, cap.taxes, assets.cow)
   
   #WARNING: UGLY UGLY CODE AHEAD. Get a handle on dplyr and revisit.
   #Split into ins and non-insurance; calculate interest income, profits, and cash assets; then put back together
