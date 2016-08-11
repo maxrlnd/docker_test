@@ -109,7 +109,7 @@ out.feed <- OptionOutput(t = t,
 days.rent <- days.act # Assumes that pasture rental days are equivalent to drought adaptation action days
 
 # Calculate calf revenues in drought after trucking pairs to rented pasture
-calf.rev.rentpast <- CalculateRentPastRevenue(wn.wt = wn.wt, 
+calf.rev.rentpast <- CalculateRentPastRevenue(expected.wn.wt = expected.wn.wt, 
                                               calf.loss = calf.loss, 
                                               calf.wt.adj = calf.wt.adj,
                                               calf.sell = calf.sell, 
