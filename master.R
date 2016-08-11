@@ -50,11 +50,11 @@ base.cost.ins <- base.op.cost + rma.ins[,2] # increment base operating costs wit
 #base.prof.ins <- base.rev.ins - base.cost.ins
 
 # Base Cow Assets: No sell/replace
-base.assets.cow <- CalcCowAssets(herd = herd, p.cow = p.cow)
+base.assets.cow <- CalcCowAssets(t = t, herd = herd, p.cow = p.cow)
 
 ####No Drought####
 
-out.nodrght <- OptionOutput(t = 5,
+out.nodrght <- OptionOutput(t = t,
                             opt = "nodrght",
                             nodrought = TRUE, 
                             rev.calf = base.sales, 
@@ -78,7 +78,7 @@ noadpt.rev.calf <- unlist(lapply(1:t,function(i){
   CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = wn.wt[i], p.wn.yr1 = p.wn[i])
 }))
 
-out.noadpt <- OptionOutput(t = 5,
+out.noadpt <- OptionOutput(t = t,
                            opt = "noadpt",
                            rev.calf = noadpt.rev.calf, 
                            cost.op = rep(base.op.cost,t), 
@@ -95,7 +95,7 @@ days.feed <- days.act  # Assumes that feeding days are equivalent to drought ada
 # Calculate operating costs including costs to buy feed
 feed.cost <- CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, days.feed, herd) + base.op.cost
 
-out.feed <- OptionOutput(t = 5,
+out.feed <- OptionOutput(t = t,
                          opt = "feed", 
                          rev.calf = base.sales, 
                          cost.op = feed.cost, 
@@ -169,7 +169,7 @@ calf.rev.sellprs.norepl <- c(calf.rev.sellprs[1],rep(0,(t-1)))
 
 cost.op.sellprs.norepl <- c(cost.op.sellprs[1],rep(herdless.op.cost,(t-1)))
 
-sellprs.norepl.assets.cow <- CalcCowAssets(herd = herd, p.cow = p.cow, sell.year = 1)
+sellprs.norepl.assets.cow <- CalcCowAssets(t = t, herd = herd, p.cow = p.cow, sell.year = 1)
 
 out.sellprs.norepl <- OptionOutput(t = t,
                                    opt = "sellprs.norepl",
