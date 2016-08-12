@@ -20,6 +20,7 @@ library(ggplot2)
 library(readxl)
 # library(fpc)
 library(magrittr)
+library(rgdal)
 
 load("data/grid_base.RData") # Load base grid data
 load("data/insurance_base.RData") # Load base insurance data
@@ -563,10 +564,11 @@ foragePWt<-function(stgg,zonewt,stzone,styear,decision=F){
   
   ## Subset zone weights and prep index 
   zonewt=zonewt[stzone,] # subset weights by station/grid zone
-  yprecip=stgg[stgg$Year==styear,][,-1] # monthly precip amounts for start year
-  ave=stgg[stgg$Year=="AVE",][,-1] # average precip since 1948
+  yprecip=stgg[stgg[,1]==styear,][,-1] # monthly precip amounts for start year
+  # ave=stgg[stgg$Year=="AVE",][,-1] # average precip since 1948
+  ave=stgg[nrow(stgg),][,-1] # average precip since 1948
   pidx=yprecip/ave # Monthly precip "index"
-  
+    
   if(decision){ #"decision making under uncertainty" mode
   
     ## Group years in period of record by monthly precip
@@ -885,4 +887,47 @@ OptionOutput <- function(t, opt, nodrought = FALSE, rev.calf, rev.oth = NULL, co
   for (i in 1:length(lhs))
     do.call(`=`, list(lhs[[i]], rhs[[i]]), envir=frame)
   return(invisible(NULL)) 
+}
+
+getMRLAWeights<-function(state.code){
+  
+  "
+  Computes forage potential weights using the 
+  mean of plant growth curves by MRLA for a 
+  specified state. 
+
+  Data source: 
+
+    https://esis.sc.egov.usda.gov/WelcomeFSG/pgFSGSelectFormat.aspx
+
+  Inputs: 
+
+    state.code: two-letter state code (for referencing 
+      plant growth potential curves)
+  
+  "
+  
+  forage_mlra=read.table(paste0("data/",state.code,"_mlra.txt"),sep="|")
+  forage_mlra[,1]=substr(forage_mlra[,1],3,4) # Get MRLA code 
+  forage_mlra=forage_mlra[!forage_mlra$V1 %in% c("00","01","99"),] # Remove placeholder plant growth sites
+  forage_mlra=forage_mlra[,c(1,which(names(forage_mlra)=="V4"):ncol(forage_mlra))] # subset ID and plant growth curve
+  names(forage_mlra)=c("MLRA","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
+  
+  forage_mlra=aggregate(.~MLRA,data=forage_mlra,FUN=mean) # Compute mean plant growth curves by MLRA
+  forage_mlra[,-1]=forage_mlra[,-1]/100 # convert to decimal to match drought calculator fgp weights
+  
+  return(forage_mlra)
+}
+
+COOP_in_MRLA<-function(coop){
+  
+  "
+  Returns the MLRA in which a specified
+  coop site is located.
+  "
+  
+  coop.pt=SpatialPoints(t(rev(coop$loc)),proj4string=CRS(proj4string(mlra)))
+  # fwt=forage_mlra[forage_mlra$MLRA==(coop.pt %over% mlra)$MLRARSYM,][,-1]
+  return(as.numeric(as.character(((coop.pt %over% mlra)$MLRARSYM))))
+  
 }

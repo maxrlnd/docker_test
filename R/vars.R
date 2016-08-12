@@ -3,18 +3,38 @@
 #  a workable interface
 
 ## Zone Weights 
-stzone=3 # state forage zone
-# multiple operations since reading from
-# external file that may be replaced
-zonewt=read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx",sheet="Drought Calculator",skip = 5)[5:8,]
-zonewt=sapply(data.frame(zonewt[,which(names(zonewt)=="Jan"):which(names(zonewt)=="Dec")]),as.numeric)
+
+# # CPER
+# stzone=3 # state forage zone
+# # multiple operations since reading from
+# # external file that may be replaced
+# zonewt=read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx",sheet="Drought Calculator",skip = 5)[5:8,]
+# zonewt=sapply(data.frame(zonewt[,which(names(zonewt)=="Jan"):which(names(zonewt)=="Dec")]),as.numeric)
+
+# Custom location (COOP site and MLRA forage potential weights)
+wrc.state="co" # For pulling COOP sites & mlra forage weights
+load("data/coops.RData") # Shortcut for sourcing 'R/coop_scraper.R'
+# source("R/coop_scraper.R") # the long way
+mlra=readOGR("data","mlra_v42") # load MLRA zone data
+mlra.idx=COOP_in_MRLA(coops[[which(names(coops)=="BOULDER, COLORADO")]]) # MLRA index
+zonewt=getMRLAWeights(wrc.state) # zone weights
+stzone=which(zonewt[,1]==mlra.idx) # not a great workaround...should fix 'foragePwt' function instead
+zonewt=zonewt[,-1] # not a great workaround...should fix 'foragePwt' function instead
 
 ## Station precip gauge
-# multiple operations since reading from
-# external file that may be replaced
-stgg=data.frame(read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx","CPER Precip",skip = 1))
-stgg=stgg[,-which(names(stgg) %in% c("TOTAL","Var.15"))]
-stgg=stgg[stgg$Year %in% c(1948:2016,"AVE"),]
+
+# # CPER Default, from excel model
+# # multiple operations since reading from
+# # external file that may be replaced
+# stgg=data.frame(read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx","CPER Precip",skip = 1))
+# stgg=stgg[,-which(names(stgg) %in% c("TOTAL","Var.15"))]
+# stgg=stgg[stgg$Year %in% c(1948:2016,"AVE"),]
+
+# Custom location 
+stgg=coops[[which(names(coops)=="BOULDER, COLORADO")]]$precip
+stgg=rbind(stgg,rep(NA,ncol(stgg)))
+stgg[nrow(stgg),][,1]="AVE"
+stgg[nrow(stgg),][,-1]=colMeans(stgg[-nrow(stgg),][,-1],na.rm=T)
 
 # Setting input values to defaults in excel file (temporary placeholder)
 styr=2002 # starting year in five-year period 
