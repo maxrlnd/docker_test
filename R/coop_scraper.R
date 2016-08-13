@@ -10,7 +10,10 @@ library(XML)
 library(stringr)
 
 source("R/support_functions.R")
-source("R/vars.R")
+
+if(!exists("wrc.state")){
+  wrc.state="co"
+}
 
 ##list of station links
 sta=getHTMLLinks(paste0("http://www.wrcc.dri.edu/summary/",wrc.state,"lst.html"))
@@ -38,10 +41,10 @@ for (st in sta){
       state.code=substr(stmeta$V2[1],1,2)
     }
     
-#     ##get station grid cell
-#     # TIME INTENSIVE - ignored for test purposes
-#     stp=SpatialPoints(t(rev(sta_loc)),proj4string=CRS(proj4string(gridRaster)))
-#     staGrid=(stp %over% rasterToPolygons(gridRaster))$layer
+    ##get station grid cell
+    # TIME INTENSIVE - ignored for test purposes
+    stp=SpatialPoints(t(rev(sta_loc)),proj4string=CRS(proj4string(gridRaster)))
+    staGrid=(stp %over% rasterToPolygons(gridRaster))$layer
 
         ##monthly precip totals
     staprecip=readHTMLTable(paste0("http://www.wrcc.dri.edu/WRCCWrappers.py?sodxtrmts+",state.code,stcode,"+por+por+pcpn+none+msum+5+01+F"),stringsAsFactors=F)[[1]] #monthly precip totals
@@ -73,3 +76,5 @@ for (st in sta){
   })
                          
 }
+
+save(coops,file="data/coops.RData")
