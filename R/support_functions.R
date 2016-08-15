@@ -636,7 +636,7 @@ CalcCowAssets <- function(t, herd, p.cow, sell.year = NA, replace.year = NA) {
     cow.assets <- c(herd * p.cow, cow.assets)  # Adding time 0 cow assets to make a 6x1 vector
     return(cow.assets)
   }
-
+  
   if(sell.year > 0 & is.na(replace.year)) {
     cow.assets[1:sell.year] <- herd * p.cow  # Allows for sale of herd outside of year 1
     cow.assets[sell.year:t] <- 0  # Replaces sell year with 0, leaves prior years with herd, all subsequent years with no herd 
@@ -655,7 +655,7 @@ CalcCowAssets <- function(t, herd, p.cow, sell.year = NA, replace.year = NA) {
 
 
 
-CalcCapSalesPurch <- function(assets.cow, t) {
+CalcCapSalesPurch <- function(assets.cow, t, cull.num, p.cow) {
   # Description: Calculates vectors of capital sales and capital purchases from 
   #  changes in assets.cow. Assumes sale/purchase of cows is only capital sales/purchase
   #
@@ -666,18 +666,31 @@ CalcCapSalesPurch <- function(assets.cow, t) {
   #  cap.sales = tx1 vector of capital sales for each year
   #  cap.purch = tx1 vector of capital purchases for each year
   n <- length(assets.cow)
-  cap.sales <- c(0, rep(NA, t), 0, rep(NA, t))
-  cap.purch <- c(0, rep(NA, t), 0, rep(NA, t))
+  cap.sales <- c(0, rep(NA, t))
+  cap.purch <- c(0, rep(NA, t))
   for (i in 2:n) {
-    if(assets.cow[i] > assets.cow[i-1]) {
-      cap.sales[i] <- 0 
+    # If cow assets increase and they were not 0 in the prior year, then cap sales equal to normal culling and
+    if(assets.cow[i] > assets.cow[i-1] & assets.cow[i-1] != 0) { 
+      cap.sales[i] <- cull.num * p.cow  # Normal culling 
       cap.purch[i] <- assets.cow[i] - assets.cow[i-1]
     }
+    # If cow assets increase and they were 0 in the prior year, then no cap sales and cap purchases equal to change in assets
+    if(assets.cow[i] > assets.cow[i-1] & assets.cow[i - 1] == 0) { 
+      cap.sales[i] <- 0
+      cap.purch[i] <- assets.cow[i] - assets.cow[i-1]
+    }
+    # If cow assets decrease, then capital sales are equal to the change in cow assets, then cap sales equal to the change in assets
     if(assets.cow[i] < assets.cow[i - 1]) {
       cap.sales[i] <- assets.cow[i-1] - assets.cow[i] 
       cap.purch[i] <- 0
     }
-    if(assets.cow[i] == assets.cow[i - 1]) {
+    # If cow assets are unchanged, then capital sales are equal to the normal culling
+    if(assets.cow[i] == assets.cow[i - 1] & assets.cow[i] != 0) {
+      cap.sales[i] <- cull.num * p.cow
+      cap.purch[i] <- 0
+    }
+    # If cow assets are unchanged at 0, then capital sales and purch are 0
+    if(assets.cow[i] == assets.cow[i - 1] & assets.cow[i] == 0) {
       cap.sales[i] <- 0
       cap.purch[i] <- 0
     }
@@ -685,7 +698,8 @@ CalcCapSalesPurch <- function(assets.cow, t) {
   list(cap.sales, cap.purch)
 }
 
-CalcCapTaxes <- function(cap.sales, cap.purch, cap.tax.rate, drought.emrg = 1)  {
+
+CalcCapTaxes <- function(herd, p.cow, cap.sales, cap.purch, cap.tax.rate, drought.emrg = 1)  {
   # Function: CalcCapTaxes
   # Description: Calculates capital taxes on herd sales. Tax treatment is 
   # different depending on whether herd is sold and replaced by the end of the
@@ -705,23 +719,28 @@ CalcCapTaxes <- function(cap.sales, cap.purch, cap.tax.rate, drought.emrg = 1)  
   #  cap.taxes <- 5x1 vector of capital taxes
   
   n <- length(cap.sales)
-  cap.taxes <- rep(0,n)  # default value of 0 for capital taxes
-  
-  # If herd is sold and replaced within 2 years, then there are no capital taxes
-  
-  # If herd is sold and not replaced within 2 years:
+  cap.taxes <- cap.sales * cap.tax.rate  # default value is standard capital tax rate
+  herd.value <- herd * p.cow
+ 
+  # Special tax treatment for herd sales due to drought:
   for (i in 1:n) {
-    if(cap.sales[i] > 0 & cap.purch[i] == 0 & cap.purch[i+1] == 0 & cap.purch[i+2] == 0 & drought.emrg == 1) {  # if herd is sold and not replaced by the end of the 2nd year after the purchase and there is a drought emergency
+    if(cap.sales[i] == herd.value & cap.purch[i] == 0 & cap.purch[i+1] == 0 & cap.purch[i+2] == 0 & drought.emrg == 1) {  # if herd is sold and not replaced by the end of the 2nd year after the purchase and there is a drought emergency
+      cap.taxes[i] <- 0
       cap.taxes[i+1] <- cap.sales[i] * cap.tax.rate  # then the capital taxes can be delayed by one year
     }
-    if(cap.sales[i] > 0 & cap.purch[i] == 0 & cap.purch[i+1] == 0 & cap.purch[i+2] == 0 & drought.emrg == 0) {  # if herd is sold and not replaced by the end of the 2nd year after the purchase and there is not a declared drought emergency
-      cap.taxes[i] <- cap.sales[i] * cap.tax.rate  # then the capital taxes can be delayed by one year
+    if(cap.sales[i] == herd.value & cap.purch[i] == 0 & cap.purch[i+1] == 0 & cap.purch[i+2] == 0 & drought.emrg == 0) {  # if herd is sold and not replaced by the end of the 2nd year after the purchase and there is not a declared drought emergency
+      cap.taxes[i] <- cap.sales[i] * cap.tax.rate  # then the capital taxes occur in the year of the sale
     }  
+    if(cap.sales[i] == herd.value & cap.purch[i+1] == herd.value | cap.sales[i] == herd.value & cap.purch[i+2] == herd.value ) {   # if herd is sold and replaced within 2 years, then there are no capital taxes
+      cap.taxes[i] <- 0
+    }
   }
   cap.taxes
 }
 
-OptionOutput <- function(t, opt, nodrought = FALSE, rev.calf, rev.oth = NULL, cost.op, rma.ins, int.invst, int.loan, start.cash, assets.cow) {
+OptionOutput <- function(t, opt, nodrought = FALSE, rev.calf, rev.oth = NULL, 
+                         cost.op, rma.ins, int.invst, int.loan, start.cash, 
+                         assets.cow, cap.sales, cap.purch, cap.taxes) {
   # Function: OptOutput
   # Desciption: Takes in cost and revenue variables and outputs data.frame with 
   # all relevant outcome variables
@@ -763,7 +782,6 @@ OptionOutput <- function(t, opt, nodrought = FALSE, rev.calf, rev.oth = NULL, co
   #   assets.cow
   #   assets.cash
   #   net.wrth
-
   
   n <- (t + 1) * 2   # sets length as years plus 1 for initial year, times 2 for insurance and no insurance
   option <- rep(opt, n)
@@ -780,10 +798,6 @@ OptionOutput <- function(t, opt, nodrought = FALSE, rev.calf, rev.oth = NULL, co
   } else {
     rev.ins <- rep(0, n) # no drought, no payout
   }
-  
-  c(cap.sales, cap.purch) := CalcCapSalesPurch(assets.cow = rep(assets.cow, 2), t=t)
-  
-  cap.taxes <- CalcCapTaxes(cap.sales = cap.sales, cap.purch = cap.purch, cap.tax.rate = cap.tax.rate)
   
   if(!is.null(rev.oth)) {  # if other revenues are passed through, then they are included in total revenues
     rev.oth <- c(0, rev.oth, 0, rev.oth)
@@ -864,7 +878,6 @@ OptionOutput <- function(t, opt, nodrought = FALSE, rev.calf, rev.oth = NULL, co
                "aftax.inc", "cap.sales", "cap.purch", "cap.taxes", "assets.cow", 
                "assets.cash", "net.wrth")]
   out
-  
 }  
 
 ':=' <- function(lhs, rhs) {

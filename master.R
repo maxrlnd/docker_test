@@ -52,6 +52,17 @@ base.cost.ins <- base.op.cost + rma.ins[,2] # increment base operating costs wit
 # Base Cow Assets: No sell/replace
 base.assets.cow <- CalcCowAssets(t = t, herd = herd, p.cow = p.cow)
 
+c(base.cap.sales, base.cap.purch) := CalcCapSalesPurch(assets.cow = base.assets.cow, 
+                                             t=t, 
+                                             cull.num = cull.num, 
+                                             p.cow = p.cow)
+
+base.cap.taxes <- CalcCapTaxes(cap.sales = base.cap.sales, 
+                          cap.purch = base.cap.purch, 
+                          cap.tax.rate = cap.tax.rate,
+                          herd = herd,
+                          p.cow = p.cow)
+
 ####No Drought####
 
 out.nodrght <- OptionOutput(t = t,
@@ -63,7 +74,10 @@ out.nodrght <- OptionOutput(t = t,
                             int.invst = invst.int, 
                             int.loan = loan.int,
                             start.cash = 0,
-                            assets.cow = base.assets.cow)
+                            assets.cow = base.assets.cow,
+                            cap.sales = base.cap.sales,
+                            cap.purch = base.cap.purch,
+                            cap.taxes = base.cap.taxes)
   
 ####Drought Occurs####
 # For each option, we calculate the **CHANGE** in costs
@@ -86,7 +100,10 @@ out.noadpt <- OptionOutput(t = t,
                            int.invst = invst.int, 
                            int.loan = loan.int,
                            start.cash = 0,
-                           assets.cow = base.assets.cow)
+                           assets.cow = base.assets.cow,
+                           cap.sales = base.cap.sales,
+                           cap.purch = base.cap.purch,
+                           cap.taxes = base.cap.taxes)
 
 
 ## Option 1: Buy additional feed
@@ -103,7 +120,10 @@ out.feed <- OptionOutput(t = t,
                          int.invst = invst.int,
                          int.loan = loan.int,
                          start.cash = 0,
-                         assets.cow = base.assets.cow)
+                         assets.cow = base.assets.cow,
+                         cap.sales = base.cap.sales,
+                         cap.purch = base.cap.purch,
+                         cap.taxes = base.cap.taxes)
 
 ## Option 2: Truck pairs to rented pasture
 days.rent <- days.act # Assumes that pasture rental days are equivalent to drought adaptation action days
@@ -135,7 +155,10 @@ out.rentpast <- OptionOutput(t = t,
                              int.invst = invst.int, 
                              int.loan = loan.int,
                              start.cash = 0,
-                             assets.cow = base.assets.cow)
+                             assets.cow = base.assets.cow,
+                             cap.sales = base.cap.sales,
+                             cap.purch = base.cap.purch,
+                             cap.taxes = base.cap.taxes)
 
 ## Option 3: Sell pairs and replace cows
 
@@ -151,7 +174,21 @@ cost.op.sellprs <- CalculateSellPrsCost(op.cost.adj = op.cost.adj,
                                         base.op.cost = base.op.cost, 
                                         herdless.op.cost = herdless.op.cost)
 
-sellprs.assets.cow <- CalcCowAssets(herd = herd, p.cow = p.cow, sell.year = 1, replace.year = 3)
+assets.cow.sellprs <- CalcCowAssets(herd = herd, 
+                            p.cow = p.cow, 
+                            sell.year = 1, 
+                            replace.year = 3)
+
+c(cap.sales, cap.purch) := CalcCapSalesPurch(assets.cow = assets.cow, 
+                                             t=t, 
+                                             cull.num = cull.num, 
+                                             p.cow = p.cow)
+
+cap.taxes <- CalcCapTaxes(cap.sales = cap.sales, 
+                          cap.purch = cap.purch, 
+                          cap.tax.rate = cap.tax.rate,
+                          herd = herd,
+                          p.cow = p.cow)
 
 out.sellprs <- OptionOutput(t = t,
                             opt = "sellprs",
@@ -161,7 +198,10 @@ out.sellprs <- OptionOutput(t = t,
                             int.invst = invst.int, 
                             int.loan = loan.int,
                             start.cash = 0,
-                            assets.cow = sellprs.assets.cow)
+                            assets.cow = assets.cow,
+                            cap.sales = cap.sales,
+                            cap.purch = cap.purch,
+                            cap.taxes = cap.taxes)
 
 ## Option 4: Sell pairs and don't replace
 
@@ -169,7 +209,21 @@ calf.rev.sellprs.norepl <- c(calf.rev.sellprs[1],rep(0,(t-1)))
 
 cost.op.sellprs.norepl <- c(cost.op.sellprs[1],rep(herdless.op.cost,(t-1)))
 
-sellprs.norepl.assets.cow <- CalcCowAssets(t = t, herd = herd, p.cow = p.cow, sell.year = 1)
+assets.cow <- CalcCowAssets(t = t, 
+                            herd = herd, 
+                            p.cow = p.cow, 
+                            sell.year = 1)
+
+c(cap.sales, cap.purch) := CalcCapSalesPurch(assets.cow = assets.cow, 
+                                             t=t, 
+                                             cull.num = cull.num, 
+                                             p.cow = p.cow)
+
+cap.taxes <- CalcCapTaxes(cap.sales = cap.sales, 
+                          cap.purch = cap.purch, 
+                          cap.tax.rate = cap.tax.rate,
+                          herd = herd,
+                          p.cow = p.cow)
 
 out.sellprs.norepl <- OptionOutput(t = t,
                                    opt = "sellprs.norepl",
@@ -179,7 +233,10 @@ out.sellprs.norepl <- OptionOutput(t = t,
                                    int.invst = invst.int, 
                                    int.loan = loan.int,
                                    start.cash = 0,
-                                   assets.cow = sellprs.norepl.assets.cow)
+                                   assets.cow = assets.cow,
+                                   cap.sales = cap.sales,
+                                   cap.purch = cap.purch,
+                                   cap.taxes = cap.taxes)
 
 ## Bringing outcome df's from each option together
 outcomes <- rbind(out.nodrght, out.noadpt, out.feed, out.rentpast, out.sellprs, out.sellprs.norepl)
