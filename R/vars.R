@@ -79,6 +79,7 @@ calf.wt.adj <- ifelse(drought.action==1,-0.1,0)
 calf.sell <- 0.75
 p.wn <- c(1.31,1.25,1.25,1.25,1.25) # previously 'p.wn.yr1', now vectorized for iteration
 wn.succ <- 0.94
+expected.wn.succ <- 0.94  # Baseline weaning success.
 p.calf.t0 <- 1.45
 p.cow <- 850
 cow.cost = 500

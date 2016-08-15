@@ -242,7 +242,7 @@ dcInfo<-function(dc,tgrd){
 }
 
 #### Baseline Costs and Revenues ####
-CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn.yr1) {
+CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn, wn.succ) {
   "
   Function: CalculateExpSales
   Description: Calculates expected calf revenues for non-drought year
@@ -257,13 +257,13 @@ CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn.yr1) {
     base.sales = Expected revenues from calf sales for a non-drought year
   "
   
-  base.sales <- herd * calf.sell * wn.wt * p.wn.yr1
-  return(base.sales)
+  base.sales <- herd * wn.succ * calf.sell * wn.wt * p.wn
+  base.sales
 }
 
 CalculateBaseOpCosts <- function(herd, cow.cost) {
   base.op.cost <- herd * cow.cost
-  return(base.op.cost)
+  base.op.cost
 } 
 
 #### Drought Action ####
@@ -374,7 +374,7 @@ CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days
   return(cost.rentpast)
 }
 
-CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, calf.sell, herd, p.wn) {
+CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, calf.sell, herd, p.wn, wn.succ) {
 "
  CalculateRentPastRevenue 
  Description: Calculates calf sale revenues after trucking pairs to rented pastures
@@ -391,7 +391,7 @@ CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, cal
   rev.rentpast = Change in revenue due to mortality and weight loss from trucking to rented pasture
 "
   # Number of calves sold after accounting for calf mortality in transport 
-  calf.sales.num <- herd * calf.sell - calf.loss
+  calf.sales.num <- herd * wn.succ * calf.sell - calf.loss
   
   # Selling weight after accounting for weight loss due to transport stress
   sell.wt <- expected.wn.wt * (1 + calf.wt.adj)
