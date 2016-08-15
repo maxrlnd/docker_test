@@ -2,13 +2,63 @@
 # NOTE: Currently, the default values are taken from the excel model. Eventually this will be replaced by
 #  a workable interface
 
+## Precip and forage potential 
+# These variables need to be set first because our 
+# cow/calf weights by year depend upon them.
+
+use.CPER=T # Use COOP sites or CPER: Stick with CPER for now
+
+if(use.CPER){
+  
+  ## Zone Weights
+  stzone=3 # state forage zone
+  # multiple operations since reading from
+  # external file that may be replaced
+  zonewt=read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx",sheet="Drought Calculator",skip = 5)[5:8,]
+  zonewt=sapply(data.frame(zonewt[,which(names(zonewt)=="Jan"):which(names(zonewt)=="Dec")]),as.numeric)
+  
+  ## Station precip gauge
+  stgg=data.frame(read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx","CPER Precip",skip = 1))
+  stgg=stgg[,-which(names(stgg) %in% c("TOTAL","Var.15"))]
+  stgg=stgg[stgg$Year %in% c(1948:2016,"AVE"),]
+  
+  ## Target grid cell
+  tgrd = 25002  # target grid cell - CPER default 
+  
+}else{ #use Custom location (COOP site and MLRA forage potential weights)
+  
+  ## Fetch data
+  wrc.state="co" # For pulling COOP sites & mlra forage weights
+  target.loc="BOULDER, COLORADO"
+  load("data/coops.RData") # Shortcut for sourcing 'R/coop_scraper.R'
+  # source("R/coop_scraper.R") # the long way
+  mlra=readOGR("data","mlra_v42") # load MLRA zone data
+  target.coop=coops[[which(names(coops)==target.loc)]]
+  
+  ## Zone weights
+  mlra.idx=COOP_in_MRLA(target.coop) # MLRA index
+  zonewt=getMRLAWeights(wrc.state) # zone weights
+  stzone=which(zonewt[,1]==mlra.idx) # not a great workaround...should fix 'foragePwt' function instead
+  zonewt=zonewt[,-1] # not a great workaround...should fix 'foragePwt' function instead
+  
+  ## Station precip gauge
+  stgg=target.coop$precip
+  stgg=rbind(stgg,rep(NA,ncol(stgg)))
+  stgg[nrow(stgg),][,1]="AVE"
+  stgg[nrow(stgg),][,-1]=colMeans(stgg[-nrow(stgg),][,-1],na.rm=T)
+  
+  ## Target grid cell
+  tgrd = target.coop$grid  # target grid cell - custom site
+  
+}  
+
 # Setting input values to defaults in excel file (temporary placeholder)
 styr=2002 # starting year in five-year period 
 act.st.yr <- 1
 act.st.m <- 6
 act.end.yr <- 1
 act.end.m <- 12
-drought.action = ifelse(1:5 %in% act.st.yr:act.end.yr,1,0)
+drought.action = ifelse(1:5 %in% act.st.yr:act.end.yr, 1, 0)
 kHayLbs <- 22
 kOthLbs <- 0
 p.hay <- 100  # This should be a user input variable
@@ -34,25 +84,23 @@ p.cow <- 850
 cow.cost = 500
 purchase.insurance = 1 # dummy - purchase insurance (1) or do not (0)
 invst.int = 0.0125
+cap.tax.rate <- 0.15
+t <- 5  # number of years in the model
+cull.num <- 15  # Number of cows culled in a normal year
 
 ## Other Information
 loan.int <- 0.065  # interest rate for borrowed money (%/year)
 
 ## Option 3 Variables: Sell pairs and replace cows
-op.cost.yr1 <- -100  # Change in operating costs in year 1 per cow ($/cow/year). Negative value represents reduced costs
-op.cost.yr2 <- 5000  # Change in operating costs in year 2 per year ($/year)
-op.cost.yr3up <- 5000  # Change in operating costs in years 3 and up per year ($/year)
+op.cost.adj <- -100  # Change in operating costs in year 1 per cow ($/cow/year). Negative value represents reduced costs
+herdless.op.cost <- 5000  # Operating costs incurred without a herd ($/year)
 sell.cost <- 20  # Selling cost per cow ($/cow) NOTE: DO WE COUNT SELLING COSTS IN A NORMAL YEAR? ARE THESE ADDITIONAL?
 replc.cost <- 850  # Cost of replacing the cow ($/cow)
 
-## Target grid cell
-tgrd = 25002  # target grid cell 
-tgrd_pt = rastPt[rastPt@data$layer == tgrd, ]  # SpatialPoints representation of target gridcell
-
 ## set target insurance years
-# yyr=2002:2006 # all five years
+yyr=2002:2006 # all five years
 # yyr=c(2002:2003,2005) # we can also set this for individual years
-yyr=2002 # or just one year - the "one year, one drought" model
+# yyr=2002 # or just one year - the "one year, one drought" model
 
 ## set insurance variables
 clv=0.9 # insurance coverage level (0.7 - 0.9 in increments of 0.05)
@@ -60,25 +108,16 @@ acres=3000 # ranch acres
 pfactor=1 # productivity factor (0.6 - 1.5)
 insp=rbind(c(3,0.5),c(5,0.5)) # insurance purchase
 
+# SpatialPoints representation of target gridcell 
+# for fetching insurance results
+tgrd_pt = rastPt[rastPt@data$layer == tgrd, ]  
+
 ## Precip, Forage Potential, and Calf Weight variables
 styear=yyr[1] # Starting "drought" year
 # dr_start=6 # Drought adaptive action starts
 dr_start=act.st.m # Drought adaptive action starts
 # dr_end=8 # Drought action ends 
 dr_end=act.end.m # Drought action ends 
-calf_currently=375 # Average calf weight "currently"
+# calf_currently=375 # Average calf weight "currently"
 calf_wean=600 # Expected average calf weight "at weaning"
-stzone=3 # state forage zone
 
-## Zone Weights 
-# multiple operations since reading from
-# external file that may be replaced
-zonewt=read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx",sheet="Drought Calculator",skip = 5)[5:8,]
-zonewt=sapply(data.frame(zonewt[,which(names(zonewt)=="Jan"):which(names(zonewt)=="Dec")]),as.numeric)
-
-## Station precip gauge
-# multiple operations since reading from
-# external file that may be replaced
-stgg=data.frame(read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx","CPER Precip",skip = 1))
-stgg=stgg[,-which(names(stgg) %in% c("TOTAL","Var.15"))]
-stgg=stgg[stgg$Year %in% c(1948:2016,"AVE"),]

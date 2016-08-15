@@ -1,0 +1,59 @@
+CO0001|in site description by CB|Spring fall growth by CB|0|0|5|10|25|15|0|25|20|0|0|0
+CO0101|MLRA 34B-Salt Desert Sites|MLRA 34B|0|5|45|27|13|0|0|0|5|5|0|0
+CO0102|MLRA 34B & 36 - Semidesert Sites|MLRA 34B and 36|0|0|20|30|30|10|0|0|5|5|0|0
+CO0103|MLRA 36 - Foothills Mesic|MLRA 36|0|0|8|32|32|18|0|0|4|6|0|0
+CO0104|MLRA 48A & 34A - Foothill Frigid|MLRA 48A & 34A|0|0|0|5|30|40|10|7|6|2|0|0
+CO0105|MLRA 48A - Mountain Sites|MLRA 48A|0|0|0|5|30|38|17|0|5|5|0|0
+CO0106|MLRA 48A - Subalpine Sites|MLRA 48A|0|0|0|0|10|38|42|8|2|0|0|0
+CO0107|MLRA 48A - Alpine Sites|MLRA 48A|0|0|0|0|0|15|24|22|26|13|0|0
+CO4801|Cool season dominant; MLRA-48A; Mountain loam||0|0|0|5|30|37|17|1|5|5|0|0
+CO4802|MLRA 48A- Mt Swale |Extended moisture availability in mid-summer|0|0|0|2|10|23|35|20|7|3|0|0
+CO4808|MLRA 48A - Foothill Mountain Valley|MLRA 48A|0|0|0|5|30|42|10|7|6|0|0|0
+CO4901|Cool season dominant/warm season sub-dominant; MLRA-49C; upland loamy soils|Reference Plant Community - Western Wheatgrass, Green Needlegrass, Fourwing Saltbush   |0|0|0|3|18|32|23|16|7|1|0|0
+CO4921|Cool season dominant, warm season subdominant; MLRA 49D, loamy upland soils|Loamy Foothill in MLRA 49D, Reference Community; Western Wheatgrass, Blue grama, fourwing saltbush; Warm/cool season, mixed short and mid grass|0|0|2|5|15|20|25|20|10|3|0|0
+CO4922|Blue Grama Sod|Warm season dominant, shortgrass|0|0|0|2|12|30|35|18|3|0|0|0
+CO4923|Snakeweed, Pioneer Annual/Perennials, Bare Ground|Warm/cool season, annual/perennial forbs|0|0|5|10|20|25|30|10|0|0|0|0
+CO4924|Juniper/pinyon dominated; foothill MLRA 49D|Juniper/pinyon MLRA 49D|0|0|0|10|20|30|25|15|0|0|0|0
+CO4925|Cool season dominant, warm season subdominant; MLRA 49C; loamy upland soils|Loamy Foothill in MLRA 49C, Reference Community; Western wheatgrass, blue grama, fourwing saltbush; warm/cool season, mixed, short, and midgrass|0|0|2|5|15|20|25|20|10|3|0|0
+CO5102|Warm season dominant, cool season sub-dominant; MLRA-51; coarse textured soils||0|0|0|2|15|25|30|20|8|0|0|0
+CO5104|Warm season dominant, cool season sub-dominant MLRA-51; valley floor- fine textured soils||0|0|0|3|30|35|15|10|5|2|0|0
+CO5105|Warm/cool season co-dominant; MLRA-51; fine textured soils||0|0|0|2|40|30|18|5|3|2|0|0
+CO5107|Warm season dominant, cool season sub-dominant; MLRA-51; valley floor-alkaline soils.||0|0|0|3|30|25|20|12|10|0|0|0
+CO5108|Cool-season Dominant Warm-season Subdominant, MLRA 51 Alluvial Fans & fan Remnants|Reference Plant Community for Chico Fan located in LRU 51-5 on fans and fan remnants above valley floor, pre-dominantly in areas surrounding Villa Grove and Saguache, Saguache County.|0|0|0|3|30|25|20|12|10|0|0|0
+CO5109|Cool-season/Warm-season co-dominant, coarse textured soils, alluvial fans and benches|Located in LRU 51-5 on fans and fan remnants above valley floor, pre-dominantly in Saguache County, Villa Grove and Saguache area.|0|0|0|2|35|30|25|5|3|0|0|0
+CO5110|Dominant Shrub, Warm Season Remnant Community|For LRU 5 in MLRA 51. Eroded state with black greasewood, remnant warm season grasses such as blue grama and ring muhly.|0|0|0|3|15|20|30|25|7|0|0|0
+CO6701|Cool season/warm season co-dominant; MLRA-67B; upland fine textured soils.||0|0|2|8|20|28|15|12|10|5|0|0
+CO6702|Warm season dominant, cool season sub-dominant; MLRA-67B, upland fine textured soils.||0|0|0|2|15|45|20|15|3|0|0|0
+CO6703|Cool season/warm season co-dominant, excess litter; MLRA-67B; upland fine textured soils.||0|0|0|10|20|25|15|15|10|5|0|0
+CO6704|Warm season dominant, excess litter; MLRA-67B; upland fine textured soils. ||0|0|0|1|25|45|20|7|2|0|0|0
+CO6705|Warm season/cool season co-dominant, excess litter; MLRA-67B; upland fine textured soils||0|0|2|7|18|35|18|13|5|2|0|0
+CO6706|Warm season dominant, cool season sub-dominant, excess litter; MLRA-67B; upland fine textured soils.||0|0|2|8|15|35|18|13|7|2|0|0
+CO6707|Warm season dominant; MLRA-67B; upland fine textured soils.||0|0|0|3|20|45|20|10|2|0|0|0
+CO6708|Warm season/cool season co-dominant; MLRA-67B; upland fine textured soils.||0|0|2|8|20|35|18|10|5|2|0|0
+CO6709|Warm season dominant, cool season sub-dominant; MLRA-67B; upland coarse textured soils.||0|0|2|7|25|35|15|10|5|1|0|0
+CO6710|Warm season dominant; MLRA-67B; upland coarse textured soils.||0|0|0|5|20|40|20|10|5|0|0|0
+CO6711|Warm season dominant, cool season sub-dominant, excess litter; MLRA-67B; upland coarse texture soil.||0|0|2|8|20|35|17|10|5|3|0|0
+CO6712|Warm season/cool season co-dominant; MLRA-67B; upland coarse textured soils.||0|0|0|1|7|48|27|15|2|0|0|0
+CO6713|Warm season dominat, sool season sub-dominant; MLRA-67B; lowland water influenced soils||0|0|2|8|20|30|20|12|5|3|0|0
+CO6714|Cool season dominant, warm season sub-dominant; MLRA-67B; lowland water influenced soils||0|0|2|7|25|40|15|7|3|1|0|0
+CO6715|Warm season/cool season co-dominant, excess litter; MLRA-67B; lowland water influenced soils.||0|0|1|7|20|35|20|10|5|2|0|0
+CO6716|Warm season dominat, cool season sub-dominant, high litter; MLRA-67B; lowland water influenced soils||0|0|2|8|20|28|20|12|6|4|0|0
+CO6717|Cool season dominant; MLRA-67B; lowland water influenced soils||0|0|5|13|25|30|15|7|3|2|0|0
+CO6718|Warm season dominant; MLRA-67B; lowland water influenced soils||0|0|0|5|15|40|23|12|3|2|0|0
+CO6901|Warm season/cool season co-dominant; MLRA-69; upland fine textured soils.||0|0|5|10|20|30|20|10|3|2|0|0
+CO6902|Warm season/cool season co-dominant, excess litter; MLRA-69; upland fine textured soils.||0|0|3|7|22|33|18|12|5|0|0|0
+CO6903|Warm season dominant, cool season sub-dominant; MLRA-69; upland fine textured soils.||0|0|0|5|15|35|25|15|5|0|0|0
+CO6904|Warm season dominant; MLRA-69; upland fine textured soils.||0|0|0|0|15|45|25|15|0|0|0|0
+CO6905|Warm season dominant, cool season sub-dominant; MLRA-69; upland coarse textured soils||0|0|5|10|22|35|15|10|3|0|0|0
+CO6906|Warm season dominant, cool season sub-dominant, excess litter; MLRA-69; upland coarse textured soils||0|0|5|10|25|30|15|10|3|2|0|0
+CO6907|Warm season dominant; MLRA-69; upland coarse textured soils||0|0|0|5|30|40|20|5|0|0|0|0
+CO6908|Warm season/cool season co-dominant; MLRA-69; lowland water influenced soils||0|0|5|10|23|30|17|10|3|2|0|0
+CO6909|Warm season dominant, cool season sub-dominant; MLRA-69; lowland water influenced soils||0|0|3|7|15|35|25|10|3|2|0|0
+CO6910|Warm season dominant, cool season sub-dominant, excess litter; MLRA-69; lowland water influenced soi||0|0|2|8|20|30|20|10|7|3|0|0
+CO6911|Warm season dominant; MLRA-69; lowland water influenced soils||0|0|0|5|15|45|20|10|5|0|0|0
+CO6912|Cool season dominant, warm season subdominant, ponded||0|0|2|13|25|30|20|7|3|0|0|0
+CO9994|Mountain Pinyon by CB|upper foothill zone I made this up for this zone CB|0|0|2|9|37|42|0|0|4|6|0|0
+CO9995|Foothill PJ by CB|Foothill PJ I made this up for this zone CB|0|0|0|0|50|45|1|2|2|0|0|0
+CO9996|Foothill Zone by CB|Foothill Zone - Mesic I made this up for this zone CB|0|0|8|32|32|18|0|0|4|6|0|0
+CO9998|Mountain Zone by CB|***dont know the growth curve or curve id...just made this up so I could save the data*** CB|0|0|0|3|15|10|37|30|5|0|0|0
+CO9999|Mountain Zone by CB|***dont know the growth curve or curve id...just made this up so I could save the data***CB|0|0|0|3|15|10|37|30|5|0|0|0

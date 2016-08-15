@@ -4,7 +4,7 @@
 # library(pracma)
 # library("tseries")
 # require(lubridate)
-# require(dplyr)
+library(dplyr)
 library(raster)
 # library("ncdf4")
 # library("rgdal")
@@ -19,6 +19,8 @@ library(ggplot2)
 # library("maptools")
 library(readxl)
 # library(fpc)
+library(magrittr)
+library(rgdal)
 
 load("data/grid_base.RData") # Load base grid data
 load("data/insurance_base.RData") # Load base insurance data
@@ -265,7 +267,7 @@ CalculateBaseOpCosts <- function(herd, cow.cost) {
 } 
 
 #### Drought Action ####
-CalculateDaysAction <- function(act.st.yr, act.st.m, act.end.yr, act.end.m) {
+CalculateDaysAction <- function(act.st.yr, act.st.m, act.end.yr, act.end.m, drought.action) {
  "
  Function: CalculateDaysAction
  Description: Calculate the number of days rancher pays for a drought adaptation action.
@@ -281,8 +283,7 @@ CalculateDaysAction <- function(act.st.yr, act.st.m, act.end.yr, act.end.m) {
   days.act = Number of days drought adaptation action takes place (days)
 	"
 
-  # Warning about end month
-  warning("Start and End month assumes that action starts/stops on the first of the month")
+  # Start and End month assumes that action starts/stops on the first of the month
   
   # Error handling
   if (act.st.yr < 1) {
@@ -305,7 +306,8 @@ CalculateDaysAction <- function(act.st.yr, act.st.m, act.end.yr, act.end.m) {
     stop("Model not equipped for multi-year drought adaptation. act.st.yr must equal act.end.yr")
   }
   
-  return(days.act)
+  days.act.vect <- days.act * drought.action #Creates a vector of days of action
+  days.act.vect
 }
 
 #### Option 1: Buy feed ####
@@ -331,13 +333,6 @@ CalculateFeedCost <- function(kHayLbs, kOthLbs, p.hay,p.oth, days.feed, herd) {
   return(feed.cost)
 }
 
-CalculateFeedRevenue <- function() {
-  "
-  Function: CalculateFeedRevenue
-  Description: Calculates the change in revenue from buying feed. This is assumed to be 0, so this is trivial.
-  "
-  return(0)
-}
 
 #### Option 2: Rent Pasture ####
 
@@ -374,15 +369,15 @@ CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days
   
   # Total costs including transport, rent, and other costs
   cost.rentpast.woint <- ifelse(days.rent > 0, tot.truck.cost + tot.past.rent + oth.cost, 0)
-  cost.rentpast <- ifelse(days.rent > 0, cost.rentpast.woint * (1 + loan.int), 0)
+  cost.rentpast <- ifelse(days.rent > 0, cost.rentpast.woint * (1 + loan.int / 365 * days.rent), 0)  # I think we should not include interest here unless it is also included in other adaptation costs
   
   return(cost.rentpast)
 }
 
-CalculateRentPastRevenue <- function(base.sales, wn.wt, calf.loss, calf.wt.adj, calf.sell, herd, p.wn.yr1) {
+CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, calf.sell, herd, p.wn) {
 "
  CalculateRentPastRevenue 
- Description: Calculates the change in revenues due to trucking pairs to rented pastures
+ Description: Calculates calf sale revenues after trucking pairs to rented pastures
 
  Inputs:
   calf.loss = Additional calf deaths due to transport stress (head of calves)
@@ -396,101 +391,77 @@ CalculateRentPastRevenue <- function(base.sales, wn.wt, calf.loss, calf.wt.adj, 
   rev.rentpast = Change in revenue due to mortality and weight loss from trucking to rented pasture
 "
   # Number of calves sold after accounting for calf mortality in transport 
-  actual.calf.sales.num <- herd * calf.sell - cfalf.loss
+  calf.sales.num <- herd * calf.sell - calf.loss
   
   # Selling weight after accounting for weight loss due to transport stress
-  actual.sell.wt <- wn.wt * (1 + calf.wt.adj)
+  sell.wt <- expected.wn.wt * (1 + calf.wt.adj)
   
-  # Change in expected revenues
-  rev.rentpast <- -1 * base.sales + actual.calf.sales.num * actual.sell.wt * p.wn.yr1
-  return(rev.rentpast)
+  # Expected calf sale revenues
+  rev.rentpast <- calf.sales.num * sell.wt * p.wn
+  rev.rentpast
 }
 
 #### Option 3: Sell Pairs & Replace ####
-CalculateSellPrsCost <- function(op.cost.yr1, herd, sell.cost, base.op.cost, fixed.op.cost, p.cow.rplc) {
+CalculateSellPrsCost <- function(op.cost.adj, herd, sell.cost, base.op.cost, herdless.op.cost) {
   "
-  Function: CalculateSellPrsCostYr1
-  Description: Calculates the change in costs due to selling pairs and replacing cows for years 1 through 3
+  Function: CalculateSellPrsCost
+  Description: Calculates the operating costs to sell pairs in year 1 and replacing cows in year 3
   NOTE: It is assumed that cows are replaced on last day of the second year after they are sold. 
   For example, cows sold in 2011 are replaced on 12/31/2013.
   
   Inputs:
-  op.cost.yr1 = Change in operating costs in year 1 per cow ($/cow/year)
+  op.cost.adj = Change in operating costs in year 1 per cow ($/cow/year)
   sell.cost = Selling cost per cow ($/cow) NOTE: DO WE COUNT SELLING COSTS IN A NORMAL YEAR? ARE THESE ADDITIONAL?
   herd = Size of herd (head of cows, does not include calves)
-  base.op.cost = Baseline annaul cost of operating ranch with full herd ($/year)
+  base.cost = Baseline annual cost of operating ranch with full herd ($/year)
   fixed.op.cost = Fixed operating costs for a year without a herd ($/year)
-  p.cow.rplc = Price to replace cows ($/cow)
   
   Outputs:
   cost.sellprs = 5x1 vector of changes in operating costs for years 1 through 5 from selling pairs in year 1 and replacing them at the end of year 3
   "
   cost.sellprs <- NULL
-  # cost.sellprs[1] <- op.cost.yr1 * herd + sell.cost * herd  # CORRECT CODE!!! # Yr 1 change in operating costs includes change in operating cost from not having the herd and the additional cost to sell cows
-  cost.sellprs[1] <- op.cost.yr1 * herd  # INCORRECT CODE (replicates excel's exclusion of herd selling costs)
-  cost.sellprs[2] <- -1 * base.op.cost + fixed.op.cost  # Yr 2 change in operating costs includes change in operating cost from not having the herd plus the fixed 'herdless' operating costs
-  cost.sellprs[3] <- -1 * base.op.cost + fixed.op.cost  # Yr 3 change in operating costs includes change in operating cost from not having the herd plus the fixed 'herdless' operating costs 
-  cost.sellprs[4:5] <- 0  # Yr 4 & 5 change in op costs are assumed to be 0
+  cost.sellprs[1] <- base.op.cost + op.cost.adj * herd + sell.cost * herd  # CORRECT CODE!!! # Yr 1 operating costs includes a reduction in operating cost from not having the herd and the additional cost to sell cows
+  # cost.sellprs[1] <- base.op.cost + op.cost.adj * herd  # INCORRECT CODE (replicates excel's exclusion of herd selling costs)
+  cost.sellprs[2] <- herdless.op.cost  # fixed 'herdless' operating costs
+  cost.sellprs[3] <- herdless.op.cost  # fixed 'herdless' operating costs 
+  cost.sellprs[4:5] <- base.op.cost  # Yr 4 & 5 change in op costs are assumed to be normal
   
-  return(cost.sellprs)
+  cost.sellprs
 }
 
-CalculateSellPrsRev <- function(base.sales, herd, wn.wt, p.wn, wn.succ, calf.wt, p.calf.t0, p.cow, invst.int, cull) { 
+CalculateSellPrsRev <- function(base.sales, herd, wn.succ, calf.wt, p.calf.t0) { 
   "
   Function: CalculateSellPrsRev
-  Description: Calculates the change in revenues due to selling pairs and replacing cows for years 1 through 3
+  Description: Calculates calf sales revenues due to selling pairs and replacing cows for years 1 through 3
   NOTE: It is assumed that cows are replaced on last day of the second year after they are sold. 
   For example, cows sold in 2011 are replaced on 12/31/2013.
-  Test:   CalculateSellPrsRev(base.sales, herd, wn.wt, p.wn, wn.succ, calf.wt, p.calf.t0, p.cow, invst.int, cull)
 
   Inputs:
   base.sales = Calf sales in a normal year ($/year)
-  wn.wt = Average weight at weaning (pounds)
   p.wn.t0 = Current sale price calves ($/pound)
-  p.wn = Vector of expected sale prices of calves in years 1-5 ($/pound)
   herd = Size of herd (head of cows, does not include calves)
   wn.succ = Average percentage of cows that successfully wean calves (%)
   calf.wt = Average 'current' weight of calves (pounds)
-  p.cow = Current sale price of cow ($/cow)
-  invst.int = Interest rate for investments (%/year)
-  cull = Number of cows culled in a normal year (cows)
-  
+
   Outputs:
-  rev.sellprs = 5x1 vector of changes in revenue for years 1 through 5. (Years 4 and 5 are assumed to be 0.)
+  rev.sellprs = 5x1 vector of calf revenues for years 1 through 5.
   "
-  # Actual calf sales for years 1 through 3
-  calf.sales <- NULL
-  for (i in 1:3) {
-    ifelse(i == 1, calf.sales[i] <- herd * wn.succ * calf.wt * p.calf.t0, calf.sales[i] <- 0)
-  }
-  
-  # Cow sales (sell in year 1, no sales in years 2 and 3)
-  cow.sales <- c(p.cow * (herd - cull), 0, 0)
-  cow.sales.nocull <- c(p.cow * herd, 0, 0)  # Cow sales not including a reduction from normally culled cows
-  
-  # Interest income from cow sales
-  pr <- c(cow.sales.nocull[1],0,0,0)  # Investment principle. Incorrect carry over from excel file. Change to cow.sales
-  int.inc <- NULL
-  for (i in 1:3) {
-    if (i == 1) {
-      int.inc[i] <- pr[i] * invst.int / 365 * days.act
-      pr[i + 1] <- pr[i] + int.inc[i]
+  # Calf sales revenues
+  calf.sales <- rep(NA,5)
+  for (i in 1:5) {
+    if(i == 1) {
+      calf.sales[i] <- herd * wn.succ * calf.wt * p.calf.t0
     }
-    else {
-      int.inc[i] <- pr[i] * invst.int
-      pr[i + 1] <- pr[i] + int.inc[i]
+    if(i == 2 | i == 3) {
+      calf.sales[i] <- 0
+    }
+    if(i > 3) {
+      calf.sales[i] <- base.sales[i]
     }
   }
-  
-  base.sales.123 <- base.sales[1:3]  # Subsetting base sales to the first 3 years
-  # rev.sellprs <- -1* base.sales.123 + calf.sales + int.inc  # CORRECT CODE (includes interest) # Changes in revenues for years 1 through 3
-  rev.sellprs <- -1* base.sales.123 + calf.sales  # INCORRECT CODE (excel replication)
-  for (i in 4:5) {  # Changes in revenues for years 4 through 5
-    rev.sellprs[i] <- 0
-  }
-  
-  return(rev.sellprs)
+  calf.sales
 }
+
 
 insMat<-function(tgrd,yyr,clv,acres,pfactor,insPurchase){
   
@@ -593,10 +564,11 @@ foragePWt<-function(stgg,zonewt,stzone,styear,decision=F){
   
   ## Subset zone weights and prep index 
   zonewt=zonewt[stzone,] # subset weights by station/grid zone
-  yprecip=stgg[stgg$Year==styear,][,-1] # monthly precip amounts for start year
-  ave=stgg[stgg$Year=="AVE",][,-1] # average precip since 1948
+  yprecip=stgg[stgg[,1]==styear,][,-1] # monthly precip amounts for start year
+  # ave=stgg[stgg$Year=="AVE",][,-1] # average precip since 1948
+  ave=stgg[nrow(stgg),][,-1] # average precip since 1948
   pidx=yprecip/ave # Monthly precip "index"
-  
+    
   if(decision){ #"decision making under uncertainty" mode
   
     ## Group years in period of record by monthly precip
@@ -623,10 +595,9 @@ foragePWt<-function(stgg,zonewt,stzone,styear,decision=F){
   
 }
 
-# calfDroughtWeight<-function(calf_wean,calf_currently,stfwt){
-  ###DEPRECATED###
-#   return(calf_currently+(stfwt*(calf_wean-calf_currently)))
-# }
+calfDroughtWeight<-function(expected.wn.wt,calf.wt,stfwt){
+  return(calf.wt+(stfwt*(expected.wn.wt-calf.wt)))
+}
 
 calfWeanWeight<-function(styr){
   
@@ -639,9 +610,337 @@ calfWeanWeight<-function(styr){
     foragePWt(stgg,zonewt,stzone,i)
   }))
   calf_weights_ann=unlist(lapply(forage.weights,function(i){ # annual calf weights
-    calfDroughtWeight(calf_wean,calf_currently,i)
+    calfDroughtWeight(expected.wn.wt,calf.wt,i)
   }))
   
-  return(calf_weights_ann)
+  calf_weights_ann
+}
+
+CalcCowAssets <- function(t, herd, p.cow, sell.year = NA, replace.year = NA) {
+  # Function: CapitalAssets
+  # Description: Caluclated the cow assets for each year.
+  
+  # Inputs:
+  #  herd
+  #  p.cow
+  #  sell.year = Single numeric value. Equal to t where year 1 is t=1.
+  #  replace.year = Single numeric value. Equal to t where year 1 is t=1.
+  
+  # Output:
+  #  6x1 vector of cow assets for each year, including t=0
+  
+  cow.assets <- rep(NA,t)
+  
+  if(is.na(sell.year)) {
+    cow.assets[1:t] <- herd * p.cow
+    cow.assets <- c(herd * p.cow, cow.assets)  # Adding time 0 cow assets to make a 6x1 vector
+    return(cow.assets)
+  }
+  
+  if(sell.year > 0 & is.na(replace.year)) {
+    cow.assets[1:sell.year] <- herd * p.cow  # Allows for sale of herd outside of year 1
+    cow.assets[sell.year:t] <- 0  # Replaces sell year with 0, leaves prior years with herd, all subsequent years with no herd 
+    cow.assets <- c(herd * p.cow, cow.assets)  # Adding time 0 cow assets to make a 6x1 vector
+    return(cow.assets)
+  }  
+  
+  if(sell.year > 0 & replace.year > 0 ) {
+    cow.assets[1:sell.year] <- herd * p.cow  # Allows for sale of herd outside of year 1
+    cow.assets[sell.year:(replace.year-1)] <- 0  # Replaces sell year with 0, leaves prior years with herd
+    cow.assets[replace.year:5] <- herd * p.cow  # After replacing, assumes no additional sales
+    cow.assets <- c(herd * p.cow, cow.assets)  # Adding time 0 cow assets to make a 6x1 vector
+    return(cow.assets)
+  }
+}
+
+
+
+CalcCapSalesPurch <- function(assets.cow, t, cull.num, p.cow) {
+  # Description: Calculates vectors of capital sales and capital purchases from 
+  #  changes in assets.cow. Assumes sale/purchase of cows is only capital sales/purchase
+  #
+  # Inputs: 
+  #  assets.cow = tx1 vector of the value of cow assets each year.
+  #
+  # Outputs:
+  #  cap.sales = tx1 vector of capital sales for each year
+  #  cap.purch = tx1 vector of capital purchases for each year
+  n <- length(assets.cow)
+  cap.sales <- c(0, rep(NA, t))
+  cap.purch <- c(0, rep(NA, t))
+  for (i in 2:n) {
+    # If cow assets increase and they were not 0 in the prior year, then cap sales equal to normal culling and
+    if(assets.cow[i] > assets.cow[i-1] & assets.cow[i-1] != 0) { 
+      cap.sales[i] <- cull.num * p.cow  # Normal culling 
+      cap.purch[i] <- assets.cow[i] - assets.cow[i-1]
+    }
+    # If cow assets increase and they were 0 in the prior year, then no cap sales and cap purchases equal to change in assets
+    if(assets.cow[i] > assets.cow[i-1] & assets.cow[i - 1] == 0) { 
+      cap.sales[i] <- 0
+      cap.purch[i] <- assets.cow[i] - assets.cow[i-1]
+    }
+    # If cow assets decrease, then capital sales are equal to the change in cow assets, then cap sales equal to the change in assets
+    if(assets.cow[i] < assets.cow[i - 1]) {
+      cap.sales[i] <- assets.cow[i-1] - assets.cow[i] 
+      cap.purch[i] <- 0
+    }
+    # If cow assets are unchanged, then capital sales are equal to the normal culling
+    if(assets.cow[i] == assets.cow[i - 1] & assets.cow[i] != 0) {
+      cap.sales[i] <- cull.num * p.cow
+      cap.purch[i] <- 0
+    }
+    # If cow assets are unchanged at 0, then capital sales and purch are 0
+    if(assets.cow[i] == assets.cow[i - 1] & assets.cow[i] == 0) {
+      cap.sales[i] <- 0
+      cap.purch[i] <- 0
+    }
+  }
+  list(cap.sales, cap.purch)
+}
+
+
+CalcCapTaxes <- function(herd, p.cow, cap.sales, cap.purch, cap.tax.rate, drought.emrg = 1)  {
+  # Function: CalcCapTaxes
+  # Description: Calculates capital taxes on herd sales. Tax treatment is 
+  # different depending on whether herd is sold and replaced by the end of the
+  # third year or if the herd is sold and not replaced during a drought emergency.
+  # Assumes that the entire herd is sold and replaced at the same rate. 
+  # Not sure how the tax code treats changes in prices. This abstracts away from that. 
+  # The price dynamics could matter here, but for now we are leaving them out.
+  #
+  # Inputs: 
+  #  cap.sales
+  #  cap.purch
+  #  cap.tax.rate
+  #  drought.emrg = Binary variable to indicate whether drought emergency was in place when the herd was sold. 
+  #    currently set to a default of 1. This only matters if the herd is sold and not replaced.
+  #
+  # Outputs:
+  #  cap.taxes <- 5x1 vector of capital taxes
+  
+  n <- length(cap.sales)
+  cap.taxes <- cap.sales * cap.tax.rate  # default value is standard capital tax rate
+  herd.value <- herd * p.cow
+ 
+  # Special tax treatment for herd sales due to drought:
+  for (i in 1:n) {
+    if(cap.sales[i] == herd.value & cap.purch[i] == 0 & cap.purch[i+1] == 0 & cap.purch[i+2] == 0 & drought.emrg == 1) {  # if herd is sold and not replaced by the end of the 2nd year after the purchase and there is a drought emergency
+      cap.taxes[i] <- 0
+      cap.taxes[i+1] <- cap.sales[i] * cap.tax.rate  # then the capital taxes can be delayed by one year
+    }
+    if(cap.sales[i] == herd.value & cap.purch[i] == 0 & cap.purch[i+1] == 0 & cap.purch[i+2] == 0 & drought.emrg == 0) {  # if herd is sold and not replaced by the end of the 2nd year after the purchase and there is not a declared drought emergency
+      cap.taxes[i] <- cap.sales[i] * cap.tax.rate  # then the capital taxes occur in the year of the sale
+    }  
+    if(cap.sales[i] == herd.value & cap.purch[i+1] == herd.value | cap.sales[i] == herd.value & cap.purch[i+2] == herd.value ) {   # if herd is sold and replaced within 2 years, then there are no capital taxes
+      cap.taxes[i] <- 0
+    }
+  }
+  cap.taxes
+}
+
+OptionOutput <- function(t, opt, nodrought = FALSE, rev.calf, rev.oth = NULL, 
+                         cost.op, rma.ins, int.invst, int.loan, start.cash, 
+                         assets.cow, cap.sales, cap.purch, cap.taxes) {
+  # Function: OptOutput
+  # Desciption: Takes in cost and revenue variables and outputs data.frame with 
+  # all relevant outcome variables
+  #
+  # Inputs:
+  # t = Number of years
+  # opt = String to label option: "nodrght", "noadpt", etc.
+  # nodrought = OPTIONAL value. default is set to false. set to true for no drought option
+  # rev.calf = tx1 vector of revenue from actual calf sales in years 1 through t
+  # rev.oth = OPTIONAL tx1 vector of non-calf revenues (created to account for interest on sale of cows in year 1)
+  # int.invst = Interest rate on investments
+  # int.loan = Interest rate on loans
+  # rma.ins = tx3 matrix of insurance year, premium, and payouts
+  # cost.op = tx1 vector of operating costs for years 1 through t, including any adaptation costs
+  # int.invst = interest rate on positive cash assets (savings)
+  # int.loan = interest rate on negative cash asssets (loans)
+  # start.cash = starting cash assets at t=0
+  # assets.cow = tx1 vector of the value of cow assets in each year
+  #
+  # Outputs:
+  #  out = dataframe of all major variables of interest:
+  #   opt
+  #   yr, 
+  #   ins, 
+  #   rev.calf
+  #   rev.ins
+  #   rev.int
+  #   rev.tot
+  #   cost.op 
+  #   cost.ins 
+  #   cost.int
+  #   cost.tot
+  #   profit
+  #   taxes
+  #   aftax.inc
+  #   cap.sales 
+  #   cap.purch 
+  #   cap.taxes 
+  #   assets.cow
+  #   assets.cash
+  #   net.wrth
+  
+  n <- (t + 1) * 2   # sets length as years plus 1 for initial year, times 2 for insurance and no insurance
+  option <- rep(opt, n)
+  yr <- c(0, 1:t, 0, 1:t)
+  ins <- c(rep(1, t+1), rep(0, t+1))
+  
+  rev.calf <- c(0, rev.calf, 0, rev.calf)
+  cost.op <- c(0, cost.op, 0, cost.op)
+  
+  cost.ins <- c(0, rma.ins[, 2], 0, rep(0, t))  # insurance for 2:6, no insurance for 8:12
+  
+  if(nodrought == FALSE) {
+    rev.ins <- c(0, rma.ins[, 3], 0, rep(0, t))  # potential payout for 2:6, no payout for 8:12
+  } else {
+    rev.ins <- rep(0, n) # no drought, no payout
+  }
+  
+  if(!is.null(rev.oth)) {  # if other revenues are passed through, then they are included in total revenues
+    rev.oth <- c(0, rev.oth, 0, rev.oth)
+    rev.tot.noint <- rev.calf + rev.ins + rev.oth
+  } else {
+    rev.tot.noint <- rev.calf + rev.ins 
+  }
+  
+  out <- data.frame(opt, yr, ins, rev.calf, rev.ins, rev.tot.noint, cost.op, cost.ins, cap.sales, cap.purch, cap.taxes, assets.cow)
+  
+  #WARNING: UGLY UGLY CODE AHEAD. Get a handle on dplyr and revisit.
+  #Split into ins and non-insurance; calculate interest income, profits, and cash assets; then put back together
+  out.ins <- out[out$ins==1, ]
+  out.noins <- out[out$ins==0,]
+  
+  out.ins$rev.int <- c(0, rep(NA, t))
+  out.ins$cost.int <- c(0, rep(NA, t))
+  out.ins$rev.tot <- c(0, rep(NA, t))
+  out.ins$cost.tot <- c(0, rep(NA, t))
+  out.ins$profit <- c(0, rep(NA, t))
+  out.ins$taxes <- c(0, rep(NA, t))
+  out.ins$aftax.inc <- c(0, rep(NA, t))
+  out.ins$assets.cash <- rep(start.cash, t+1)
+  for (i in 2:(t+1)) {
+    if(out.ins$assets.cash[i - 1] > 0) {
+      out.ins$rev.int[i] <- out.ins$assets.cash[i - 1] * (invst.int)
+    } else {
+      out.ins$rev.int[i] <- 0
+    }
+    if(out.ins$assets.cash[i - 1] < 0) {
+      out.ins$cost.int[i] <- -1 * (out.ins$assets.cash[i - 1] * (loan.int))
+    } else {
+      out.ins$cost.int[i] <- 0
+    }
+    out.ins$rev.tot[i] <- out.ins$rev.int[i] + out.ins$rev.tot.noint[i]
+    out.ins$cost.tot[i] <- out.ins$cost.int[i] + out.ins$cost.op[i] + out.ins$cost.ins[i]
+    out.ins$profit[i] <- out.ins$rev.tot[i] - out.ins$cost.tot[i]
+    out.ins$taxes[i] <- ifelse(out.ins$profit[i] > 0, out.ins$profit[i] * (0.124+0.15+0.04), 0)  # taxes only if positive profits. i wonder if EITC applies here?
+    out.ins$aftax.inc[i] <- out.ins$profit[i] - out.ins$taxes[i]
+    out.ins$assets.cash[i] <- out.ins$assets.cash[i-1] + out.ins$aftax.inc[i] + out.ins$cap.sales[i] - out.ins$cap.purch[i] - out.ins$cap.taxes[i]
+  }
+  
+  out.noins$rev.int <- c(0, rep(NA, t))
+  out.noins$cost.int <- c(0, rep(NA, t))
+  out.noins$rev.tot <- c(0, rep(NA, t))
+  out.noins$cost.tot <- c(0, rep(NA, t))
+  out.noins$profit <- c(0, rep(NA, t))
+  out.noins$taxes <- c(0, rep(NA, t))
+  out.noins$aftax.inc <- c(0, rep(NA, t))
+  out.noins$assets.cash <- rep(start.cash, t+1)
+  for (i in 2:(t+1)) {
+    if(out.noins$assets.cash[i - 1] > 0) {
+      out.noins$rev.int[i] <- out.noins$assets.cash[i - 1] * (invst.int)
+    } else {
+      out.noins$rev.int[i] <- 0
+    }
+    if(out.noins$assets.cash[i - 1] < 0) {
+      out.noins$cost.int[i] <- -1 * (out.noins$assets.cash[i - 1] * (loan.int))
+    } else {
+      out.noins$cost.int[i] <- 0
+    }
+    out.noins$rev.tot[i] <- out.noins$rev.int[i] + out.noins$rev.tot.noint[i]
+    out.noins$cost.tot[i] <- out.noins$cost.int[i] + out.noins$cost.op[i] + out.noins$cost.ins[i]
+    out.noins$profit[i] <- out.noins$rev.tot[i] - out.noins$cost.tot[i]
+    out.noins$taxes[i] <- ifelse(out.noins$profit[i] > 0, out.noins$profit[i] * (0.124+0.15+0.04), 0)  # taxes only if positive profits. i wonder if EITC applies here?
+    out.noins$aftax.inc[i] <- out.noins$profit[i] - out.noins$taxes[i]
+    out.noins$assets.cash[i] <- out.noins$assets.cash[i-1] + out.noins$aftax.inc[i] + out.noins$cap.sales[i] - out.noins$cap.purch[i] - out.noins$cap.taxes[i]
+  }
+  
+  
+  out <- rbind(out.ins, out.noins)  # Recombine ins and no ins dataframes
+  out$rev.tot.noint <- NULL  # Remove total revenue without insurance variable
+  out$net.wrth <- out$assets.cash + out$assets.cow  # Calculate total net worth
+  
+  # Reorder variables for output
+  out <- out[c("opt", "yr", "ins", "rev.calf", "rev.ins", "rev.int", "rev.tot",  
+               "cost.op", "cost.ins", "cost.int", "cost.tot", "profit", "taxes", 
+               "aftax.inc", "cap.sales", "cap.purch", "cap.taxes", "assets.cow", 
+               "assets.cash", "net.wrth")]
+  out
+}  
+
+':=' <- function(lhs, rhs) {
+  # Decription: Magical function that allows you to return more than one variable
+  #  from other functions.
+  # Code from http://stackoverflow.com/questions/1826519/function-returning-more-than-one-value
+  
+  frame <- parent.frame()
+  lhs <- as.list(substitute(lhs))
+  if (length(lhs) > 1)
+    lhs <- lhs[-1]
+  if (length(lhs) == 1) {
+    do.call(`=`, list(lhs[[1]], rhs), envir=frame)
+    return(invisible(NULL)) 
+  }
+  if (is.function(rhs) || is(rhs, 'formula'))
+    rhs <- list(rhs)
+  if (length(lhs) > length(rhs))
+    rhs <- c(rhs, rep(list(NULL), length(lhs) - length(rhs)))
+  for (i in 1:length(lhs))
+    do.call(`=`, list(lhs[[i]], rhs[[i]]), envir=frame)
+  return(invisible(NULL)) 
+}
+
+getMRLAWeights<-function(state.code){
+  
+  "
+  Computes forage potential weights using the 
+  mean of plant growth curves by MRLA for a 
+  specified state. 
+
+  Data source: 
+
+    https://esis.sc.egov.usda.gov/WelcomeFSG/pgFSGSelectFormat.aspx
+
+  Inputs: 
+
+    state.code: two-letter state code (for referencing 
+      plant growth potential curves)
+  
+  "
+  
+  forage_mlra=read.table(paste0("data/",state.code,"_mlra.txt"),sep="|")
+  forage_mlra[,1]=substr(forage_mlra[,1],3,4) # Get MRLA code 
+  forage_mlra=forage_mlra[!forage_mlra$V1 %in% c("00","01","99"),] # Remove placeholder plant growth sites
+  forage_mlra=forage_mlra[,c(1,which(names(forage_mlra)=="V4"):ncol(forage_mlra))] # subset ID and plant growth curve
+  names(forage_mlra)=c("MLRA","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
+  
+  forage_mlra=aggregate(.~MLRA,data=forage_mlra,FUN=mean) # Compute mean plant growth curves by MLRA
+  forage_mlra[,-1]=forage_mlra[,-1]/100 # convert to decimal to match drought calculator fgp weights
+  
+  return(forage_mlra)
+}
+
+COOP_in_MRLA<-function(coop){
+  
+  "
+  Returns the MLRA in which a specified
+  coop site is located.
+  "
+  
+  coop.pt=SpatialPoints(t(rev(coop$loc)),proj4string=CRS(proj4string(mlra)))
+  # fwt=forage_mlra[forage_mlra$MLRA==(coop.pt %over% mlra)$MLRARSYM,][,-1]
+  return(as.numeric(as.character(((coop.pt %over% mlra)$MLRARSYM))))
   
 }
