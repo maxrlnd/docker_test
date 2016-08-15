@@ -429,7 +429,7 @@ CalculateSellPrsCost <- function(op.cost.adj, herd, sell.cost, base.op.cost, her
   cost.sellprs
 }
 
-CalculateSellPrsRev <- function(base.sales, herd, wn.succ, calf.wt, p.calf.t0) { 
+CalculateSellPrsRev <- function(t, base.sales, herd, wn.succ, calf.wt, p.calf.t0, p.cow, invst.int) { 
   "
   Function: CalculateSellPrsRev
   Description: Calculates calf sales revenues due to selling pairs and replacing cows for years 1 through 3
@@ -447,8 +447,8 @@ CalculateSellPrsRev <- function(base.sales, herd, wn.succ, calf.wt, p.calf.t0) {
   rev.sellprs = 5x1 vector of calf revenues for years 1 through 5.
   "
   # Calf sales revenues
-  calf.sales <- rep(NA,5)
-  for (i in 1:5) {
+  calf.sales <- rep(NA,t)
+  for (i in 1:t) {
     if(i == 1) {
       calf.sales[i] <- herd * wn.succ * calf.wt * p.calf.t0
     }
@@ -459,7 +459,17 @@ CalculateSellPrsRev <- function(base.sales, herd, wn.succ, calf.wt, p.calf.t0) {
       calf.sales[i] <- base.sales[i]
     }
   }
-  calf.sales
+  
+  # Interest from early cow and calf sales
+  cow.sales <- rep(0,t)
+  cow.sales[1] <- herd * p.cow
+  additional.int.rev <-  rep(0,t)
+  additional.int.rev[1] <-  (calf.sales[1] + cow.sales[1]) * invst.int
+  
+  
+  # Total non-capital gains revenues
+  rev <- calf.sales + additional.int.rev
+  rev
 }
 
 

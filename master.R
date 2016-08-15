@@ -162,11 +162,14 @@ out.rentpast <- OptionOutput(t = t,
 
 ## Option 3: Sell pairs and replace cows
 
-calf.rev.sellprs <- CalculateSellPrsRev(base.sales = base.sales, 
+calf.rev.sellprs <- CalculateSellPrsRev(t = t,
+                                        base.sales = base.sales, 
                                         herd = herd, 
                                         wn.succ = wn.succ, 
                                         calf.wt = calf.wt, 
-                                        p.calf.t0 = p.calf.t0)
+                                        p.calf.t0 = p.calf.t0,
+                                        p.cow = p.cow,
+                                        invst.int = invst.int)
 
 cost.op.sellprs <- CalculateSellPrsCost(op.cost.adj = op.cost.adj, 
                                         herd = herd, 
