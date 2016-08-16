@@ -13,7 +13,8 @@
 #   ...
 
 # Clear environment
-rm(list=ls())
+# prevent from erasing custom location if set
+rm(list=ls()[ls()!="target.loc"])
 
 # Source functions
 source("R/support_functions.R")
@@ -179,7 +180,7 @@ assets.cow.sellprs <- CalcCowAssets(herd = herd,
                             sell.year = 1, 
                             replace.year = 3)
 
-c(cap.sales, cap.purch) := CalcCapSalesPurch(assets.cow = assets.cow, 
+c(cap.sales, cap.purch) := CalcCapSalesPurch(assets.cow = assets.cow.sellprs, 
                                              t=t, 
                                              cull.num = cull.num, 
                                              p.cow = p.cow)
@@ -198,7 +199,7 @@ out.sellprs <- OptionOutput(t = t,
                             int.invst = invst.int, 
                             int.loan = loan.int,
                             start.cash = 0,
-                            assets.cow = assets.cow,
+                            assets.cow = assets.cow.sellprs,
                             cap.sales = cap.sales,
                             cap.purch = cap.purch,
                             cap.taxes = cap.taxes)
@@ -209,12 +210,12 @@ calf.rev.sellprs.norepl <- c(calf.rev.sellprs[1],rep(0,(t-1)))
 
 cost.op.sellprs.norepl <- c(cost.op.sellprs[1],rep(herdless.op.cost,(t-1)))
 
-assets.cow <- CalcCowAssets(t = t, 
+assets.cow.sellprs.norepl <- CalcCowAssets(t = t, 
                             herd = herd, 
                             p.cow = p.cow, 
                             sell.year = 1)
 
-c(cap.sales, cap.purch) := CalcCapSalesPurch(assets.cow = assets.cow, 
+c(cap.sales, cap.purch) := CalcCapSalesPurch(assets.cow = assets.cow.sellprs.norepl, 
                                              t=t, 
                                              cull.num = cull.num, 
                                              p.cow = p.cow)
@@ -233,7 +234,7 @@ out.sellprs.norepl <- OptionOutput(t = t,
                                    int.invst = invst.int, 
                                    int.loan = loan.int,
                                    start.cash = 0,
-                                   assets.cow = assets.cow,
+                                   assets.cow = assets.cow.sellprs.norepl,
                                    cap.sales = cap.sales,
                                    cap.purch = cap.purch,
                                    cap.taxes = cap.taxes)

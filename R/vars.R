@@ -6,9 +6,7 @@
 # These variables need to be set first because our 
 # cow/calf weights by year depend upon them.
 
-use.CPER=T # Use COOP sites or CPER: Stick with CPER for now
-
-if(use.CPER){
+if(!exists("target.loc")){ # Use COOP sites or CPER: Default to CPER
   
   ## Zone Weights
   stzone=3 # state forage zone
@@ -25,7 +23,7 @@ if(use.CPER){
   ## Target grid cell
   tgrd = 25002  # target grid cell - CPER default 
   
-}else{ #use Custom location (COOP site and MLRA forage potential weights)
+}else{ #Custom location specified (COOP site and MLRA forage potential weights)
   
   ## Fetch data
   wrc.state="co" # For pulling COOP sites & mlra forage weights
