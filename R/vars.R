@@ -86,6 +86,7 @@ purchase.insurance = 1 # dummy - purchase insurance (1) or do not (0)
 invst.int = 0.0125
 cap.tax.rate <- 0.15
 t <- 5  # number of years in the model
+cull.num <- 15  # Number of cows culled in a normal year
 
 ## Other Information
 loan.int <- 0.065  # interest rate for borrowed money (%/year)
