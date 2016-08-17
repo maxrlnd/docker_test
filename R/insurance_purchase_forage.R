@@ -18,6 +18,7 @@ section in 'vars.R' when developed further.
 "
 
 target.loc="BOULDER, COLORADO"
+source("R/support_functions.R")
 source("R/vars.R")
 
 fpwt=as.numeric(zonewt[stzone,]) # our forage potential weight (e.g. for MLRA 49)
@@ -30,6 +31,8 @@ for(m in 1:11){
   names(fpwt_iv[m])=paste0("i",m)
   
 }
+
+####Insurance Purchase Options####
 
 ##OPTION 1 - RANKING##
 # This one is very simple to implement when just two intervals are insured. 
@@ -146,3 +149,93 @@ for(i in 1:ncol(iv_comb)){
 wt_iv=iv_comb[,which.max(combwt)]
 wt_choice=fpwt_iv[wt_iv]
 cat(wt_iv,wt_choice,sep="\n")
+
+####Write Options to Functions####
+
+forageWeights2Intervals<-function(fpwt){
+  
+  "
+  Helper function for binning monthly 
+  forage weights into 2-month intervals
+  matching the RMA insurance. 
+  "
+  
+  fpwt_iv=c()
+  for(m in 1:11){
+    
+    fpwt_iv=c(fpwt_iv,(sum(fpwt[m],fpwt[m+1])/2)) # need to calc mean manually - not sure why
+    names(fpwt_iv[m])=paste0("i",m)
+    
+  }
+  
+  return(fpwt_iv)
+  
+}
+
+## Option 1 - By Rank
+insuranceSelect_opt1<-function(fpwt,niv=2){
+  
+  fpwt_iv=forageWeights2Intervals(fpwt) # bin forage potential weights into intervals
+  fpwt_iv_rank=rank(-fpwt_iv) # rank interval weights descending
+  names(fpwt_iv_rank)=paste0("i",1:11)
+  top_iv=which.min(fpwt_iv_rank) # index of top-ranked interval
+  
+  wt_iv=top_iv
+  cand_iv=fpwt_iv_rank[-c((top_iv-1):(top_iv+1))] # candidate secondary intervals
+  
+  for(i in 2:niv){
+    
+    excl_iv=unique(unlist(lapply(wt_iv,function(X)-1:1+X))) #intervals to exclude (prev. chosen/overlapping)
+    cand_iv=fpwt_iv_rank[-excl_iv]
+    
+    # Append the highest-ranked choice to 'wt_iv'
+    if(length(cand_iv)>0){
+      iv_select=names(cand_iv[which.min(cand_iv)]) # get top-ranked candidate weight
+      iv_select=as.numeric(substr(iv_select,2,nchar(iv_select))) # get original index from interval name
+      wt_iv=c(wt_iv,iv_select)
+    }else{ # end if no choices left
+      break
+    }
+    
+  }
+  
+  wt_choice=fpwt_iv[wt_iv] # get weight values
+  
+  return(cbind(wt_iv,wt_choice))
+  
+}
+
+insuranceSelect_opt1(fpwt,2) # seems to work
+
+
+## Option 2 - By Combo
+insuranceSelect_opt2<-function(fpwt,niv=2){
+  
+  fpwt_iv=forageWeights2Intervals(fpwt) # bin forage potential weights into intervals
+  
+  # Separate intervals 
+  # this ensures no overlap
+  odd_iv=seq(1,11,by=2)
+  even_iv=seq(2,10,by=2)
+  
+  # All combos of intervals
+  iv_comb=cbind(combn(odd_iv,niv),combn(even_iv,niv))
+  
+  # Mean of weights for interval combos
+  combwt=c()
+  for(i in 1:ncol(iv_comb)){
+    
+    combwt=c(combwt,
+             (sum(fpwt_iv[iv_comb[,i]])/2))
+    
+  }
+  
+  # Select best intervals
+  wt_iv=iv_comb[,which.max(combwt)]
+  wt_choice=fpwt_iv[wt_iv]
+  
+  return(cbind(wt_iv,wt_choice))
+  
+}
+
+insuranceSelect_opt2(fpwt,2) # seems to work
