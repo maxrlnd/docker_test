@@ -172,6 +172,20 @@ forageWeights2Intervals<-function(fpwt){
   
 }
 
+rescaleInsAlloc<-function(wt_choice,max.alloc){
+  
+  "
+  Helper function for rescaling insurance
+  allocation percentages by a maximum 
+  allocation percentage. 
+  "
+  
+  wt_scl=wt_choice
+  wt_scl[1]=max.alloc
+  wt_scl[2:length(wt_scl)]=(wt_scl[2:length(wt_scl)]/sum(wt_scl[2:length(wt_scl)]))*(1-max.alloc)
+  return(wt_scl)
+}
+
 ## Option 1 - By Rank
 insuranceSelect_opt1<-function(fpwt,niv=2){
   
@@ -206,10 +220,10 @@ insuranceSelect_opt1<-function(fpwt,niv=2){
 }
 
 insuranceSelect_opt1(fpwt,2) # seems to work
-
+ins_opt1=insuranceSelect_opt1(fpwt,3) # repeating worked example
 
 ## Option 2 - By Combo
-insuranceSelect_opt2<-function(fpwt,niv=2){
+insuranceSelect_opt2<-function(fpwt,niv=2,max.alloc=NULL){
   
   fpwt_iv=forageWeights2Intervals(fpwt) # bin forage potential weights into intervals
   
@@ -233,9 +247,23 @@ insuranceSelect_opt2<-function(fpwt,niv=2){
   # Select best intervals
   wt_iv=iv_comb[,which.max(combwt)]
   wt_choice=fpwt_iv[wt_iv]
+  wt_out=cbind(wt_iv,wt_choice) # convert to matrix
+  wt_out=wt_out[order(-wt_out[,2]),] # sort descending
   
-  return(cbind(wt_iv,wt_choice))
+  # Set max allocation percentages if existing max is too high
+  if(max(wt_out[,2]>0.6) & is.null(max.alloc)){
+      max.alloc=0.6 # set max.alloc to highest possible allocation pct
+  }  
+
+  # rescale allocation percentages if a maximum allocation is set
+  if(!is.null(max.alloc)){
+    wt_out[,2]=rescaleInsAlloc(wt_out[,2],max.alloc)
+  }
+  
+  return(wt_out)
   
 }
 
-insuranceSelect_opt2(fpwt,2) # seems to work
+insuranceSelect_opt2(fpwt,3) # seems to work
+ins_opt2=insuranceSelect_opt2(fpwt,3) # repeating worked example
+

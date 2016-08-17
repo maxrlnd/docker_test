@@ -944,3 +944,113 @@ COOP_in_MRLA<-function(coop){
   return(as.numeric(as.character(((coop.pt %over% mlra)$MLRARSYM))))
   
 }
+
+forageWeights2Intervals<-function(fpwt){
+  
+  "
+  Helper function for binning monthly 
+  forage weights into 2-month intervals
+  matching the RMA insurance. 
+  "
+  
+  fpwt_iv=c()
+  for(m in 1:11){
+    
+    fpwt_iv=c(fpwt_iv,(sum(fpwt[m],fpwt[m+1])/2)) # need to calc mean manually - not sure why
+    names(fpwt_iv[m])=paste0("i",m)
+    
+  }
+  
+  return(fpwt_iv)
+  
+}
+
+rescaleInsAlloc<-function(wt_choice,max.alloc){
+  
+  "
+  Helper function for rescaling insurance
+  allocation percentages by a maximum 
+  allocation percentage. 
+  "
+  
+  wt_scl=wt_choice
+  wt_scl[1]=max.alloc
+  wt_scl[2:length(wt_scl)]=(wt_scl[2:length(wt_scl)]/sum(wt_scl[2:length(wt_scl)]))*(1-max.alloc)
+  return(wt_scl)
+}
+
+insAlloc<-function(fpwt,niv=2,by.rank=T,max.alloc=NULL){
+  
+  if(by.rank){
+  
+    fpwt_iv=forageWeights2Intervals(fpwt) # bin forage potential weights into intervals
+    fpwt_iv_rank=rank(-fpwt_iv) # rank interval weights descending
+    names(fpwt_iv_rank)=paste0("i",1:11)
+    top_iv=which.min(fpwt_iv_rank) # index of top-ranked interval
+    
+    wt_iv=top_iv
+    cand_iv=fpwt_iv_rank[-c((top_iv-1):(top_iv+1))] # candidate secondary intervals
+    
+    for(i in 2:niv){
+      
+      excl_iv=unique(unlist(lapply(wt_iv,function(X)-1:1+X))) #intervals to exclude (prev. chosen/overlapping)
+      cand_iv=fpwt_iv_rank[-excl_iv]
+      
+      # Append the highest-ranked choice to 'wt_iv'
+      if(length(cand_iv)>0){
+        iv_select=names(cand_iv[which.min(cand_iv)]) # get top-ranked candidate weight
+        iv_select=as.numeric(substr(iv_select,2,nchar(iv_select))) # get original index from interval name
+        wt_iv=c(wt_iv,iv_select)
+      }else{ # end if no choices left
+        break
+      }
+      
+    }
+    
+  }else{ #use max combination of weights / number of intervals specified
+    
+    # Separate intervals 
+    # this ensures no overlap
+    odd_iv=seq(1,11,by=2)
+    even_iv=seq(2,10,by=2)
+    
+    # All combos of intervals
+    iv_comb=cbind(combn(odd_iv,niv),combn(even_iv,niv))
+    
+    # Mean of weights for interval combos
+    combwt=c()
+    for(i in 1:ncol(iv_comb)){
+      
+      combwt=c(combwt,
+               (sum(fpwt_iv[iv_comb[,i]])/2))
+      
+    }
+    
+    # Select best intervals
+    wt_iv=iv_comb[,which.max(combwt)]
+    
+    
+  }
+  
+  wt_choice=fpwt_iv[wt_iv] # get weight values
+  wt_out=cbind(wt_iv,wt_choice) # convert to matrix
+  wt_out=wt_out[order(-wt_out[,2]),] # sort descending
+  
+  # Set max allocation percentages if existing max is too high
+  if(max(wt_out[,2]>0.6) & is.null(max.alloc)){
+    max.alloc=0.6 # set max.alloc to highest possible allocation pct
+  }  
+  
+  # rescale allocation percentages if a maximum allocation is set
+  if(!is.null(max.alloc)){
+    wt_out[,2]=rescaleInsAlloc(wt_out[,2],max.alloc)
+  }
+  
+  # Round allocation pcts to 2 signif. digits
+  # since PRF decision model only runs on 
+  # whole number allocation pcts 
+  wt_out[,2]=round(wt_out[,2],2)
+
+  return(wt_out)
+
+}
