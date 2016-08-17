@@ -65,6 +65,8 @@ base.cap.taxes <- CalcCapTaxes(cap.sales = base.cap.sales,
                           herd = herd,
                           p.cow = p.cow)
 
+base.wn.succ <- rep(expected.wn.succ,t)  # Created a vector of expected weaning success
+
 ####No Drought####
 
 out.nodrght <- OptionOutput(t = t,
@@ -89,12 +91,13 @@ out.nodrght <- OptionOutput(t = t,
 days.act <- CalculateDaysAction(act.st.yr, act.st.m, act.end.yr, act.end.m, drought.action)
 
 ## Option 0: No adaptation ##
-# drought revenues
+# Drought revenues
+noadpt.wn.succ <- AdjWeanSuccess(stgg, zonewt, stzone, styear, noadpt = TRUE, expected.wn.succ)
 noadpt.rev.calf <- CalculateExpSales(herd = herd, 
                                      calf.sell = calf.sell, 
                                      wn.wt = wn.wt, 
                                      p.wn = p.wn,
-                                     wn.succ = wn.succ)
+                                     wn.succ = noadpt.wn.succ)
 
 
 out.noadpt <- OptionOutput(t = t,
@@ -188,7 +191,7 @@ assets.cow.sellprs <- CalcCowAssets(herd = herd,
                             sell.year = 1, 
                             replace.year = 3)
 
-c(cap.sales, cap.purch) := CalcCapSalesPurch(assets.cow = assets.cow, 
+c(cap.sales, cap.purch) := CalcCapSalesPurch(assets.cow = assets.cow.sellprs, 
                                              t=t, 
                                              cull.num = cull.num, 
                                              p.cow = p.cow)
@@ -207,7 +210,7 @@ out.sellprs <- OptionOutput(t = t,
                             int.invst = invst.int, 
                             int.loan = loan.int,
                             start.cash = 0,
-                            assets.cow = assets.cow,
+                            assets.cow = assets.cow.sellprs,
                             cap.sales = cap.sales,
                             cap.purch = cap.purch,
                             cap.taxes = cap.taxes)
@@ -218,12 +221,12 @@ calf.rev.sellprs.norepl <- c(calf.rev.sellprs[1],rep(0,(t-1)))
 
 cost.op.sellprs.norepl <- c(cost.op.sellprs[1],rep(herdless.op.cost,(t-1)))
 
-assets.cow <- CalcCowAssets(t = t, 
+assets.cow.sellprs.norepl <- CalcCowAssets(t = t, 
                             herd = herd, 
                             p.cow = p.cow, 
                             sell.year = 1)
 
-c(cap.sales, cap.purch) := CalcCapSalesPurch(assets.cow = assets.cow, 
+c(cap.sales, cap.purch) := CalcCapSalesPurch(assets.cow = assets.cow.sellprs.norepl, 
                                              t=t, 
                                              cull.num = cull.num, 
                                              p.cow = p.cow)
@@ -242,7 +245,7 @@ out.sellprs.norepl <- OptionOutput(t = t,
                                    int.invst = invst.int, 
                                    int.loan = loan.int,
                                    start.cash = 0,
-                                   assets.cow = assets.cow,
+                                   assets.cow = assets.cow.sellprs.norepl,
                                    cap.sales = cap.sales,
                                    cap.purch = cap.purch,
                                    cap.taxes = cap.taxes)

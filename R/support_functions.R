@@ -473,10 +473,9 @@ CalculateSellPrsRev <- function(t, base.sales, herd, wn.succ, calf.wt, p.calf.t0
 }
 
 
-insMat<-function(tgrd,yyr,clv,acres,pfactor,insPurchase){
+insMat<-function(tgrd, yyr, clv, acres, pfactor, insPurchase){
   
   "
-
   Generates a matrix representing insurance 
   premium payments and indemnities for a 
   specified grid cell over a five-year interval. 
@@ -522,7 +521,7 @@ insMat<-function(tgrd,yyr,clv,acres,pfactor,insPurchase){
   
 }
 
-foragePWt<-function(stgg,zonewt,stzone,styear,decision=F){
+foragePWt <- function(stgg, zonewt, stzone, styear, decision = F){
   
   "
   Returns a weight representing
@@ -954,3 +953,25 @@ COOP_in_MRLA<-function(coop){
   return(as.numeric(as.character(((coop.pt %over% mlra)$MLRARSYM))))
   
 }
+
+AdjWeanSuccess <- function(stgg, zonewt, stzone, styear, noadpt = FALSE, expected.wn.succ) {
+  # Description: Adusts weaning success downward for the year of the drought and the following year
+  # NOTE: This equation is based on what I consider to be "reasonable" estimates
+  #  of weaning success based on forage potential. We need to find a source
+  #  that gives a better idea of the relationship
+  
+  forage.potential <- foragePWt(stgg, zonewt, stzone, styear)
+  
+  if(noadpt == FALSE) {
+    wn.succ <- rep(expected.wn.succ, t)
+  }
+  if(noadpt == TRUE & forage.potential < 1) {
+    wn.succ[1] <- expected.wn.succ * (1 / (1 + exp(-(1 + forage.potential)*1))) 
+    wn.succ[2] <- expected.wn.succ * (1 / (1 + exp(-(1 + forage.potential)*2)))
+    wn.succ[3:t] <- expected.wn.succ                                
+  }
+  wn.succ
+}
+  
+  
+  
