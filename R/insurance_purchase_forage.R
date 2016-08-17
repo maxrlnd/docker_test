@@ -107,7 +107,7 @@ wt_alloc_scaled
 
 # Final insurance purchase input 
 cbind(wt_iv,round(wt_alloc,2))
-cbind(wt_iv,round(round(wt_alloc,2))) # with more generalized rounding
+cbind(wt_iv,round(wt_alloc_scaled,2)) # scaled for max allocation
 
 
 ##OPTION 2 - HIGHEST WEIGHTED INTERVAL SETS##
@@ -122,13 +122,27 @@ cbind(wt_iv,round(round(wt_alloc,2))) # with more generalized rounding
 # which are both highly weighted, but not quite as high 
 # as the interval they bound (Jun-July).
 
-niv=2 # number of intervals to insure 
+niv=3 # number of intervals to insure 
 
 # Separate intervals 
 # this ensures no overlap
-odd_int=seq(1,11,by=2)
-even_int=seq(2,10,by=2)
+odd_iv=seq(1,11,by=2)
+even_iv=seq(2,10,by=2)
 
+# All combos of intervals
+iv_comb=cbind(combn(odd_iv,niv),combn(even_iv,niv))
 
+# Mean of weights for interval combos
+combwt=c()
+for(i in 1:ncol(iv_comb)){
+  
+  combwt=c(combwt,
+           (sum(fpwt_iv[iv_comb[,i]])/2))
+  
+}
 
-
+# Select best intervals
+# with 3 chosen this is identical to option 1
+wt_iv=iv_comb[,which.max(combwt)]
+wt_choice=fpwt_iv[wt_iv]
+cat(wt_iv,wt_choice,sep="\n")
