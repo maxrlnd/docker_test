@@ -104,8 +104,17 @@ yyr=2002:2006 # all five years
 clv=0.9 # insurance coverage level (0.7 - 0.9 in increments of 0.05)
 acres=3000 # ranch acres
 pfactor=1 # productivity factor (0.6 - 1.5)
-insp=rbind(c(3,0.5),c(5,0.5)) # insurance purchase
 
+# Insurance purchases
+# Use Excel model choices by default,
+# otherwise automatically allocate based
+# upon forage potential
+if(!exists("autoSelect.insurance")){
+  insp=rbind(c(3,0.5),c(5,0.5)) # insurance purchase
+}else{
+  insp=insAlloc(fpwt=zonewt[stzone,],niv=2) # automatic selection
+}
+  
 # SpatialPoints representation of target gridcell 
 # for fetching insurance results
 tgrd_pt = rastPt[rastPt@data$layer == tgrd, ]  
