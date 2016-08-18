@@ -1029,9 +1029,53 @@ rescaleInsAlloc<-function(alloc_choice,max.alloc=0.6,min.alloc=0.1){
 
 insAlloc<-function(fpwt,niv=2,by.rank=T,max.alloc=0.6,min.alloc=0.1){
   
+  "
+  Automates range insurance allocation to two-month
+  RMA intervals using a grid cell/COOP site's forage
+  potential weights. Returns a matrix formatted as the
+  `insPurchase` input for function `insMat`.
+
+  Allocation for chosen two-month intervals is roughly
+  proportional to the relative value of each interval's 
+  forage potential weight. Adjustments to allocation 
+  percentages are automatically made if a selection is invalid
+  for one or more intervals, either too high (>60%) or too low 
+  (10%).
+  User-specified min/max allocation percentages falling within
+  this range may also be substituted by setting the `max.alloc`
+  and `min.alloc` arguments.
+
+
+  Inputs:  
+
+    `fpwt`: A vector of monthly forage potential weights
+      for the target site. Monthly intervals are averaged
+      to two-month intervals to match RMA insurance
+      selections.
+
+    `niv`: Number of two-month intervals to insure.
+  
+    `by.rank`: if TRUE (default), ranks forage potential
+      weights by interval in descending order and selects
+      the `niv` most highly ranked non-consecutive intervals
+      to insure. 
+
+      If FALSE, selects the combination of `niv` non-
+      consecutive two-month intervals with the highest 
+      average forage potential weights.
+
+    `max.alloc`: Maximum insurance protection allocation. Must
+      not exceed 0.6.
+
+    `min.alloc`: Minimum insurance protection allocation. Must
+      be at least 0.1.
+
+  "
+  
+  fpwt_iv=forageWeights2Intervals(fpwt) # bin forage potential weights into intervals
+  
   if(by.rank){
   
-    fpwt_iv=forageWeights2Intervals(fpwt) # bin forage potential weights into intervals
     fpwt_iv_rank=rank(-fpwt_iv) # rank interval weights descending
     names(fpwt_iv_rank)=paste0("i",1:11)
     top_iv=which.min(fpwt_iv_rank) # index of top-ranked interval
