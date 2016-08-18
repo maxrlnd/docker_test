@@ -965,21 +965,69 @@ forageWeights2Intervals<-function(fpwt){
   
 }
 
-rescaleInsAlloc<-function(wt_choice,max.alloc){
+rescaleInsAlloc<-function(alloc_choice,max.alloc=0.6,min.alloc=0.1){
   
   "
   Helper function for rescaling insurance
-  allocation percentages by a maximum 
-  allocation percentage. 
+  allocation percentages by a maximum/ 
+  minimum allocation percentage. 
+
+  Currently this function is set up so that
+  a compromise will be reached if rescaling 
+  the top allocation percentage to the maximum
+  produces values of <10% (or <`min.alloc`) for
+  the remaining intervals. The remaining intervals
+  will be rescaled to the minimum amount, potentially
+  leaving the top allocation below `max.alloc`
   "
   
-  wt_scl=wt_choice
-  wt_scl[1]=max.alloc
-  wt_scl[2:length(wt_scl)]=(wt_scl[2:length(wt_scl)]/sum(wt_scl[2:length(wt_scl)]))*(1-max.alloc)
-  return(wt_scl)
+  if(max.alloc>0.6){
+    stop("Maximum allocation cannot exceed 0.6.")
+  }
+  
+  if(min.alloc<0.1){
+    stop("Minimum allocation must be at least 0.1.")    
+  }
+  
+  if(min.alloc>max.alloc){
+    stop("Minimum allocation cannot be greater than maximum allocation.")
+  }
+  
+  if(max.alloc<(1/length(alloc_choice))){
+    warning("Maximum allocation is less than uniform allocation size. Allocation amounts will
+    be disproportionate to their original values.")
+  }
+  
+  if(min.alloc>(1/length(alloc_choice))){
+    warning("Maximum allocation is less than uniform allocation size. Allocation amounts will
+    be disproportionate to their original values.")
+  }
+  
+  if(alloc_choice[1]>max.alloc){
+    alloc_choice[1]=max.alloc
+    alloc_choice[-1]=(alloc_choice[-1]/sum(alloc_choice[-1]))*(1-max.alloc)
+  }
+
+  # Readjust min if remaining intervals 
+  # receive <min% allocation
+  if(any(alloc_choice[-1]<min.alloc)){
+    
+    uidx=which(alloc_choice<min.alloc) # index of alloc intervals < min%
+    alloc_choice[uidx]=min.alloc
+    alloc_choice[-uidx]=(alloc_choice[-uidx]/sum(alloc_choice[-uidx]))*(1-(min.alloc*length(uidx)))
+    
+  }
+  
+  # Prevent returning negative weights
+  if(any(alloc_choice<0)){
+    stop("Allocation percentages must be positive.")
+  }
+  
+  return(alloc_choice)
+  
 }
 
-insAlloc<-function(fpwt,niv=2,by.rank=T,max.alloc=NULL){
+insAlloc<-function(fpwt,niv=2,by.rank=T,max.alloc=0.6,min.alloc=0.1){
   
   if(by.rank){
   
@@ -1033,17 +1081,13 @@ insAlloc<-function(fpwt,niv=2,by.rank=T,max.alloc=NULL){
   }
   
   wt_choice=fpwt_iv[wt_iv] # get weight values
-  wt_out=cbind(wt_iv,wt_choice) # convert to matrix
+  wt_alloc=wt_choice/sum(wt_choice) #Convert weights to allocation amounts
+  wt_out=cbind(wt_iv,wt_alloc) # convert to matrix
   wt_out=wt_out[order(-wt_out[,2]),] # sort descending
   
-  # Set max allocation percentages if existing max is too high
-  if(max(wt_out[,2]>0.6) & is.null(max.alloc)){
-    max.alloc=0.6 # set max.alloc to highest possible allocation pct
-  }  
-  
-  # rescale allocation percentages if a maximum allocation is set
-  if(!is.null(max.alloc)){
-    wt_out[,2]=rescaleInsAlloc(wt_out[,2],max.alloc)
+  # Readjust max/min allocation percentages if too high/low
+  if(max(wt_out[,2])>max.alloc | min(wt_out[,2])<min.alloc){
+    wt_out[,2]=rescaleInsAlloc(wt_out[,2],max.alloc,min.alloc)
   }
   
   # Round allocation pcts to 2 signif. digits
@@ -1051,6 +1095,10 @@ insAlloc<-function(fpwt,niv=2,by.rank=T,max.alloc=NULL){
   # whole number allocation pcts 
   wt_out[,2]=round(wt_out[,2],2)
 
+  if(sum(wt_out[,2])!=1){
+    warning("Allocation percentages do not sum to 1.")
+  }
+  
   return(wt_out)
 
 }
