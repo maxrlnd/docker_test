@@ -1114,7 +1114,7 @@ insAlloc<-function(fpwt,niv=2,by.rank=T,max.alloc=0.6,min.alloc=0.1){
     for(i in 1:ncol(iv_comb)){
       
       combwt=c(combwt,
-               (sum(fpwt_iv[iv_comb[,i]])/2))
+               (sum(fpwt_iv[iv_comb[,i]])/niv))
       
     }
     
