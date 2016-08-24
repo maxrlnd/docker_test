@@ -27,7 +27,6 @@ if(!exists("target.loc")){ # Use COOP sites or CPER: Default to CPER
   
   ## Fetch data
   wrc.state="co" # For pulling COOP sites & mlra forage weights
-  target.loc="BOULDER, COLORADO"
   load("data/coops.RData") # Shortcut for sourcing 'R/coop_scraper.R'
   # source("R/coop_scraper.R") # the long way
   mlra=readOGR("data","mlra_v42") # load MLRA zone data
