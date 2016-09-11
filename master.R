@@ -14,7 +14,7 @@
 
 # Clear environment
 # prevent from erasing custom location/insurance selection if set
-rm(list=ls()[!ls() %in% c("target.loc","autoSelect.insurance")])
+rm(list=ls()[!ls() %in% c("target.loc","autoSelect.insurance","random.starts","masterRunner","runs")])
 
 # Source functions
 source("R/support_functions.R")
