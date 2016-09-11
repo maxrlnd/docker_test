@@ -115,9 +115,9 @@ droughtCalculator<-function(yy,clv,acres,pfactor,insPurchase,mask=NULL){
   "
   
   ##Make sure inputs are valid
-  if(!yy %in% 2000:2015){
-    stop("Input year must occur in the range 2000-2015.")
-  }
+#   if(!yy %in% 2000:2015){
+#     stop("Input year must occur in the range 2000-2015.")
+#   }
   # if(!clv %in% round(seq(0.7,0.9,by=0.05),1)){
   #   stop("Invalid coverage level. Accepted coverage levels are 0.7, 0.75, 0.8, 0.85, 0.9.")
   # }
