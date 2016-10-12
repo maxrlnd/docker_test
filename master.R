@@ -14,13 +14,13 @@
 
 # Clear environment
 # prevent from erasing custom location/insurance selection if set
-rm(list=ls()[!ls() %in% c("target.loc","autoSelect.insurance","random.starts","masterRunner","runs")])
+# rm(list=ls()[!ls() %in% c("target.loc","autoSelect.insurance","random.starts","masterRunner","runs")])
 
 # Source functions
-source("R/support_functions.R")
+# source("R/support_functions.R")
 
 # Source variable assignment script
-source("R/vars.R")
+# source("R/vars.R")
 
 
 #### Main Script ####
@@ -241,4 +241,4 @@ out.sellprs.norepl <- OptionOutput(t = t,
 
 ## Bringing outcome df's from each option together
 outcomes <- rbind(out.nodrght, out.noadpt, out.feed, out.rentpast, out.sellprs, out.sellprs.norepl)
-
+outcomes$opt=as.character(outcomes$opt) 

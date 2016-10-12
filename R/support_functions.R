@@ -34,6 +34,22 @@ if(!"noaaIndex.RData" %in% list.files("data")){
 }
 load("data/noaaIndex.RData")
 
+## Miscellaneous supporting var's/data
+# State code - for pulling COOP sites & mlra forage weights
+if(!exists("wrc.state")){
+  wrc.state="co"
+}
+
+# Shortcut for sourcing 'R/coop_scraper.R'
+if(!exists("coops")){
+  load("data/coops.RData") 
+}
+
+# load MLRA zone data
+if(!exists("mlra")){
+  mlra=readOGR("data","mlra_v42")
+}
+
 gridToRaster <- function(grid, rasterTemplate){
   # Author: Adam
   # 
@@ -606,12 +622,24 @@ calfWeanWeight<-function(styr){
   forage potential for a five-year period.
   "
   
+  if(!exists("station.gauge",envir=globalenv())){
+    stop("Station gauge information is required.")
+  }
+  
+  if(!exists("constvars",envir=globalenv())){
+    stop("Constant variable information is required.")
+  }
+  
+  attach(station.gauge)
+  attach(constvars)
   forage.weights=unlist(lapply(seq(styr,styr+4),function(i){
     foragePWt(stgg,zonewt,stzone,i)
   }))
   calf_weights_ann=unlist(lapply(forage.weights,function(i){ # annual calf weights
     calfDroughtWeight(expected.wn.wt,calf.wt,i)
   }))
+  detach(station.gauge)
+  detach(constvars)
   
   calf_weights_ann
 }
@@ -1145,4 +1173,173 @@ insAlloc<-function(fpwt,niv=2,by.rank=T,max.alloc=0.6,min.alloc=0.1){
   
   return(wt_out)
 
+}
+
+getStationGauge<-function(target.loc="CPER"){
+  
+  # clear station gauge environment if previously written
+  if(exists("station.gauge",envir = globalenv())){
+    rm("station.gauge",envir=globalenv())
+  }
+  
+  if(target.loc=="CPER"){ # Use COOP sites or CPER: Default to CPER
+    
+    ## Zone Weights
+    stzone=3 # state forage zone
+    # multiple operations since reading from
+    # external file that may be replaced
+    zonewt=read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx",sheet="Drought Calculator",skip = 5)[5:8,]
+    zonewt=sapply(data.frame(zonewt[,which(names(zonewt)=="Jan"):which(names(zonewt)=="Dec")]),as.numeric)
+    
+    ## Station precip gauge 
+    stgg=data.frame(read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx","CPER Precip",skip = 1))
+    stgg=stgg[,-which(names(stgg) %in% c("TOTAL","Var.15"))]
+    stgg=stgg[stgg$Year %in% c(1948:2016,"AVE"),]
+    
+    ## Target grid cell
+    tgrd = 25002  # target grid cell - CPER default 
+    
+  }else{ #Custom location specified (COOP site and MLRA forage potential weights)
+    
+    ## Fetch data
+    # wrc.state="co" # For pulling COOP sites & mlra forage weights
+    # load("data/coops.RData") # Shortcut for sourcing 'R/coop_scraper.R'
+    # source("R/coop_scraper.R") # the long way
+    # mlra=readOGR("data","mlra_v42") # load MLRA zone data
+    target.coop=coops[[which(names(coops)==target.loc)]]
+    
+    ## Zone weights
+    mlra.idx=COOP_in_MRLA(target.coop) # MLRA index
+    zonewt=getMRLAWeights(wrc.state) # zone weights
+    stzone=which(zonewt[,1]==mlra.idx) # not a great workaround...should fix 'foragePwt' function instead
+    zonewt=zonewt[,-1] # not a great workaround...should fix 'foragePwt' function instead
+    
+    ## Station precip gauge
+    stgg=target.coop$precip
+    stgg=rbind(stgg,rep(NA,ncol(stgg)))
+    stgg[nrow(stgg),][,1]="AVE"
+    stgg[nrow(stgg),][,-1]=colMeans(stgg[-nrow(stgg),][,-1],na.rm=T)
+    
+    ## Target grid cell
+    tgrd = target.coop$grid  # target grid cell - custom site
+    
+  }  
+  
+  # Write vars to new env
+  station.gauge<<-new.env()
+  assign("zonewt",zonewt,envir=station.gauge)
+  assign("stzone",stzone,envir=station.gauge)
+  assign("stgg",stgg,envir=station.gauge)
+  assign("tgrd",tgrd,envir=station.gauge)
+  
+  # SpatialPoints representation of target gridcell 
+  # for fetching insurance results
+  assign("tgrd_pt",rastPt[rastPt@data$layer == tgrd, ],envir=station.gauge)  
+  
+  
+}
+
+getConstantVars<-function(){
+  
+  "
+  Reads in constant variables into a
+  `constvars` environment using the 
+  file `data/constant_vars.csv`.
+  "
+  
+  # Remove the constvars environment if it exists
+  if(exists("constvars")){
+    rm("constvars",envir=globalenv())
+  }
+  
+  constvars<<-new.env()
+  
+  cvars=read.csv("data/constant_vars.csv",stringsAsFactors = F)
+  for(i in 1:nrow(cvars)){
+    assign(cvars[i,]$Variable,cvars[i,]$Value,envir=constvars)
+  }
+  
+}
+
+getSimVars=function(random.starts=F,use.forage=F,autoSelect.insurance=F,clv=0.9,acres=3000,pfactor=1){
+  
+  "
+  Note that this will default to the excel 
+  model var's
+  "
+  options(warn=-1) # doesn't seem to get rid of warnings...
+  
+  ## Ensure the baseline environments exist
+  if(!exists("station.gauge",envir=globalenv())){
+    stop("Station gauge information is required.")
+  }
+  
+  if(!exists("constvars",envir=globalenv())){
+    stop("Constant variable information is required.")
+  }
+  
+  # Remove the `simvars` environment if one currently exists
+  if(exists("simvars",envir=globalenv())){
+    rm("simvars",envir=globalenv())
+  }
+  
+  # Create a fresh simulation vars environment
+  simvars<<-new.env()
+  
+  ## Range of years
+  # if specified, use a random starting year
+  if(random.starts){
+    assign("styr",round(runif(1,1948,2010)),envir=simvars)
+  }else{
+    assign("styr",2002,envir=simvars) # starting year in five-year period 
+  }
+  
+  ## Static vs dynamic vars, based on forage
+  attach(constvars) # use direct reference to `constvars` environment
+  if(use.forage){
+    assign("wn.wt",calfWeanWeight(get("styr",simvars)),envir=simvars) # dynamic by year based on precip/forage
+  }else{
+    assign("wn.wt",c(calfWeanWeight(get("styr",simvars))[1],rep(expected.wn.wt,4)),envir=simvars) # year 1 only based on precip/forage
+  }
+
+  # Drought action var's
+  assign("drought.action",ifelse(1:5 %in% act.st.yr:act.end.yr, 1, 0),envir=simvars)
+  assign("calf.loss",ifelse(get("drought.action",simvars)==1,2,0),envir=simvars)
+  assign("calf.wt.adj",ifelse(get("drought.action",simvars)==1,-0.1,0),envir=simvars)
+  detach(constvars)
+  
+  ## Wean weights
+  # make this constant??
+  # previously 'p.wn.yr1', now vectorized for iteration
+  # (I only have this here because vectors can't be represented well in `constant_vars.csv`)
+  assign("p.wn",c(1.31,1.25,1.25,1.25,1.25),envir=simvars)
+  
+  
+  ## set target insurance years
+  attach(simvars)
+  assign("yyr",styr:(4+styr),envir=simvars) # all five years
+  detach(simvars)
+  
+  ## Set Insurance variables
+  assign("clv",clv,envir=simvars) # insurance coverage level (0.7 - 0.9 in increments of 0.05)
+  assign("acres",acres,envir=simvars) # ranch acres
+  assign("pfactor",pfactor,envir=simvars) # productivity factor (0.6 - 1.5)
+  
+  # Insurance purchases
+  # Use Excel model choices by default,
+  # otherwise automatically allocate based
+  # upon forage potential
+  attach(station.gauge) # reference the `station gauge` environment's vars
+  if(autoSelect.insurance){
+    assign("insp",insAlloc(fpwt=zonewt[stzone,],niv=2),envir=simvars) # automatic selection
+  }else{
+    assign("insp",rbind(c(3,0.5),c(5,0.5)),envir=simvars) # insurance purchase
+  }
+  detach(station.gauge)
+  
+  ## Precip, Forage Potential, and Calf Weight variables
+  assign("styear",get("yyr",simvars)[1],envir=simvars) # Starting "drought" year
+  assign("dr_start",get("act.st.m",envir=constvars),envir=simvars) # Drought adaptive action starts
+  assign("dr_end",get("act.end.m",envir=constvars),envir=simvars) # Drought action ends 
+  
 }
