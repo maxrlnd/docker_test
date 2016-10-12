@@ -1,21 +1,19 @@
-#### Main Script ####
+# Script for one simulation run
 
 # Calculate No-Drought Revenues from Calf Sales (aka base sales)
-base.sales <- CalculateExpSales(herd = herd, 
-                                calf.sell = calf.sell, 
-                                wn.wt = expected.wn.wt, 
-                                p.wn = p.wn,
-                                wn.succ = expected.wn.succ)
+base.sales <- unlist(lapply(1:t,function(i){
+  CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = expected.wn.wt, p.wn.yr1 = p.wn[i])
+}))
 
 # Calculate No-Drought Operating Costs
 base.op.cost = CalculateBaseOpCosts(herd = herd, cow.cost = cow.cost)
 
 # Compute insurance premiums and indemnities
-if (purchase.insurance == 1){
-  rma.ins = insMat(tgrd = tgrd, yyr = yyr, clv = clv, acres = acres,
-                   pfactor = pfactor, insPurchase = insp)
+if (purchase.insurance==1){
+  rma.ins = insMat(tgrd = tgrd,yyr = yyr,clv = clv,acres = acres,
+                   pfactor = pfactor,insPurchase  =  insp)
 }else{ # if purchase.insurance set to 0 (no insurance), simply set prem/indem = 0
-  rma.ins = cbind(yyr[1]:yyr[1] + (t - 1), matrix(0, t, 2))
+  rma.ins = cbind(yyr[1]:yyr[1]+(t-1),matrix(0,t,2))
 }
 
 # Base Values: Indicate average year costs and revenues without insurance
@@ -41,8 +39,6 @@ base.cap.taxes <- CalcCapTaxes(cap.sales = base.cap.sales,
                                herd = herd,
                                p.cow = p.cow)
 
-base.wn.succ <- rep(expected.wn.succ,t)  # Created a vector of expected weaning success
-
 ####No Drought####
 
 out.nodrght <- OptionOutput(t = t,
@@ -67,14 +63,10 @@ out.nodrght <- OptionOutput(t = t,
 days.act <- CalculateDaysAction(act.st.yr, act.st.m, act.end.yr, act.end.m, drought.action)
 
 ## Option 0: No adaptation ##
-# Drought revenues
-noadpt.wn.succ <- AdjWeanSuccess(stgg, zonewt, stzone, styear, noadpt = TRUE, expected.wn.succ)
-noadpt.rev.calf <- CalculateExpSales(herd = herd, 
-                                     calf.sell = calf.sell, 
-                                     wn.wt = wn.wt, 
-                                     p.wn = p.wn,
-                                     wn.succ = noadpt.wn.succ)
-
+# drought revenues
+noadpt.rev.calf <- unlist(lapply(1:t,function(i){
+  CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = wn.wt[i], p.wn.yr1 = p.wn[i])
+}))
 
 out.noadpt <- OptionOutput(t = t,
                            opt = "noadpt",
@@ -118,8 +110,7 @@ calf.rev.rentpast <- CalculateRentPastRevenue(expected.wn.wt = expected.wn.wt,
                                               calf.wt.adj = calf.wt.adj,
                                               calf.sell = calf.sell, 
                                               herd = herd, 
-                                              p.wn = p.wn,
-                                              wn.succ = wn.succ)
+                                              p.wn = p.wn)
 
 # Calculate operating costs to truck pairs to rented pasture. Assumes base operating cost is unchanged.
 cost.op.rentpast <- CalculateRentPastCost(n.miles = n.miles, 
@@ -147,14 +138,11 @@ out.rentpast <- OptionOutput(t = t,
 
 ## Option 3: Sell pairs and replace cows
 
-calf.rev.sellprs <- CalculateSellPrsRev(t = t,
-                                        base.sales = base.sales, 
+calf.rev.sellprs <- CalculateSellPrsRev(base.sales = base.sales, 
                                         herd = herd, 
                                         wn.succ = wn.succ, 
                                         calf.wt = calf.wt, 
-                                        p.calf.t0 = p.calf.t0,
-                                        p.cow = p.cow,
-                                        invst.int = invst.int)
+                                        p.calf.t0 = p.calf.t0)
 
 cost.op.sellprs <- CalculateSellPrsCost(op.cost.adj = op.cost.adj, 
                                         herd = herd, 
@@ -228,3 +216,4 @@ out.sellprs.norepl <- OptionOutput(t = t,
 
 ## Bringing outcome df's from each option together
 outcomes <- rbind(out.nodrght, out.noadpt, out.feed, out.rentpast, out.sellprs, out.sellprs.norepl)
+outcomes$opt=as.character(outcomes$opt) 
