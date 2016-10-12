@@ -2,6 +2,7 @@ source("R/support_functions.R")
 
 # Populate a new environment with 
 # station gauge info 
+# Default location is CPER site
 getStationGauge()
 
 # Populate a new environment with 
