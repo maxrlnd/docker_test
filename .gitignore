@@ -4,3 +4,4 @@
 .Ruserdata
 data/noaaIndex.RData
 R/scratchpad.R
+misc/demo_sim_100.RData

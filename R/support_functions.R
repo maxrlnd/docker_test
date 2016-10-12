@@ -34,6 +34,22 @@ if(!"noaaIndex.RData" %in% list.files("data")){
 }
 load("data/noaaIndex.RData")
 
+## Miscellaneous supporting var's/data
+# State code - for pulling COOP sites & mlra forage weights
+if(!exists("wrc.state")){
+  wrc.state="co"
+}
+
+# Shortcut for sourcing 'R/coop_scraper.R'
+if(!exists("coops")){
+  load("data/coops.RData") 
+}
+
+# load MLRA zone data
+if(!exists("mlra")){
+  mlra=readOGR("data","mlra_v42")
+}
+
 gridToRaster <- function(grid, rasterTemplate){
   # Author: Adam
   # 
@@ -242,7 +258,7 @@ dcInfo<-function(dc,tgrd){
 }
 
 #### Baseline Costs and Revenues ####
-CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn, wn.succ) {
+CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn.yr1) {
   "
   Function: CalculateExpSales
   Description: Calculates expected calf revenues for non-drought year
@@ -257,13 +273,13 @@ CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn, wn.succ) {
     base.sales = Expected revenues from calf sales for a non-drought year
   "
   
-  base.sales <- herd * wn.succ * calf.sell * wn.wt * p.wn
-  base.sales
+  base.sales <- herd * calf.sell * wn.wt * p.wn.yr1
+  return(base.sales)
 }
 
 CalculateBaseOpCosts <- function(herd, cow.cost) {
   base.op.cost <- herd * cow.cost
-  base.op.cost
+  return(base.op.cost)
 } 
 
 #### Drought Action ####
@@ -374,7 +390,7 @@ CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days
   return(cost.rentpast)
 }
 
-CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, calf.sell, herd, p.wn, wn.succ) {
+CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, calf.sell, herd, p.wn) {
 "
  CalculateRentPastRevenue 
  Description: Calculates calf sale revenues after trucking pairs to rented pastures
@@ -391,7 +407,7 @@ CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, cal
   rev.rentpast = Change in revenue due to mortality and weight loss from trucking to rented pasture
 "
   # Number of calves sold after accounting for calf mortality in transport 
-  calf.sales.num <- herd * wn.succ * calf.sell - calf.loss
+  calf.sales.num <- herd * calf.sell - calf.loss
   
   # Selling weight after accounting for weight loss due to transport stress
   sell.wt <- expected.wn.wt * (1 + calf.wt.adj)
@@ -429,7 +445,7 @@ CalculateSellPrsCost <- function(op.cost.adj, herd, sell.cost, base.op.cost, her
   cost.sellprs
 }
 
-CalculateSellPrsRev <- function(t, base.sales, herd, wn.succ, calf.wt, p.calf.t0, p.cow, invst.int) { 
+CalculateSellPrsRev <- function(base.sales, herd, wn.succ, calf.wt, p.calf.t0) { 
   "
   Function: CalculateSellPrsRev
   Description: Calculates calf sales revenues due to selling pairs and replacing cows for years 1 through 3
@@ -447,8 +463,8 @@ CalculateSellPrsRev <- function(t, base.sales, herd, wn.succ, calf.wt, p.calf.t0
   rev.sellprs = 5x1 vector of calf revenues for years 1 through 5.
   "
   # Calf sales revenues
-  calf.sales <- rep(NA,t)
-  for (i in 1:t) {
+  calf.sales <- rep(NA,5)
+  for (i in 1:5) {
     if(i == 1) {
       calf.sales[i] <- herd * wn.succ * calf.wt * p.calf.t0
     }
@@ -459,23 +475,14 @@ CalculateSellPrsRev <- function(t, base.sales, herd, wn.succ, calf.wt, p.calf.t0
       calf.sales[i] <- base.sales[i]
     }
   }
-  
-  # Interest from early cow and calf sales
-  cow.sales <- rep(0,t)
-  cow.sales[1] <- herd * p.cow
-  additional.int.rev <-  rep(0,t)
-  additional.int.rev[1] <-  (calf.sales[1] + cow.sales[1]) * invst.int
-  
-  
-  # Total non-capital gains revenues
-  rev <- calf.sales + additional.int.rev
-  rev
+  calf.sales
 }
 
 
-insMat<-function(tgrd, yyr, clv, acres, pfactor, insPurchase){
+insMat<-function(tgrd,yyr,clv,acres,pfactor,insPurchase){
   
   "
+
   Generates a matrix representing insurance 
   premium payments and indemnities for a 
   specified grid cell over a five-year interval. 
@@ -521,7 +528,7 @@ insMat<-function(tgrd, yyr, clv, acres, pfactor, insPurchase){
   
 }
 
-foragePWt <- function(stgg, zonewt, stzone, styear, decision = F){
+foragePWt<-function(stgg,zonewt,stzone,styear,decision=F){
   
   "
   Returns a weight representing
@@ -615,12 +622,24 @@ calfWeanWeight<-function(styr){
   forage potential for a five-year period.
   "
   
+  if(!exists("station.gauge",envir=globalenv())){
+    stop("Station gauge information is required.")
+  }
+  
+  if(!exists("constvars",envir=globalenv())){
+    stop("Constant variable information is required.")
+  }
+  
+  attach(station.gauge)
+  attach(constvars)
   forage.weights=unlist(lapply(seq(styr,styr+4),function(i){
     foragePWt(stgg,zonewt,stzone,i)
   }))
   calf_weights_ann=unlist(lapply(forage.weights,function(i){ # annual calf weights
     calfDroughtWeight(expected.wn.wt,calf.wt,i)
   }))
+  detach(station.gauge)
+  detach(constvars)
   
   calf_weights_ann
 }
@@ -954,27 +973,6 @@ COOP_in_MRLA<-function(coop){
   
 }
 
-AdjWeanSuccess <- function(stgg, zonewt, stzone, styear, noadpt = FALSE, expected.wn.succ) {
-  # Description: Adusts weaning success downward for the year of the drought and the following year
-  # NOTE: This equation is based on what I consider to be "reasonable" estimates
-  #  of weaning success based on forage potential. We need to find a source
-  #  that gives a better idea of the relationship
-  
-  forage.potential <- foragePWt(stgg, zonewt, stzone, styear)
-  
-  if(noadpt == FALSE) {
-    wn.succ <- rep(expected.wn.succ, t)
-  }
-  if(noadpt == TRUE & forage.potential < 1) {
-    wn.succ[1] <- expected.wn.succ * (1 / (1 + exp(-(1 + forage.potential)*2))) 
-    wn.succ[2] <- expected.wn.succ * (1 / (1 + exp(-(1 + forage.potential))))
-    wn.succ[3:t] <- expected.wn.succ                                
-  }
-  wn.succ
-}
-  
-  
-  
 forageWeights2Intervals<-function(fpwt){
   
   "
@@ -1176,3 +1174,173 @@ insAlloc<-function(fpwt,niv=2,by.rank=T,max.alloc=0.6,min.alloc=0.1){
   return(wt_out)
 
 }
+
+getStationGauge<-function(target.loc="CPER"){
+  
+  # clear station gauge environment if previously written
+  if(exists("station.gauge",envir = globalenv())){
+    rm("station.gauge",envir=globalenv())
+  }
+  
+  if(target.loc=="CPER"){ # Use COOP sites or CPER: Default to CPER
+    
+    ## Zone Weights
+    stzone=3 # state forage zone
+    # multiple operations since reading from
+    # external file that may be replaced
+    zonewt=read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx",sheet="Drought Calculator",skip = 5)[5:8,]
+    zonewt=sapply(data.frame(zonewt[,which(names(zonewt)=="Jan"):which(names(zonewt)=="Dec")]),as.numeric)
+    
+    ## Station precip gauge 
+    stgg=data.frame(read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx","CPER Precip",skip = 1))
+    stgg=stgg[,-which(names(stgg) %in% c("TOTAL","Var.15"))]
+    stgg=stgg[stgg$Year %in% c(1948:2016,"AVE"),]
+    
+    ## Target grid cell
+    tgrd = 25002  # target grid cell - CPER default 
+    
+  }else{ #Custom location specified (COOP site and MLRA forage potential weights)
+    
+    ## Fetch data
+    # wrc.state="co" # For pulling COOP sites & mlra forage weights
+    # load("data/coops.RData") # Shortcut for sourcing 'R/coop_scraper.R'
+    # source("R/coop_scraper.R") # the long way
+    # mlra=readOGR("data","mlra_v42") # load MLRA zone data
+    target.coop=coops[[which(names(coops)==target.loc)]]
+    
+    ## Zone weights
+    mlra.idx=COOP_in_MRLA(target.coop) # MLRA index
+    zonewt=getMRLAWeights(wrc.state) # zone weights
+    stzone=which(zonewt[,1]==mlra.idx) # not a great workaround...should fix 'foragePwt' function instead
+    zonewt=zonewt[,-1] # not a great workaround...should fix 'foragePwt' function instead
+    
+    ## Station precip gauge
+    stgg=target.coop$precip
+    stgg=rbind(stgg,rep(NA,ncol(stgg)))
+    stgg[nrow(stgg),][,1]="AVE"
+    stgg[nrow(stgg),][,-1]=colMeans(stgg[-nrow(stgg),][,-1],na.rm=T)
+    
+    ## Target grid cell
+    tgrd = target.coop$grid  # target grid cell - custom site
+    
+  }  
+  
+  # Write vars to new env
+  station.gauge<<-new.env()
+  assign("zonewt",zonewt,envir=station.gauge)
+  assign("stzone",stzone,envir=station.gauge)
+  assign("stgg",stgg,envir=station.gauge)
+  assign("tgrd",tgrd,envir=station.gauge)
+  
+  # SpatialPoints representation of target gridcell 
+  # for fetching insurance results
+  assign("tgrd_pt",rastPt[rastPt@data$layer == tgrd, ],envir=station.gauge)  
+  
+  
+}
+
+getConstantVars<-function(){
+  
+  "
+  Reads in constant variables into a
+  `constvars` environment using the 
+  file `data/constant_vars.csv`.
+  "
+  
+  # Remove the constvars environment if it exists
+  if(exists("constvars")){
+    rm("constvars",envir=globalenv())
+  }
+  
+  constvars<<-new.env()
+  
+  cvars=read.csv("data/constant_vars.csv",stringsAsFactors = F)
+  for(i in 1:nrow(cvars)){
+    assign(cvars[i,]$Variable,cvars[i,]$Value,envir=constvars)
+  }
+  
+}
+
+getSimVars=function(random.starts=F,use.forage=F,autoSelect.insurance=F,clv=0.9,acres=3000,pfactor=1){
+  
+  "
+  Note that this will default to the excel 
+  model var's
+  "
+  options(warn=-1) # doesn't seem to get rid of warnings...
+  
+  ## Ensure the baseline environments exist
+  if(!exists("station.gauge",envir=globalenv())){
+    stop("Station gauge information is required.")
+  }
+  
+  if(!exists("constvars",envir=globalenv())){
+    stop("Constant variable information is required.")
+  }
+  
+  # Remove the `simvars` environment if one currently exists
+  if(exists("simvars",envir=globalenv())){
+    rm("simvars",envir=globalenv())
+  }
+  
+  # Create a fresh simulation vars environment
+  simvars<<-new.env()
+  
+  ## Range of years
+  # if specified, use a random starting year
+  if(random.starts){
+    assign("styr",round(runif(1,1948,2010)),envir=simvars)
+  }else{
+    assign("styr",2002,envir=simvars) # starting year in five-year period 
+  }
+  
+  ## Static vs dynamic vars, based on forage
+  attach(constvars) # use direct reference to `constvars` environment
+  if(use.forage){
+    assign("wn.wt",calfWeanWeight(get("styr",simvars)),envir=simvars) # dynamic by year based on precip/forage
+  }else{
+    assign("wn.wt",c(calfWeanWeight(get("styr",simvars))[1],rep(expected.wn.wt,4)),envir=simvars) # year 1 only based on precip/forage
+  }
+
+  # Drought action var's
+  assign("drought.action",ifelse(1:5 %in% act.st.yr:act.end.yr, 1, 0),envir=simvars)
+  assign("calf.loss",ifelse(get("drought.action",simvars)==1,2,0),envir=simvars)
+  assign("calf.wt.adj",ifelse(get("drought.action",simvars)==1,-0.1,0),envir=simvars)
+  detach(constvars)
+  
+  ## Wean weights
+  # make this constant??
+  # previously 'p.wn.yr1', now vectorized for iteration
+  # (I only have this here because vectors can't be represented well in `constant_vars.csv`)
+  assign("p.wn",c(1.31,1.25,1.25,1.25,1.25),envir=simvars)
+  
+  
+  ## set target insurance years
+  attach(simvars)
+  assign("yyr",styr:(4+styr),envir=simvars) # all five years
+  detach(simvars)
+  
+  ## Set Insurance variables
+  assign("clv",clv,envir=simvars) # insurance coverage level (0.7 - 0.9 in increments of 0.05)
+  assign("acres",acres,envir=simvars) # ranch acres
+  assign("pfactor",pfactor,envir=simvars) # productivity factor (0.6 - 1.5)
+  
+  # Insurance purchases
+  # Use Excel model choices by default,
+  # otherwise automatically allocate based
+  # upon forage potential
+  attach(station.gauge) # reference the `station gauge` environment's vars
+  if(autoSelect.insurance){
+    assign("insp",insAlloc(fpwt=zonewt[stzone,],niv=2),envir=simvars) # automatic selection
+  }else{
+    assign("insp",rbind(c(3,0.5),c(5,0.5)),envir=simvars) # insurance purchase
+  }
+  detach(station.gauge)
+  
+  ## Precip, Forage Potential, and Calf Weight variables
+  assign("styear",get("yyr",simvars)[1],envir=simvars) # Starting "drought" year
+  assign("dr_start",get("act.st.m",envir=constvars),envir=simvars) # Drought adaptive action starts
+  assign("dr_end",get("act.end.m",envir=constvars),envir=simvars) # Drought action ends 
+  
+}
+>>>>>>> eea54a17bcecd50378f1ff4a05c1ef965e9a563e
