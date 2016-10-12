@@ -13,7 +13,7 @@ getConstantVars()
 # into a "baseline varaibles" list 
 # base_vars=append(as.list(station.gauge),as.list(constvars))
 
-## SIMPLE EXAMPLE
+#### SIMPLE EXAMPLE ####
 # Get simulated vars
 # getSimVars() # default settings
 getSimVars(random.starts = T,use.forage = T) # with simulated vars
@@ -23,7 +23,13 @@ run_vars=append(append(as.list(station.gauge),as.list(constvars)),as.list(simvar
 attach(run_vars)
 source("master.R")
 
-## Perform all runs
+#### Perform all runs ####
+
+generateRunParams<-function(){
+	getSimVars(random.starts = T,use.forage = T) # with simulated vars
+	return(append(append(as.list(station.gauge),as.list(constvars)),as.list(simvars)))
+}
+
 simruns=replicate(100,generateRunParams())
 sim_outcomes=data.frame()
 for(r in 1:ncol(simruns)){
@@ -32,6 +38,8 @@ for(r in 1:ncol(simruns)){
   sim_outcomes=rbind(sim_outcomes,outcomes)
   detach(simruns[,r])
 }
+
+#### TEST VISUALIZATION ####
 
 save(sim_outcomes,"misc/demo_sim_100.RData")
 load(sim_outcomes,"misc/demo_sim_100.RData") # reload original run
