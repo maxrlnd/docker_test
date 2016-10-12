@@ -1,0 +1,51 @@
+## Load Libraries
+# libraries commented out might be needed
+# as the project is further developed...
+# library(pracma)
+# library("tseries")
+# require(lubridate)
+library(dplyr)
+library(raster)
+# library("ncdf4")
+# library("rgdal")
+# library("fields")
+library(data.table)
+# library(spdep)
+library(ggplot2)
+# library(rasterVis)
+# library("RSelenium")
+# library("trend")
+# library(rgeos)
+# library("maptools")
+library(readxl)
+# library(fpc)
+library(magrittr)
+library(rgdal)
+
+load("data/grid_base.RData") # Load base grid data
+load("data/insurance_base.RData") # Load base insurance data
+
+# Load gridded precip
+# Get the gridded precip file if not in 'data' folder
+# ideally I can get this to work with git-lfs in the future...
+if(!"noaaIndex.RData" %in% list.files("data")){
+  cat("No NOAA Index data found. Fetching the files...\n")
+  download.file("https://o365coloradoedu-my.sharepoint.com/personal/jotu9073_colorado_edu/_layouts/15/guestaccess.aspx?guestaccesstoken=CLfTQ%2fVIj3v7cel5UkM65Noqx%2bHEgIDoS0lzqM5FHUw%3d&docid=08a40bf084add47629568d4d4161e283e&rev=1",destfile="data/noaaIndex.RData")
+}
+load("data/noaaIndex.RData")
+
+## Miscellaneous supporting var's/data
+# State code - for pulling COOP sites & mlra forage weights
+if(!exists("wrc.state")){
+  wrc.state="co"
+}
+
+# Shortcut for sourcing 'R/coop_scraper.R'
+if(!exists("coops")){
+  load("data/coops.RData") 
+}
+
+# load MLRA zone data
+if(!exists("mlra")){
+  mlra=readOGR("data","mlra_v42")
+}
