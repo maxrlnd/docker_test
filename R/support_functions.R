@@ -1343,4 +1343,4 @@ getSimVars=function(random.starts=F,use.forage=F,autoSelect.insurance=F,clv=0.9,
   assign("dr_end",get("act.end.m",envir=constvars),envir=simvars) # Drought action ends 
   
 }
->>>>>>> eea54a17bcecd50378f1ff4a05c1ef965e9a563e
+
