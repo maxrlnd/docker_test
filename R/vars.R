@@ -6,9 +6,7 @@
 # These variables need to be set first because our 
 # cow/calf weights by year depend upon them.
 
-use.CPER=T # Use COOP sites or CPER: Stick with CPER for now
-
-if(use.CPER){
+if(!exists("target.loc")){ # Use COOP sites or CPER: Default to CPER
   
   ## Zone Weights
   stzone=3 # state forage zone
@@ -25,11 +23,10 @@ if(use.CPER){
   ## Target grid cell
   tgrd = 25002  # target grid cell - CPER default 
   
-}else{ #use Custom location (COOP site and MLRA forage potential weights)
+}else{ #Custom location specified (COOP site and MLRA forage potential weights)
   
   ## Fetch data
   wrc.state="co" # For pulling COOP sites & mlra forage weights
-  target.loc="BOULDER, COLORADO"
   load("data/coops.RData") # Shortcut for sourcing 'R/coop_scraper.R'
   # source("R/coop_scraper.R") # the long way
   mlra=readOGR("data","mlra_v42") # load MLRA zone data
@@ -53,7 +50,14 @@ if(use.CPER){
 }  
 
 # Setting input values to defaults in excel file (temporary placeholder)
-styr=2002 # starting year in five-year period 
+
+# if specified, use a random starting year
+if(exists("random.starts")){
+  styr=round(runif(1,1948,2010))
+}else{
+  styr=2002 # starting year in five-year period 
+}
+
 act.st.yr <- 1
 act.st.m <- 6
 act.end.yr <- 1
@@ -99,7 +103,8 @@ sell.cost <- 20  # Selling cost per cow ($/cow) NOTE: DO WE COUNT SELLING COSTS 
 replc.cost <- 850  # Cost of replacing the cow ($/cow)
 
 ## set target insurance years
-yyr=2002:2006 # all five years
+# yyr=2002:2006 # all five years
+yyr=styr:(4+styr) # all five years
 # yyr=c(2002:2003,2005) # we can also set this for individual years
 # yyr=2002 # or just one year - the "one year, one drought" model
 
@@ -107,8 +112,17 @@ yyr=2002:2006 # all five years
 clv=0.9 # insurance coverage level (0.7 - 0.9 in increments of 0.05)
 acres=3000 # ranch acres
 pfactor=1 # productivity factor (0.6 - 1.5)
-insp=rbind(c(3,0.5),c(5,0.5)) # insurance purchase
 
+# Insurance purchases
+# Use Excel model choices by default,
+# otherwise automatically allocate based
+# upon forage potential
+if(!exists("autoSelect.insurance")){
+  insp=rbind(c(3,0.5),c(5,0.5)) # insurance purchase
+}else{
+  insp=insAlloc(fpwt=zonewt[stzone,],niv=2) # automatic selection
+}
+  
 # SpatialPoints representation of target gridcell 
 # for fetching insurance results
 tgrd_pt = rastPt[rastPt@data$layer == tgrd, ]  
