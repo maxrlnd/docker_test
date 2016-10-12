@@ -1,28 +1,3 @@
-# Copyright (c) 2016 Trisha Shrum, Joseph Tuccillo
-## Authors Comment: This model is jointly developed at the University of 
-#  Colorado Earth Lab based on work by Adam McCurdy, Joseph Tuccillo, Kelly Carney, 
-#  Bill Travis, Jeffrey Tranel, Rod Sharp, and John Deering.
-#
-# Description: This script implements a simulation of drought adaptation
-#  decisions by Western cattle ranchers. 
-#
-# Inputs:
-#   ...
-#
-# Outputs:
-#   ...
-
-# Clear environment
-# prevent from erasing custom location/insurance selection if set
-rm(list=ls()[!ls() %in% c("target.loc","autoSelect.insurance","random.starts","masterRunner","runs")])
-
-# Source functions
-source("R/support_functions.R")
-
-# Source variable assignment script
-source("R/vars.R")
-
-
 #### Main Script ####
 
 # Calculate No-Drought Revenues from Calf Sales (aka base sales)
@@ -56,15 +31,15 @@ base.cost.ins <- base.op.cost + rma.ins[,2] # increment base operating costs wit
 base.assets.cow <- CalcCowAssets(t = t, herd = herd, p.cow = p.cow)
 
 c(base.cap.sales, base.cap.purch) := CalcCapSalesPurch(assets.cow = base.assets.cow, 
-                                             t=t, 
-                                             cull.num = cull.num, 
-                                             p.cow = p.cow)
+                                                       t=t, 
+                                                       cull.num = cull.num, 
+                                                       p.cow = p.cow)
 
 base.cap.taxes <- CalcCapTaxes(cap.sales = base.cap.sales, 
-                          cap.purch = base.cap.purch, 
-                          cap.tax.rate = cap.tax.rate,
-                          herd = herd,
-                          p.cow = p.cow)
+                               cap.purch = base.cap.purch, 
+                               cap.tax.rate = cap.tax.rate,
+                               herd = herd,
+                               p.cow = p.cow)
 
 base.wn.succ <- rep(expected.wn.succ,t)  # Created a vector of expected weaning success
 
@@ -83,7 +58,7 @@ out.nodrght <- OptionOutput(t = t,
                             cap.sales = base.cap.sales,
                             cap.purch = base.cap.purch,
                             cap.taxes = base.cap.taxes)
-  
+
 ####Drought Occurs####
 # For each option, we calculate the **CHANGE** in costs
 # and the **CHANGE** in revenues relative to the no drought baseline.
@@ -188,9 +163,9 @@ cost.op.sellprs <- CalculateSellPrsCost(op.cost.adj = op.cost.adj,
                                         herdless.op.cost = herdless.op.cost)
 
 assets.cow.sellprs <- CalcCowAssets(herd = herd, 
-                            p.cow = p.cow, 
-                            sell.year = 1, 
-                            replace.year = 3)
+                                    p.cow = p.cow, 
+                                    sell.year = 1, 
+                                    replace.year = 3)
 
 c(cap.sales, cap.purch) := CalcCapSalesPurch(assets.cow = assets.cow.sellprs, 
                                              t=t, 
@@ -223,9 +198,9 @@ calf.rev.sellprs.norepl <- c(calf.rev.sellprs[1],rep(0,(t-1)))
 cost.op.sellprs.norepl <- c(cost.op.sellprs[1],rep(herdless.op.cost,(t-1)))
 
 assets.cow.sellprs.norepl <- CalcCowAssets(t = t, 
-                            herd = herd, 
-                            p.cow = p.cow, 
-                            sell.year = 1)
+                                           herd = herd, 
+                                           p.cow = p.cow, 
+                                           sell.year = 1)
 
 c(cap.sales, cap.purch) := CalcCapSalesPurch(assets.cow = assets.cow.sellprs.norepl, 
                                              t=t, 
@@ -253,4 +228,3 @@ out.sellprs.norepl <- OptionOutput(t = t,
 
 ## Bringing outcome df's from each option together
 outcomes <- rbind(out.nodrght, out.noadpt, out.feed, out.rentpast, out.sellprs, out.sellprs.norepl)
-

@@ -242,7 +242,7 @@ dcInfo<-function(dc,tgrd){
 }
 
 #### Baseline Costs and Revenues ####
-CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn.yr1) {
+CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn, wn.succ) {
   "
   Function: CalculateExpSales
   Description: Calculates expected calf revenues for non-drought year
@@ -257,13 +257,13 @@ CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn.yr1) {
     base.sales = Expected revenues from calf sales for a non-drought year
   "
   
-  base.sales <- herd * calf.sell * wn.wt * p.wn.yr1
-  return(base.sales)
+  base.sales <- herd * wn.succ * calf.sell * wn.wt * p.wn
+  base.sales
 }
 
 CalculateBaseOpCosts <- function(herd, cow.cost) {
   base.op.cost <- herd * cow.cost
-  return(base.op.cost)
+  base.op.cost
 } 
 
 #### Drought Action ####
@@ -374,7 +374,7 @@ CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days
   return(cost.rentpast)
 }
 
-CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, calf.sell, herd, p.wn) {
+CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, calf.sell, herd, p.wn, wn.succ) {
 "
  CalculateRentPastRevenue 
  Description: Calculates calf sale revenues after trucking pairs to rented pastures
@@ -391,7 +391,7 @@ CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, cal
   rev.rentpast = Change in revenue due to mortality and weight loss from trucking to rented pasture
 "
   # Number of calves sold after accounting for calf mortality in transport 
-  calf.sales.num <- herd * calf.sell - calf.loss
+  calf.sales.num <- herd * wn.succ * calf.sell - calf.loss
   
   # Selling weight after accounting for weight loss due to transport stress
   sell.wt <- expected.wn.wt * (1 + calf.wt.adj)
@@ -429,7 +429,7 @@ CalculateSellPrsCost <- function(op.cost.adj, herd, sell.cost, base.op.cost, her
   cost.sellprs
 }
 
-CalculateSellPrsRev <- function(base.sales, herd, wn.succ, calf.wt, p.calf.t0) { 
+CalculateSellPrsRev <- function(t, base.sales, herd, wn.succ, calf.wt, p.calf.t0, p.cow, invst.int) { 
   "
   Function: CalculateSellPrsRev
   Description: Calculates calf sales revenues due to selling pairs and replacing cows for years 1 through 3
@@ -447,8 +447,8 @@ CalculateSellPrsRev <- function(base.sales, herd, wn.succ, calf.wt, p.calf.t0) {
   rev.sellprs = 5x1 vector of calf revenues for years 1 through 5.
   "
   # Calf sales revenues
-  calf.sales <- rep(NA,5)
-  for (i in 1:5) {
+  calf.sales <- rep(NA,t)
+  for (i in 1:t) {
     if(i == 1) {
       calf.sales[i] <- herd * wn.succ * calf.wt * p.calf.t0
     }
@@ -459,14 +459,23 @@ CalculateSellPrsRev <- function(base.sales, herd, wn.succ, calf.wt, p.calf.t0) {
       calf.sales[i] <- base.sales[i]
     }
   }
-  calf.sales
+  
+  # Interest from early cow and calf sales
+  cow.sales <- rep(0,t)
+  cow.sales[1] <- herd * p.cow
+  additional.int.rev <-  rep(0,t)
+  additional.int.rev[1] <-  (calf.sales[1] + cow.sales[1]) * invst.int
+  
+  
+  # Total non-capital gains revenues
+  rev <- calf.sales + additional.int.rev
+  rev
 }
 
 
-insMat<-function(tgrd,yyr,clv,acres,pfactor,insPurchase){
+insMat<-function(tgrd, yyr, clv, acres, pfactor, insPurchase){
   
   "
-
   Generates a matrix representing insurance 
   premium payments and indemnities for a 
   specified grid cell over a five-year interval. 
@@ -512,7 +521,7 @@ insMat<-function(tgrd,yyr,clv,acres,pfactor,insPurchase){
   
 }
 
-foragePWt<-function(stgg,zonewt,stzone,styear,decision=F){
+foragePWt <- function(stgg, zonewt, stzone, styear, decision = F){
   
   "
   Returns a weight representing
@@ -945,6 +954,27 @@ COOP_in_MRLA<-function(coop){
   
 }
 
+AdjWeanSuccess <- function(stgg, zonewt, stzone, styear, noadpt = FALSE, expected.wn.succ) {
+  # Description: Adusts weaning success downward for the year of the drought and the following year
+  # NOTE: This equation is based on what I consider to be "reasonable" estimates
+  #  of weaning success based on forage potential. We need to find a source
+  #  that gives a better idea of the relationship
+  
+  forage.potential <- foragePWt(stgg, zonewt, stzone, styear)
+  
+  if(noadpt == FALSE) {
+    wn.succ <- rep(expected.wn.succ, t)
+  }
+  if(noadpt == TRUE & forage.potential < 1) {
+    wn.succ[1] <- expected.wn.succ * (1 / (1 + exp(-(1 + forage.potential)*2))) 
+    wn.succ[2] <- expected.wn.succ * (1 / (1 + exp(-(1 + forage.potential))))
+    wn.succ[3:t] <- expected.wn.succ                                
+  }
+  wn.succ
+}
+  
+  
+  
 forageWeights2Intervals<-function(fpwt){
   
   "
