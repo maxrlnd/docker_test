@@ -37,24 +37,26 @@ getConstantVars()
 # into a "baseline varaibles" list 
 # base_vars=append(as.list(station.gauge),as.list(constvars))
 
-#### SIMPLE EXAMPLE ####
-# Get simulated vars
-# getSimVars() # default settings
-getSimVars(random.starts = T,use.forage = T) # with simulated vars
-
-run_vars=append(append(as.list(station.gauge),as.list(constvars)),as.list(simvars))
-
-attach(run_vars)
-source("R/sim_run.R")
+# #### SIMPLE EXAMPLE ####
+# # Get simulated vars
+# # getSimVars() # default settings
+# getSimVars(random.starts = T,use.forage = T) # with simulated vars
+# 
+# run_vars=append(append(as.list(station.gauge),as.list(constvars)),as.list(simvars))
+# 
+# attach(run_vars)
+# source("R/sim_run.R")
 
 #### Perform all runs ####
 
 generateRunParams<-function(){
-  getSimVars(random.starts = T,use.forage = T) # with simulated vars
-  return(append(append(as.list(station.gauge),as.list(constvars)),as.list(simvars)))
+  # with simulated vars
+  # I left coverage level constant at 0.9
+	getSimVars(random.starts = T,random.acres=T,random.productivity=T,use.forage = T) 
+	return(append(append(as.list(station.gauge),as.list(constvars)),as.list(simvars)))
 }
 
-simruns=replicate(100,generateRunParams())
+simruns=replicate(1000,generateRunParams())
 sim_outcomes=data.frame()
 for(r in 1:ncol(simruns)){
   attach(simruns[,r])
@@ -65,17 +67,18 @@ for(r in 1:ncol(simruns)){
 
 #### TEST VISUALIZATION ####
 
-save(sim_outcomes,"misc/demo_sim_100.RData")
-load(sim_outcomes,"misc/demo_sim_100.RData") # reload original run
+save(sim_outcomes,file="misc/demo_sim_1k.RData")
+load(sim_outcomes,"misc/demo_sim_1k.RData") # reload original run
 
 # tidy df
-sim_out_sub=sim_outcomes[sim_outcomes$yr==5,][,c("opt","ins","aftax.inc")]
+sim_out_sub=sim_outcomes[sim_outcomes$yr==5,][,c("opt","ins","net.wrth")]
+sim_out_sub$net.wrth=sim_out_sub$net.wrth-514688 # get ending net worth
 
-ggplot(data=sim_out_sub,aes(x=aftax.inc))+
+ggplot(data=sim_out_sub,aes(x=net.wrth))+
   geom_histogram()+
   facet_grid(ins~opt,scales="free")
-
+  
 # vectors of outcomes by opt/ins
-sim_out_v=split(sim_out_sub$aftax.inc,
+sim_out_v=split(sim_out_sub$net.wrth,
                 paste(sim_out_sub$opt,ifelse(sim_out_sub$ins==1,"Insured","Uninsured"),sep=" - "))
-hist(sim_out_v$`noadpt - Uninsured`)
+hist(sim_out_v$`rentpast - Insured`)
