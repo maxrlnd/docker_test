@@ -77,7 +77,7 @@ droughtCalculator<-function(yy,clv,acres,pfactor,insPurchase,mask=NULL){
   #   }
   
   ##Get subsidy rate based on coverage level
-  sbdy=covsub[coverage.trigger==clv,subsidy.rate]
+  sbdy=covsub[coverage.trigger==clv, subsidy.rate]
   
   ##Set up insurance purchase vector
   ip=rep(0,11)
