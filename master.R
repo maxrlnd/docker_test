@@ -1,10 +1,10 @@
 # Copyright (c) 2016 Trisha Shrum, Joseph Tuccillo
-## Authors Comment: This model is jointly developed at the University of 
-#  Colorado Earth Lab based on work by Adam McCurdy, Joseph Tuccillo, Kelly Carney, 
+## Authors Comment: This model is jointly developed at the University of
+#  Colorado Earth Lab based on work by Adam McCurdy, Joseph Tuccillo, Kelly Carney,
 #  Bill Travis, Jeffrey Tranel, Rod Sharp, and John Deering.
 #
 # Description: This script implements a simulation of drought adaptation
-#  decisions by Western cattle ranchers. 
+#  decisions by Western cattle ranchers.
 #
 # Inputs:
 #   ...
@@ -14,7 +14,7 @@
 
 # Clear environment
 # prevent from erasing custom location/insurance selection if set
-rm(list = ls()[!ls() %in% c("target.loc", "autoSelect.insurance", 
+rm(list = ls()[!ls() %in% c("target.loc", "autoSelect.insurance",
                             "random.starts", "masterRunner", "runs")])
 
 # Source functions
@@ -26,17 +26,17 @@ source("R/assets_outcomes_functions.R")
 source("R/support_functions.R")
 source("R/sim_run.R")
 
-# Populate a new environment with 
-# station gauge info 
+# Populate a new environment with
+# station gauge info
 # Default location is CPER site
 getStationGauge()
 
-# Populate a new environment with 
+# Populate a new environment with
 # constant (user) variables
 getConstantVars()
 
 # Assemble station gauge/constant variables environments
-# into a "baseline varaibles" list 
+# into a "baseline varaibles" list
 # base_vars=append(as.list(station.gauge),as.list(constvars))
 
 #### SIMPLE EXAMPLE ####
@@ -51,7 +51,7 @@ stopifnot(is.data.frame(out))
 
 #### Perform all runs ####
 generateRunParams <- function(){
-  getSimVars(random.starts = TRUE, use.forage = TRUE) # with simulated vars
+  getSimVars(random.starts = TRUE, use.forage = TRUE,random.acres=TRUE, random.productivity=TRUE) # with simulated vars
   return(append(append(as.list(station.gauge), as.list(constvars)), as.list(simvars)))
 }
 
