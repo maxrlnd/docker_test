@@ -55,7 +55,12 @@ generateRunParams <- function(){
   return(append(append(as.list(station.gauge), as.list(constvars)), as.list(simvars)))
 }
 
-simruns <- rlply(10, generateRunParams())  # list of simulation variables for runs
+runs <- 10
+simruns <- rlply(runs, generateRunParams())  # list of simulation variables for runs
+list.index <- seq_along(simruns)  # creating an index of the list number to store in the sim_outcomes and match back with the simruns variables
+for (i in 1:runs) {
+  simruns[[i]]$sim.index <- list.index[i] 
+}
 
 sim_outcomes <- lapply(simruns, sim_run)
 sim_outcomes <- do.call("rbind", sim_outcomes)

@@ -223,6 +223,7 @@ sim_run <- function(pars) {
   ## Bringing outcome df's from each option together
   outcomes <- rbind(out.nodrght, out.noadpt, out.feed, out.rentpast, out.sellprs, out.sellprs.norepl)
   outcomes$opt=as.character(outcomes$opt) 
+  outcomes$sim.index <- rep(sim.index, nrow(outcomes))
   outcomes
 }
 
