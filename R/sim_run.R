@@ -66,11 +66,14 @@ sim_run <- function(pars) {
   # and the **CHANGE** in revenues relative to the no drought baseline.
   
   # Calculate vector of days of drought adaptation action for each year
-  days.act <- CalculateDaysAction(act.st.yr, act.st.m, act.end.yr, act.end.m, drought.action)
+  forage.potential <- sapply(yyr, foragePWt, stgg = stgg, zonewt = zonewt, stzone = stzone) 
+  drght.act.adj <- ifelse(forage.potential >= 1, 0, (1 - forage.potential) * drought.adaptation.cost.factor)
+  drght.act.adj <- ifelse(drght.act.adj > 1, 1, drght.act.adj)  # putting a ceiling of this variable at 1 (no more than 100% of drought action)
+  days.act <- CalculateDaysAction(act.st.yr, act.st.m, act.end.yr, act.end.m, drought.action) * drght.act.adj  # adjusts the days of action by the severity of drought
   
   ## Option 0: No adaptation ##
   # drought revenues
-  noadpt.rev.calf <- unlist(lapply(1:t,function(i){
+  noadpt.rev.calf <- unlist(lapply(1:t, function(i){
     CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = wn.wt[i], p.wn.yr1 = p.wn[i])
   }))
   

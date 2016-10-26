@@ -24,7 +24,11 @@ getConstantVars<-function(){
 
 getSimVars = function(random.starts = FALSE, use.forage = FALSE,
                       autoSelect.insurance = FALSE, clv = 0.9, acres = 3000,
-                      pfactor = 1){
+                      pfactor = 1,
+                      random.coverage = FALSE,
+                      random.acres = FALSE,
+                      random.productivity = FALSE,
+                      drought.adaptation.cost.factor = 1){
   
   "
   Note that this will default to the excel 
@@ -39,6 +43,7 @@ getSimVars = function(random.starts = FALSE, use.forage = FALSE,
   clv: Coverage level of insurance
   acres: Size of ranching operation. Modeled to only impact the insurance premium/payout.
   pfactor: Productivity factor relative to other farms in the grid. Relevant only to insurance premium/payout.
+  drought.adaptation.cost.factor: Adjusts the impact of the low forage potential on costs of adaptation.
   
   "
   options(warn = -1) # doesn't seem to get rid of warnings...
@@ -81,6 +86,7 @@ getSimVars = function(random.starts = FALSE, use.forage = FALSE,
   assign("calf.loss", ifelse(get("drought.action", simvars) == 1, 2, 0), envir = simvars)
   assign("calf.wt.adj", ifelse(get("drought.action", simvars) == 1, -0.1, 0), envir = simvars)
   detach(constvars)
+  assign("drought.adaptation.cost.factor", drought.adaptation.cost.factor, envir = simvars)
   
   ## Wean weights
   # make this constant??
@@ -128,7 +134,7 @@ getSimVars = function(random.starts = FALSE, use.forage = FALSE,
   # otherwise automatically allocate based
   # upon forage potential
   attach(station.gauge) # reference the `station gauge` environment's vars
-  if(autoSelect.insurance){
+  if(autoSelect.insurance == TRUE){
     assign("insp", insAlloc(fpwt = zonewt[stzone, ], niv = 2), envir = simvars) # automatic selection
   }else{
     assign("insp", rbind(c(3, 0.5), c(5, 0.5)), envir = simvars) # insurance purchase
