@@ -4,6 +4,7 @@
 # library(pracma)
 # library("tseries")
 # require(lubridate)
+library(plyr)
 library(dplyr)
 library(raster)
 # library("ncdf4")
@@ -21,6 +22,7 @@ library(readxl)
 # library(fpc)
 library(magrittr)
 library(rgdal)
+library(snowfall)
 
 load("data/grid_base.RData") # Load base grid data
 load("data/insurance_base.RData") # Load base insurance data

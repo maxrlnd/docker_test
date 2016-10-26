@@ -75,7 +75,7 @@ getSimVars = function(random.starts = FALSE, use.forage = FALSE,
   }else{
     assign("wn.wt", c(calfWeanWeight(get("styr", simvars))[1], rep(expected.wn.wt, 4)), envir = simvars) # year 1 only based on precip/forage
   }
-  
+
   # Drought action var's
   assign("drought.action", ifelse(1:5 %in% act.st.yr:act.end.yr, 1, 0), envir = simvars)
   assign("calf.loss", ifelse(get("drought.action", simvars) == 1, 2, 0), envir = simvars)
@@ -98,6 +98,30 @@ getSimVars = function(random.starts = FALSE, use.forage = FALSE,
   assign("clv", clv, envir = simvars) # insurance coverage level (0.7 - 0.9 in increments of 0.05)
   assign("acres", acres, envir = simvars) # ranch acres
   assign("pfactor", pfactor, envir = simvars) # productivity factor (0.6 - 1.5)
+
+  # insurance coverage level (0.7 - 0.9 in increments of 0.05)
+  if(random.coverage){
+    assign("clv",round_any(runif(1,0.7,0.9),0.05),envir=simvars)
+  }else{
+    assign("clv",clv,envir=simvars)
+  }
+  
+  # ranch acres
+  # sample from a random normal distribution with
+  # mean ranch size = 3000 (default) and sd = 500
+  # these are arbitrary choices!! should revise as needed
+  if(random.acres){
+    assign("acres",round(sample(rnorm(10000,mean=3000,sd=500),size=1)),envir=simvars)
+  }else{
+    assign("acres",acres,envir=simvars) 
+  }
+  
+  # ranch productivity factor (0.6 - 1.5)
+  if(random.productivity){
+    assign("pfactor",round_any(runif(1,0.6,1.2),0.01),envir=simvars)
+  }else{
+    assign("pfactor",pfactor,envir=simvars) 
+  }
   
   # Insurance purchases
   # Use Excel model choices by default,
