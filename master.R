@@ -55,8 +55,8 @@ generateRunParams <- function(){
   return(append(append(as.list(station.gauge), as.list(constvars)), as.list(simvars)))
 }
 
-runs <- 10
-simruns <- rlply(runs, generateRunParams())  # list of simulation variables for runs
+runs <- 1000
+simruns1 <- rlply(runs, generateRunParams())  # list of simulation variables for runs
 list.index <- seq_along(simruns)  # creating an index of the list number to store in the sim_outcomes and match back with the simruns variables
 for (i in 1:runs) {
   simruns[[i]]$sim.index <- list.index[i] 
@@ -81,6 +81,11 @@ sfLibrary(rgdal)
 parouts <- sfLapply(simruns, sim_run)
 parouts <- do.call("rbind", parouts)
 sfStop()
+
+# quick summary of output for final year networth by option and insurance
+finalyr <- parouts[parouts$yr == 5,]
+networth <- summarize(group_by(finalyr, opt, ins), mean(net.wrth))
+
 
 #### TEST VISUALIZATION ####
 
