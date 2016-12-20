@@ -1,0 +1,57 @@
+\documentclass[11pt]{amsart}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\title{Mathematical representation of the drought decision model}
+\author{Trisha Shrum}
+%\date{}                                           % Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+%\section{}
+%\subsection{}
+
+
+Indices:
+Time is indexed by $t$, units in years. Variables with this index are allowed to vary by year.
+Insurance decision is indexed by $i$, where $i=1$ corresponds to the purchase of insurance and $i=0$
+
+Profit Model:
+\begin{equation}
+\pi_t = R_t - C_t
+\end{equation}
+
+Revenues:
+\begin{equation}
+R_t(h,\phi, w_t, p_t) = q_t (h,\phi, w_t) p_t
+\end{equation}
+
+\begin{equation}
+q_t = \phi h * w_t
+\end{equation}
+
+Costs:
+\begin{equation}
+C_t = \gamma h + 
+\end{equation}
+
+Parameters:
+\begin{itemize}
+\item \(\phi\): Average percentage of calves sold, 
+\item \(h\): herd size (number of cows, does not include calves), 
+\item $w_t$: calf weight at weaning in year \(t\) (pounds), 
+\item $p_t$: price of calves at weaning in year \(t\) (\$/pound)
+\item \(\gamma\): base operating costs (\$/cow)
+\end{itemize}
+
+
+
+
+
+\end{document}  
