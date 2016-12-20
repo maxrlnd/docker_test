@@ -22,8 +22,11 @@ getConstantVars<-function(){
   
 }
 
-getSimVars = function(random.starts = FALSE, use.forage = FALSE,
-                      autoSelect.insurance = FALSE, clv = 0.9, acres = 3000,
+getSimVars = function(random.starts = FALSE, 
+                      use.forage = FALSE,
+                      autoSelect.insurance = FALSE, 
+                      clv = 0.9, 
+                      acres = 3000,
                       pfactor = 1,
                       random.coverage = FALSE,
                       random.acres = FALSE,
