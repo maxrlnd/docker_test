@@ -50,13 +50,17 @@ out <- sim_run(run_vars)
 stopifnot(is.data.frame(out))
 
 #### Perform all runs ####
-generateRunParams <- function(){
-  getSimVars(random.starts = TRUE, use.forage = TRUE,random.acres=TRUE, random.productivity=TRUE) # with simulated vars
+generateRunParams <- function(acres.param = 3000){
+  getSimVars(random.starts = TRUE, 
+             use.forage = TRUE,
+             random.acres=FALSE, 
+             random.productivity=TRUE,
+             acres = acres.param) # with simulated vars
   return(append(append(as.list(station.gauge), as.list(constvars)), as.list(simvars)))
 }
 
-runs <- 1000
-simruns1 <- rlply(runs, generateRunParams())  # list of simulation variables for runs
+runs <- 10
+simruns <- rlply(runs, generateRunParams(acres.param = 600))  # list of simulation variables for runs
 list.index <- seq_along(simruns)  # creating an index of the list number to store in the sim_outcomes and match back with the simruns variables
 for (i in 1:runs) {
   simruns[[i]]$sim.index <- list.index[i] 
@@ -82,11 +86,40 @@ parouts <- sfLapply(simruns, sim_run)
 parouts <- do.call("rbind", parouts)
 sfStop()
 
+save(parouts, file = "output/simulation_results_baseline.RData")
+save(simruns, file = "output/simulation_inputs_baseline.RData")
+
 # quick summary of output for final year networth by option and insurance
 finalyr <- parouts[parouts$yr == 5,]
-networth <- summarize(group_by(finalyr, opt, ins), mean(net.wrth))
+networth <- summarize(group_by(finalyr, opt, ins), avg.netwrth = mean(net.wrth))
+
+# Expected utility, quick pass
+exp_utility <- select(parouts, opt, yr, ins, aftax.inc, net.wrth, sim.index) %>%
+  filter(yr > 0)
+exp_utility$inc.min1 <- ifelse(exp_utility$aftax.inc <= 0, 1, exp_utility$aftax.inc) 
+exp_utility$inc.util <- log(exp_utility$inc.min1)
+exp_utility$wealth.util <- log(exp_utility$net.wrth)
+eu <- group_by(exp_utility, ins, opt, sim.index) %>%
+  summarize(exp.util.inc = mean(inc.util), exp.util.wealth = mean(wealth.util))
+
+d <- group_by(eu, ins) %>%
+  density(exp.util.wealth)
 
 
+
+eu.noins <- filter(eu, ins==0, opt == "noadpt")
+eu.ins <- filter(eu, ins==1, opt == "noadpt")
+summarize(eu.noins, m = mean(exp.util.wealth))
+summarize(eu.ins, m = mean(exp.util.wealth))
+summarize(eu.noins, m = mean(exp.util.inc))
+summarize(eu.ins, m = mean(exp.util.inc))
+
+p <- eu.noins$exp.util.inc
+d <- density(p)
+plot(d)
+
+parouts %>% filter(opt == "noadpt", yr == 5) %>% select(opt, ins, net.wrth) ->  noadpt.results
+write.csv(noadpt.results, file="output/noadapt_montecarlo.csv")
 #### TEST VISUALIZATION ####
 
 save(sim_outcomes,"misc/demo_sim_100.RData")
