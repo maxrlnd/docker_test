@@ -159,5 +159,3 @@ dr_start=act.st.m # Drought adaptive action starts
 dr_end=act.end.m # Drought action ends 
 # calf_currently=375 # Average calf weight "currently"
 # calf_wean=600 # Expected average calf weight "at weaning"
-
->>>>>>> eea54a17bcecd50378f1ff4a05c1ef965e9a563e

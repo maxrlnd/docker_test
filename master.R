@@ -12,10 +12,10 @@
 # Outputs:
 #   ...
 
-# Clear environment
-# prevent from erasing custom location/insurance selection if set
-rm(list = ls()[!ls() %in% c("target.loc", "autoSelect.insurance",
-                            "random.starts", "masterRunner", "runs")])
+# # Clear environment
+# # prevent from erasing custom location/insurance selection if set
+# rm(list = ls()[!ls() %in% c("target.loc", "autoSelect.insurance",
+#                             "random.starts", "masterRunner", "runs")])
 
 # Source functions
 source("R/load.R")
@@ -26,6 +26,8 @@ source("R/assets_outcomes_functions.R")
 source("R/support_functions.R")
 source("R/sim_run.R")
 
+#### Setup ####
+
 # Populate a new environment with
 # station gauge info
 # Default location is CPER site
@@ -35,21 +37,7 @@ getStationGauge()
 # constant (user) variables
 getConstantVars()
 
-# Assemble station gauge/constant variables environments
-# into a "baseline varaibles" list
-# base_vars=append(as.list(station.gauge),as.list(constvars))
-
-#### SIMPLE EXAMPLE ####
-# Get simulated vars
-# getSimVars() # default settings
-getSimVars(random.starts = TRUE, use.forage = TRUE) # with simulated vars
-
-run_vars = append(append(as.list(station.gauge), as.list(constvars)), as.list(simvars))
-
-out <- sim_run(run_vars)
-stopifnot(is.data.frame(out))
-
-#### Perform all runs ####
+#### Generate Model Inputs ####
 generateRunParams <- function(acres.param = 3000){
   getSimVars(random.starts = TRUE, 
              use.forage = TRUE,
@@ -66,11 +54,7 @@ for (i in 1:runs) {
   simruns[[i]]$sim.index <- list.index[i] 
 }
 
-sim_outcomes <- lapply(simruns, sim_run)
-sim_outcomes <- do.call("rbind", sim_outcomes)
-
-
-# Parallelize simulation runs
+#### Parallelize simulation runs #### 
 sfInit(parallel = TRUE, cpus = 4)
 sfExportAll(debug = TRUE)
 
@@ -89,6 +73,7 @@ sfStop()
 save(parouts, file = "output/simulation_results_baseline.RData")
 save(simruns, file = "output/simulation_inputs_baseline.RData")
 
+#### Summary ####
 # quick summary of output for final year networth by option and insurance
 finalyr <- parouts[parouts$yr == 5,]
 networth <- summarize(group_by(finalyr, opt, ins), avg.netwrth = mean(net.wrth))
@@ -104,8 +89,6 @@ eu <- group_by(exp_utility, ins, opt, sim.index) %>%
 
 d <- group_by(eu, ins) %>%
   density(exp.util.wealth)
-
-
 
 eu.noins <- filter(eu, ins==0, opt == "noadpt")
 eu.ins <- filter(eu, ins==1, opt == "noadpt")

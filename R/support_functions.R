@@ -297,10 +297,10 @@ getStationGauge<-function(target.loc="CPER"){
   }else{ #Custom location specified (COOP site and MLRA forage potential weights)
     
     ## Fetch data
-    # wrc.state="co" # For pulling COOP sites & mlra forage weights
-    # load("data/coops.RData") # Shortcut for sourcing 'R/coop_scraper.R'
+    wrc.state="co" # For pulling COOP sites & mlra forage weights
+    load("data/coops.RData") # Shortcut for sourcing 'R/coop_scraper.R'
     # source("R/coop_scraper.R") # the long way
-    # mlra=readOGR("data","mlra_v42") # load MLRA zone data
+    mlra=readOGR("data","mlra_v42") # load MLRA zone data
     target.coop=coops[[which(names(coops)==target.loc)]]
     
     ## Zone weights
