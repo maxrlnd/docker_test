@@ -15,9 +15,9 @@ sim_run <- function(pars) {
   base.op.cost = CalculateBaseOpCosts(herd = herd, cow.cost = cow.cost)
   
   # Compute insurance premiums and indemnities
-  if (purchase.insurance==1){
-    rma.ins = insMat(tgrd = tgrd,yyr = yyr,clv = clv,acres = acres,
-                     pfactor = pfactor,insPurchase  =  insp)
+  if (purchase.insurance == 1){
+    rma.ins = insMat(tgrd = tgrd, yyr = yyr, clv = clv, acres = acres,
+                     pfactor = pfactor, insPurchase  =  insp)
   }else{ # if purchase.insurance set to 0 (no insurance), simply set prem/indem = 0
     rma.ins = cbind(yyr[1]:yyr[1]+(t-1),matrix(0,t,2))
   }
