@@ -142,9 +142,9 @@ pfactor=1 # productivity factor (0.6 - 1.5)
 # upon forage potential
 # if(!exists("autoSelect.insurance")){
 if("autoSelect.insurance"){
-  insp=rbind(c(3,0.5),c(5,0.5)) # insurance purchase
+  insp = rbind(c(3, 0.5), c(5,0.5)) # insurance purchase
 }else{
-  insp=insAlloc(fpwt=zonewt[stzone,],niv=2) # automatic selection
+  insp = insAlloc(fpwt = zonewt[stzone, ], niv=2) # automatic selection
 }
   
 # SpatialPoints representation of target gridcell 
