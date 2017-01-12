@@ -1,7 +1,7 @@
 # Support functions to calculate costs and revenues for each drought adaptation option
 
 #### Baseline Costs and Revenues ####
-CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn.yr1) {
+CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn) {
   "
   Function: CalculateExpSales
   Description: Calculates expected calf revenues for non-drought year
@@ -10,13 +10,13 @@ CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn.yr1) {
   herd = Size of herd (head of cows, does not include calves)
   calf.sell = Average percentage of calves sold (%)
   wn.wt = Average weight at weaning (pounds)
-  p.wn.yr1 = Expected sale price of calves in year 1 ($/pound)
+  p.wn = Expected sale price of calves ($/pound)
   
   Outputs:
   base.sales = Expected revenues from calf sales for a non-drought year
   "
   
-  base.sales <- herd * calf.sell * wn.wt * p.wn.yr1
+  base.sales <- herd * calf.sell * wn.wt * p.wn
   return(base.sales)
 }
 
@@ -143,7 +143,7 @@ CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, cal
   calf.wt.adj = Adjustment for calf weaning weights (%)
   calf.sell = Average percentage of calves sold (%)
   wn.wt = Average weight at weaning (pounds)
-  p.wn.yr1 = Expected sale price of calves in year 1 ($/pound)
+  p.wn = Expected sale price of calves ($/pound)
   herd = Size of herd (head of cows, does not include calves)
   
   Outputs:

@@ -8,7 +8,7 @@ sim_run <- function(pars) {
   
   # Calculate No-Drought Revenues from Calf Sales (aka base sales)
   base.sales <- unlist(lapply(1:t,function(i){
-    CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = expected.wn.wt, p.wn.yr1 = p.wn[i])
+    CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = expected.wn.wt, p.wn = p.wn[i])
   }))
   
   # Calculate No-Drought Operating Costs
