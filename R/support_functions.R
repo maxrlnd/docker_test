@@ -41,7 +41,7 @@ dataToRast<-function(inData,target.var=NULL){
 
 
 
-dcInfo<-function(dc,tgrd){
+dcInfo <- function(dc, tgrd){
   
   "
   Author: Joe
@@ -54,9 +54,9 @@ dcInfo<-function(dc,tgrd){
   tgrd: target grid cell ID
   "
   
-  dcinf=lapply(dc,function(X){
+  dcinf = lapply(dc, function(X){
     
-    extract(X,rastPt[rastPt$layer==tgrd,])
+    extract(X, rastPt[rastPt$layer == tgrd,])
     
   })
   
