@@ -81,11 +81,11 @@ droughtCalculator <- function(yy, clv, acres, pfactor, insPurchase, mask = NULL)
   
   ##Set up insurance purchase vector
   ip = rep(0, 11)
-  ip[insPurchase[, 1]] = insPurchase[, 2]
+  ip[insPurchase[, 1]] = insPurchase[, 2]  # replaces 0's with interval allocations
   insPurchase = ip
   
   ##Calculate policy rate
-  plrt=prod(clv,acres,pfactor)*basePrice
+  plrt = prod(clv, acres, pfactor) * basePrice  # why use prod() instead of multiplying?
   
   ##Generate inputs for computing premiums
   premInt=stack() #Premium/$100 rate
@@ -256,7 +256,7 @@ rescaleInsAlloc<-function(alloc_choice,max.alloc=0.6,min.alloc=0.1){
   
   }
 
-insAlloc<-function(fpwt,niv=2,by.rank=T,max.alloc=0.6,min.alloc=0.1){
+insAlloc<-function(fpwt, niv = 2, by.rank = T, max.alloc=0.6, min.alloc = 0.1){
   
   "
   Automates range insurance allocation to two-month
