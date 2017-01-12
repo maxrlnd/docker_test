@@ -37,6 +37,7 @@ CalculateDaysAction <- function(act.st.yr, act.st.m, act.end.yr, act.end.m, drou
   act.st.m = Month the action starts
   act.end.yr = Year the action ends
   act.end.m = Month the action ends
+  drought.action = ??
   
   Outputs:
   days.act = Number of days drought adaptation action takes place (days)
