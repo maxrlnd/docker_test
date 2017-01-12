@@ -18,16 +18,18 @@
 %\subsection{}
 
 
-Indices:
+\section{Indices}
 Time is indexed by $t$, units in years. Variables with this index are allowed to vary by year.
+
 Insurance decision is indexed by $i$, where $i=1$ corresponds to the purchase of insurance and $i=0$
 
-Profit Model:
+
+\section{Profit Model}
 \begin{equation}
 \pi_t = R_t - C_t
 \end{equation}
 
-Revenues:
+\subsection{Revenues}
 \begin{equation}
 R_t(h,\phi, w_t, p_t) = q_t (h,\phi, w_t) p_t
 \end{equation}
@@ -36,7 +38,16 @@ R_t(h,\phi, w_t, p_t) = q_t (h,\phi, w_t) p_t
 q_t = \phi h * w_t
 \end{equation}
 
-Costs:
+Parameters:
+\begin{itemize}
+\item $q_t$: Quantity of calves sold (pounds)
+\item \(\phi\): Average percentage of calves sold, 
+\item \(h\): herd size (number of cows, does not include calves), 
+\item $w_t$: calf weight at weaning in year \(t\) (pounds), 
+\item $p_t$: price of calves at weaning in year \(t\) (\$/pound)
+\end{itemize}
+
+\subsection{Costs}
 \begin{equation}
 C_t = \gamma h + 
 \end{equation}
