@@ -1,6 +1,6 @@
 # Insurance Related Functions
 
-droughtCalculator<-function(yy,clv,acres,pfactor,insPurchase,mask=NULL){
+droughtCalculator <- function(yy, clv, acres, pfactor, insPurchase, mask = NULL){
   
   "
   Author: Joe
@@ -51,19 +51,19 @@ droughtCalculator<-function(yy,clv,acres,pfactor,insPurchase,mask=NULL){
   # if(!pfactor %in% round(seq(0.6:1.5,by=0.01),1)){
   #   stop("Productivity factor must range from 0.6-1.5, in increments of 0.01.")
   # }
-  if(min(dist(insPurchase[,1]))==1){
+  if(min(dist(insPurchase[, 1])) == 1){
     stop("Insurance allocation for consecutive intervals is not permitted.")
   }
-  if(nrow(insPurchase)<=1){
+  if(nrow(insPurchase) <= 1){
     stop("Insurance must be allocated for at least two intervals.")
   }
-  if(prod(insPurchase[,1] %in% 1:11)==0){
+  if(prod(insPurchase[, 1] %in% 1:11) == 0){
     stop("Insurance allocation intervals must range from 1-11.")
   }
-  if(max(insPurchase[,2])>0.6){
+  if(max(insPurchase[, 2]) > 0.6){
     stop("Insurance allocation may not exceed 60% per interval.")
   }
-  if(sum(insPurchase[,2])!=1){
+  if(sum(insPurchase[, 2]) != 1){
     stop("Insurance allocation must sum to 100%.")
   }
   
@@ -77,12 +77,12 @@ droughtCalculator<-function(yy,clv,acres,pfactor,insPurchase,mask=NULL){
   #   }
   
   ##Get subsidy rate based on coverage level
-  sbdy=covsub[coverage.trigger==clv, subsidy.rate]
+  sbdy = covsub[coverage.trigger == clv, subsidy.rate]
   
   ##Set up insurance purchase vector
-  ip=rep(0,11)
-  ip[insPurchase[,1]]=insPurchase[,2]
-  insPurchase=ip
+  ip = rep(0, 11)
+  ip[insPurchase[, 1]] = insPurchase[, 2]
+  insPurchase = ip
   
   ##Calculate policy rate
   plrt=prod(clv,acres,pfactor)*basePrice
@@ -145,7 +145,7 @@ droughtCalculator<-function(yy,clv,acres,pfactor,insPurchase,mask=NULL){
   
 }
 
-insMat<-function(tgrd,yyr,clv,acres,pfactor,insPurchase){
+insMat <- function(tgrd, yyr, clv, acres, pfactor, insPurchase){
   
   "
   
@@ -155,7 +155,7 @@ insMat<-function(tgrd,yyr,clv,acres,pfactor,insPurchase){
   
   tgrd: target grid cell 
   
-  yy: starting year
+  yyr: starting year
   
   clv: coverage level
   
@@ -170,22 +170,22 @@ insMat<-function(tgrd,yyr,clv,acres,pfactor,insPurchase){
   "
   
   ## Generate insurance info
-  fiveYears=matrix(0,5,3) #empty matrix - year, indemnity, producer premium x number years 
-  fiveYears[,1]=seq(yyr[1],yyr[1]+4) #populate years
+  fiveYears = matrix(0, 5, 3)  # empty matrix - year, indemnity, producer premium x number years 
+  fiveYears[, 1] = seq(yyr[1], yyr[1] + 4)  # populate years in first column
   #**PARALLELIZE THIS??**#
   for(yy in yyr){
     
-    fiveYears[which(fiveYears[,1]==yy),]=c(yy,
+    fiveYears[which(fiveYears[, 1] == yy), ] = c(yy,
                                            unlist(
                                              dcInfo(
-                                               dc=droughtCalculator(
-                                                 yy=yy,
-                                                 clv=clv,
-                                                 acres=acres,
-                                                 pfactor=pfactor,
-                                                 insPurchase=insPurchase
+                                               dc = droughtCalculator(
+                                                 yy = yy,
+                                                 clv = clv,
+                                                 acres = acres,
+                                                 pfactor = pfactor,
+                                                 insPurchase = insPurchase
                                                  ),
-                                               tgrd=tgrd)[c("prodPrem","indemtot")]
+                                               tgrd = tgrd)[c("prodPrem", "indemtot")]
                                              )
                                            )
   }
