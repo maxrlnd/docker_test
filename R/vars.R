@@ -77,8 +77,8 @@ if(use.forage){
 
 # Drought action var's
 drought.action = ifelse(1:5 %in% act.st.yr:act.end.yr, 1, 0)
-calf.loss <- ifelse(drought.action==1,2,0) 
-calf.wt.adj <- ifelse(drought.action==1,-0.1,0)
+calf.loss <- ifelse(drought.action==1, 2, 0) 
+calf.wt.adj <- ifelse(drought.action==1, -0.1, 0)
 
 # Wean weights
 # make this constant??

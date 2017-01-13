@@ -19,10 +19,6 @@
 
 # Source functions
 source("R/load.R")
-source("R/costs_revenues_functions.R")
-source("R/vars_functions.R")
-source("R/insurance_functions.R")
-source("R/assets_outcomes_functions.R")
 source("R/support_functions.R")
 source("R/sim_run.R")
 
