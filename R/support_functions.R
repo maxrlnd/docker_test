@@ -32,7 +32,7 @@ getSimVars = function(random.starts = FALSE,
                       random.coverage = FALSE,
                       random.acres = FALSE,
                       random.productivity = FALSE,
-                      drought.adaptation.cost.factor = 1){
+                      adpt.intensity.factor = 1){
   
   "
   Note that this will default to the excel 
@@ -47,7 +47,7 @@ getSimVars = function(random.starts = FALSE,
   clv: Coverage level of insurance
   acres: Size of ranching operation. Modeled to only impact the insurance premium/payout.
   pfactor: Productivity factor relative to other farms in the grid. Relevant only to insurance premium/payout.
-  drought.adaptation.cost.factor: Adjusts the impact of the low forage potential on costs of adaptation.
+  adpt.intensity.factor: Adjusts the impact of the low forage potential on costs of adaptation.
   
   "
   options(warn = -1) # doesn't seem to get rid of warnings...
@@ -87,10 +87,10 @@ getSimVars = function(random.starts = FALSE,
   
   # Drought action var's
   assign("drought.action", ifelse(1:5 %in% act.st.yr:act.end.yr, 1, 0), envir = simvars)
-  assign("calf.loss", ifelse(get("drought.action", simvars) == 1, 2, 0), envir = simvars)
+  assign("calf.loss", ifelse(get("drought.action", simvars) == 1, 2, 0), envir = simvars)  # 
   assign("calf.wt.adj", ifelse(get("drought.action", simvars) == 1, -0.1, 0), envir = simvars)
   detach(constvars)
-  assign("drought.adaptation.cost.factor", drought.adaptation.cost.factor, envir = simvars)
+  assign("adpt.intensity.factor", adpt.intensity.factor, envir = simvars)
   
   ## Wean weights
   # make this constant??
@@ -886,6 +886,11 @@ CalculateDaysAction <- function(act.st.yr, act.st.m, act.end.yr, act.end.m, drou
   days.act.vect
 }
 
+CalculateAdaptationIntensity <- function(adpt.intensity.factor, forage.potential) {
+  drght.act.adj <- ifelse(forage.potential >= 1, 0, (1 - forage.potential) * adpt.intensity.factor)
+  drght.act.adj <- ifelse(drght.act.adj > 1, 1, drght.act.adj)  # putting a ceiling of this variable at 1 (no more than 100% of drought action)
+  drght.act.adj
+}
 
 # Costs and Revenues ------------------------------------------------------
 # Baseline Costs and Revenues
@@ -914,29 +919,31 @@ CalculateBaseOpCosts <- function(herd, cow.cost) {
 } 
 
 # Option 1: Buy feed
-CalculateFeedCost <- function(kHayLbs, kOthLbs, p.hay,p.oth, days.feed, herd) {
+CalculateFeedCost <- function(hay.ration, oth.ration, p.hay, p.oth, intens.adj, days.act, herd) {
   "
   Function: CalculateFeedCost
   Description: Calculating the costs of purchasing additional feed
   
   Inputs:
-  kHayLbs = Number of pounds of additional hay needed for each cow each day (pounds/head/day).  (Source: UNKNOWN)
+  hay.ration = Number of pounds of additional hay needed for each cow each day (pounds/head/day).  (Source: UNKNOWN)
   p.hay = Price of hay ($/ton). User input.
-  kOthLbs = Number of pounds of additional other feed needed for each cow each day (pounds/head/day). (Source: UNKNOWN)
+  oth.ration = Number of pounds of additional other feed needed for each cow each day (pounds/head/day). (Source: UNKNOWN)
   p.oth = Price of other feed ($/ton). Currently not a user input. Does not come into play since the model assumes only feeding hay
-  days.feed = Number of days additional feed is needed. Generally, equal to days.act. (days)
+  intens.adj = scalar of drought action. If forage potential is above 1 (no drought), then this variable goes to 0 (no adaptation). 
+    The variable has a maximum of 1, which assumes that drought actions are parameterized at full forage replacement for the full herd  
+  days.act = days of feeding (days)
   herd = Size of herd (head of cows, does not include calves)
   
   Outputs:
   cost.feed = Additional costs to feed the herd over the remainder of the season ($/year)
   "
   # Calculate cost per cow per day * days of feed for the year * number of cows in the herd
-  feed.cost <- (kHayLbs / 2000 * p.hay + kOthLbs / 2000 * p.oth) * days.feed * herd
+  feed.cost <- intens.adj * days.act * herd * (hay.ration / 2000 * p.hay + oth.ration / 2000 * p.oth) 
   return(feed.cost)
 }
 
 # Option 2: Rent Pasture 
-CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days.rent, max.wt, cow.wt, calf.wt, herd) {
+CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days.rent, max.wt, cow.wt, calf.wt, intens.adj, days.act, herd) {
   "
   Function: CalculatePastureRentCost
   Description: Calculates the costs of renting pasture and trucking pairs
@@ -951,30 +958,35 @@ CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days
   max.wt = Maximum weight per truck (pounds)
   cow.wt = Average cow weight (pounds)
   calf.wt = Average 'current' weight of calves before trucking to rented pasture (pounds)
+  intens.adj = Adjusts pasture rental by intensity of drought. In this case it 
+    adjusts the proportion of the herd that is transported to rented pasture
   herd = Size of herd (head of cows, does not include calves)
-  loan.int = interest rate for borrowed money (%/year)
+  
   
   Outputs:
   cost.rentpast = Total costs of using renting pasture including transport costs ($/year)
   "
+  # Proportion of herd going to rented pasture
+  herd.to.rental <- herd * intens.adj
+  
   # Calculating number of trucks needed to truck pairs to pasture and to truck cows home (without calves)
-  n.trucks.past <- ceiling(herd / ceiling(max.wt / (cow.wt + calf.wt)))
-  n.trucks.home <- ceiling(herd / ceiling(max.wt / cow.wt))
+  n.trucks.past <- ceiling(herd.to.rental / ceiling(max.wt / (cow.wt + calf.wt)))
+  n.trucks.home <- ceiling(herd.to.rental / ceiling(max.wt / cow.wt))
   
   # Cost per herd of trucking pairs to pasture and trucking cows back home
-  tot.truck.cost <- n.miles * truck.cost * n.trucks.past + n.miles * truck.cost * n.trucks.home
+  tot.truck.cost <- n.miles * truck.cost * (n.trucks.past + n.trucks.home)
   
   # Cost of renting pasture
-  tot.past.rent <- past.rent / 30 * days.rent * herd
+  tot.past.rent <- past.rent / 30 * days.act * herd.to.rental
   
   # Total costs including transport, rent, and other costs
-  cost.rentpast.woint <- ifelse(days.rent > 0, tot.truck.cost + tot.past.rent + oth.cost, 0)
-  cost.rentpast <- ifelse(days.rent > 0, cost.rentpast.woint * (1 + loan.int / 365 * days.rent), 0)  # I think we should not include interest here unless it is also included in other adaptation costs
+  cost.rentpast <- tot.truck.cost + tot.past.rent + oth.cost
+  #cost.rentpast <- ifelse(days.rent > 0, cost.rentpast.woint * (1 + loan.int / 365 * days.rent), 0)  # I think we should not include interest here unless it is also included in other adaptation costs
   
   return(cost.rentpast)
 }
 
-CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, calf.sell, herd, p.wn) {
+CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, calf.sell, herd, p.wn, intens.adj) {
   "
   CalculateRentPastRevenue 
   Description: Calculates calf sale revenues after trucking pairs to rented pastures
@@ -986,18 +998,20 @@ CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, cal
   wn.wt = Average weight at weaning (pounds)
   p.wn = Expected sale price of calves ($/pound)
   herd = Size of herd (head of cows, does not include calves)
+  intens.adj
   
   Outputs:
   rev.rentpast = Change in revenue due to mortality and weight loss from trucking to rented pasture
   "
   # Number of calves sold after accounting for calf mortality in transport 
-  calf.sales.num <- herd * calf.sell - calf.loss
+  calf.sales.rent <- herd * intens.adj * calf.sell - calf.loss
+  calf.sales.home <- herd * (1 - intens.adj) * calf.sell
   
   # Selling weight after accounting for weight loss due to transport stress
-  sell.wt <- expected.wn.wt * (1 + calf.wt.adj)
+  sell.wt.rent <- expected.wn.wt * (1 + calf.wt.adj)
   
   # Expected calf sale revenues
-  rev.rentpast <- calf.sales.num * sell.wt * p.wn
+  rev.rentpast <- p.wn * (calf.sales.rent * sell.wt.rent + calf.sales.home * expected.wn.wt)
   rev.rentpast
 }
 
@@ -1398,9 +1412,8 @@ sim_run <- function(pars) {
   
   # Calculate vector of days of drought adaptation action for each year
   forage.potential <- sapply(yyr, foragePWt, stgg = stgg, zonewt = zonewt, stzone = stzone) 
-  drght.act.adj <- ifelse(forage.potential >= 1, 0, (1 - forage.potential) * drought.adaptation.cost.factor)
-  drght.act.adj <- ifelse(drght.act.adj > 1, 1, drght.act.adj)  # putting a ceiling of this variable at 1 (no more than 100% of drought action)
-  days.act <- CalculateDaysAction(act.st.yr, act.st.m, act.end.yr, act.end.m, drought.action) * drght.act.adj  # adjusts the days of action by the severity of drought
+  intens.adj <- CalculateAdaptationIntensity(adpt.intensity.factor, forage.potential)
+  days.act <- CalculateDaysAction(act.st.yr, act.st.m, act.end.yr, act.end.m, drought.action)
   
   ## Option 0: No adaptation ##
   # drought revenues
@@ -1423,10 +1436,9 @@ sim_run <- function(pars) {
   
   
   ## Option 1: Buy additional feed
-  days.feed <- days.act  # Assumes that feeding days are equivalent to drought adaptation action days
   
   # Calculate operating costs including costs to buy feed
-  feed.cost <- CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, days.feed, herd) + base.op.cost
+  feed.cost <- CalculateFeedCost(hay.ration, oth.ration, p.hay, p.oth, intens.adj, days.act, herd) + base.op.cost
   
   out.feed <- OptionOutput(t = t,
                            opt = "feed", 
@@ -1450,7 +1462,8 @@ sim_run <- function(pars) {
                                                 calf.wt.adj = calf.wt.adj,
                                                 calf.sell = calf.sell, 
                                                 herd = herd, 
-                                                p.wn = p.wn)
+                                                p.wn = p.wn,
+                                                intens.adj = intens.adj)
   
   # Calculate operating costs to truck pairs to rented pasture. Assumes base operating cost is unchanged.
   cost.op.rentpast <- CalculateRentPastCost(n.miles = n.miles, 
@@ -1461,7 +1474,9 @@ sim_run <- function(pars) {
                                             max.wt = max.wt,
                                             cow.wt = cow.wt, 
                                             calf.wt = calf.wt, 
-                                            herd = herd) + base.op.cost
+                                            herd = herd,
+                                            intens.adj = intens.adj,
+                                            days.act = days.act) + base.op.cost
   
   out.rentpast <- OptionOutput(t = t,
                                opt = "rentpast",
