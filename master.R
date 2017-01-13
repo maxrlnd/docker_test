@@ -14,24 +14,22 @@
 
 # # Clear environment
 # # prevent from erasing custom location/insurance selection if set
-# rm(list = ls()[!ls() %in% c("target.loc", "autoSelect.insurance",
-#                             "random.starts", "masterRunner", "runs")])
+ rm(list = ls()[!ls() %in% c("target.loc", "autoSelect.insurance",
+                             "random.starts", "masterRunner", "runs")])
 
 # Source functions
 source("R/load.R")
 source("R/support_functions.R")
-source("R/sim_run.R")
 
 #### Setup ####
 
-# Populate a new environment with
-# station gauge info
+# Populate a new environment with station gauge info.
 # Default location is CPER site
 getStationGauge()
 
-# Populate a new environment with
-# constant (user) variables
+# Populate a new environment with constant (user) variables
 getConstantVars()
+
 
 #### Generate Model Inputs ####
 generateRunParams <- function(acres.param = 3000){
@@ -43,6 +41,21 @@ generateRunParams <- function(acres.param = 3000){
   return(append(append(as.list(station.gauge), as.list(constvars)), as.list(simvars)))
 }
 
+
+
+#### Non-parallel model run ####
+runs <- 2
+simruns <- rlply(runs, generateRunParams(acres.param = 600))  # list of simulation variables for runs
+list.index <- seq_along(simruns)  # creating an index of the list number to store in the sim_outcomes and match back with the simruns variables
+for (i in 1:runs) {
+  simruns[[i]]$sim.index <- list.index[i] 
+}
+outs <- lapply(simruns, sim_run)
+outs <- do.call("rbind", outs)
+
+
+
+#### Parallelized model run #### 
 runs <- 10
 simruns <- rlply(runs, generateRunParams(acres.param = 600))  # list of simulation variables for runs
 list.index <- seq_along(simruns)  # creating an index of the list number to store in the sim_outcomes and match back with the simruns variables
@@ -50,7 +63,6 @@ for (i in 1:runs) {
   simruns[[i]]$sim.index <- list.index[i] 
 }
 
-#### Parallelize simulation runs #### 
 sfInit(parallel = TRUE, cpus = 4)
 sfExportAll(debug = TRUE)
 
@@ -66,8 +78,10 @@ parouts <- sfLapply(simruns, sim_run)
 parouts <- do.call("rbind", parouts)
 sfStop()
 
-save(parouts, file = "output/simulation_results_baseline.RData")
-save(simruns, file = "output/simulation_inputs_baseline.RData")
+save(parouts, file = "output/simulation_results_baseline10.RData")
+save(simruns, file = "output/simulation_inputs_baseline10.RData")
+
+
 
 #### Summary ####
 # quick summary of output for final year networth by option and insurance
@@ -99,6 +113,7 @@ plot(d)
 
 parouts %>% filter(opt == "noadpt", yr == 5) %>% select(opt, ins, net.wrth) ->  noadpt.results
 write.csv(noadpt.results, file="output/noadapt_montecarlo.csv")
+
 #### TEST VISUALIZATION ####
 
 save(sim_outcomes,"misc/demo_sim_100.RData")
