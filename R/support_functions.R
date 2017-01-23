@@ -1649,3 +1649,9 @@ sim_run <- function(pars) {
     do.call(`=`, list(lhs[[i]], rhs[[i]]), envir=frame)
   return(invisible(NULL))
 }
+
+ 
+act.rainfall.adjustment <- function(f) {
+  forage.potential <- foragePWt(stgg, zonewt, stzone, styear)
+}
+
