@@ -219,16 +219,16 @@ getStationGauge<-function(target.loc="CPER"){
   if(target.loc=="CPER"){ # Use COOP sites or CPER: Default to CPER
 
     ## Zone Weights
-    stzone=3 # state forage zone
+    stzone <- 3 # state forage zone
     # multiple operations since reading from
     # external file that may be replaced
-    zonewt=read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx",sheet="Drought Calculator",skip = 5)[5:8,]
-    zonewt=sapply(data.frame(zonewt[,which(names(zonewt)=="Jan"):which(names(zonewt)=="Dec")]),as.numeric)
+    zonewt <- read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx", sheet = "Drought Calculator", skip = 5)[5:8, ]
+    zonewt <- sapply(data.frame(zonewt[, which(names(zonewt) == "Jan"):which(names(zonewt) == "Dec")]), as.numeric)
 
     ## Station precip gauge
-    stgg=data.frame(read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx","CPER Precip",skip = 1))
-    stgg=stgg[,-which(names(stgg) %in% c("TOTAL","Var.15"))]
-    stgg=stgg[stgg$Year %in% c(1948:2016,"AVE"),]
+    stgg <- data.frame(read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx", "CPER Precip", skip = 1))
+    stgg <- stgg[, -which(names(stgg) %in% c("TOTAL", "Var.15"))]
+    stgg <- stgg[stgg$Year %in% c(1948:2016, "AVE"), ]
 
     ## Target grid cell
     tgrd = 25002  # target grid cell - CPER default
@@ -712,7 +712,7 @@ insAlloc<-function(fpwt, niv = 2, by.rank = T, max.alloc=0.6, min.alloc = 0.1){
 
 # Forage Functions -------------------------------------------------------
 
-foragePWt<-function(stgg,zonewt,stzone,styear,decision=F){
+foragePWt <- function(stgg, zonewt, stzone, styear, decision = FALSE){
 
   "
   Returns a weight representing
@@ -763,28 +763,28 @@ foragePWt<-function(stgg,zonewt,stzone,styear,decision=F){
   "
 
   ## Subset zone weights and prep index
-  zonewt=zonewt[stzone,] # subset weights by station/grid zone
-  yprecip=stgg[stgg[,1]==styear,][,-1] # monthly precip amounts for start year
-  # ave=stgg[stgg$Year=="AVE",][,-1] # average precip since 1948
-  ave=stgg[nrow(stgg),][,-1] # average precip since 1948
-  pidx=yprecip/ave # Monthly precip "index"
+  zonewt <- zonewt[stzone, ]  # subset weights by station/grid zone
+  yprecip <- stgg[stgg[, 1] == styear, ][, -1]  # monthly precip amounts for start year
+  # ave <- stgg[stgg$Year == "AVE", ][, -1]  # average precip since 1948
+  ave <- stgg[nrow(stgg), ][, -1]  # average monthly precip since 1948
+  pidx  <- yprecip / ave # Monthly precip "index"
 
   if(decision){ #"decision making under uncertainty" mode
 
     ## Group years in period of record by monthly precip
-    cper=stgg[1:which(stgg$Year==2015),] # subset by period 1948-2015
-    cper_clust=pamk(cper[,-1]) # Find optimal groups of years, k = 2-10
-    yy_group=cper_clust[[1]]$clustering[which(cper$Year==styear)] # Group membership for target year
-    yy_ave=colMeans(cper[which(cper_clust[[1]]$clustering==yy_group),][,-1]) # Group mean vector
-    yidx=yy_ave/ave # Expected index values for year (group mean vector / long-term average)
+    cper <- stgg[1:which(stgg$Year == 2015),] # subset by period 1948-2015
+    cper_clust <- pamk(cper[, -1]) # Find optimal groups of years, k = 2-10
+    yy_group <- cper_clust[[1]]$clustering[which(cper$Year == styear)] # Group membership for target year
+    yy_ave <- colMeans(cper[which(cper_clust[[1]]$clustering == yy_group), ][, -1]) # Group mean vector
+    yidx <- yy_ave/ave # Expected index values for year (group mean vector / long-term average)
 
     # Generate forage potential weights
     # not sure why the rows are subsetting as lists!
-    foragewt=unlist(c((zonewt*pidx)[1:dr_start],(zonewt*yidx)[(dr_start+1):12]))
+    foragewt <- unlist(c((zonewt * pidx)[1:dr_start], (zonewt * yidx)[(dr_start + 1):12]))
 
   }else{ #default: long-term precip & zone weights
 
-    foragewt=zonewt*pidx
+    foragewt = zonewt * pidx
 
   }
 
