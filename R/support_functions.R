@@ -236,39 +236,39 @@ getStationGauge<-function(target.loc="CPER"){
   }else{ #Custom location specified (COOP site and MLRA forage potential weights)
 
     ## Fetch data
-    wrc.state="co" # For pulling COOP sites & mlra forage weights
+    wrc.state <- "co" # For pulling COOP sites & mlra forage weights
     load("data/coops.RData") # Shortcut for sourcing 'R/coop_scraper.R'
     # source("R/coop_scraper.R") # the long way
-    mlra=readOGR("data","mlra_v42") # load MLRA zone data
-    target.coop=coops[[which(names(coops)==target.loc)]]
+    mlra <- readOGR("data", "mlra_v42") # load MLRA zone data
+    target.coop <- coops[[which(names(coops) == target.loc)]]
 
     ## Zone weights
-    mlra.idx=COOP_in_MRLA(target.coop) # MLRA index
-    zonewt=getMRLAWeights(wrc.state) # zone weights
-    stzone=which(zonewt[,1]==mlra.idx) # not a great workaround...should fix 'foragePwt' function instead
-    zonewt=zonewt[,-1] # not a great workaround...should fix 'foragePwt' function instead
+    mlra.idx <- COOP_in_MRLA(target.coop) # MLRA index
+    zonewt <- getMRLAWeights(wrc.state) # zone weights
+    stzone <- which(zonewt[, 1] == mlra.idx) # not a great workaround...should fix 'foragePwt' function instead
+    zonewt <- zonewt[, -1] # not a great workaround...should fix 'foragePwt' function instead
 
     ## Station precip gauge
-    stgg=target.coop$precip
-    stgg=rbind(stgg,rep(NA,ncol(stgg)))
-    stgg[nrow(stgg),][,1]="AVE"
-    stgg[nrow(stgg),][,-1]=colMeans(stgg[-nrow(stgg),][,-1],na.rm=T)
+    stgg <- target.coop$precip
+    stgg <- rbind(stgg, rep(NA, ncol(stgg)))
+    stgg[nrow(stgg), ][, 1] <- "AVE"
+    stgg[nrow(stgg), ][, -1] <- colMeans(stgg[-nrow(stgg), ][, -1],na.rm = TRUE)
 
     ## Target grid cell
-    tgrd = target.coop$grid  # target grid cell - custom site
+    tgrd <- target.coop$grid  # target grid cell - custom site
 
   }
 
   # Write vars to new env
-  station.gauge<<-new.env()
-  assign("zonewt",zonewt,envir=station.gauge)
-  assign("stzone",stzone,envir=station.gauge)
-  assign("stgg",stgg,envir=station.gauge)
-  assign("tgrd",tgrd,envir=station.gauge)
+  station.gauge <<- new.env()
+  assign("zonewt", zonewt, envir = station.gauge)
+  assign("stzone", stzone, envir = station.gauge)
+  assign("stgg", stgg , envir = station.gauge)
+  assign("tgrd", tgrd, envir = station.gauge)
 
   # SpatialPoints representation of target gridcell
   # for fetching insurance results
-  assign("tgrd_pt",rastPt[rastPt@data$layer == tgrd, ],envir=station.gauge)
+  assign("tgrd_pt", rastPt[rastPt@data$layer == tgrd, ],envir = station.gauge)
 
 }
 
@@ -411,7 +411,7 @@ droughtCalculator <- function(yy, clv, acres, pfactor, insPurchase, mask = NULL)
   #   }
 
   ##Get subsidy rate based on coverage level
-  sbdy = covsub[coverage.trigger == clv, subsidy.rate]
+  sbdy <- covsub[coverage.trigger == clv, subsidy.rate]
 
   ##Set up insurance purchase vector
   ip = rep(0, 11)
@@ -832,7 +832,7 @@ COOP_in_MRLA<-function(coop){
   coop site is located.
   "
 
-  coop.pt=SpatialPoints(t(rev(coop$loc)),proj4string=CRS(proj4string(mlra)))
+  coop.pt <- SpatialPoints(t(rev(coop$loc)), proj4string = CRS(proj4string(mlra)))
   # fwt=forage_mlra[forage_mlra$MLRA==(coop.pt %over% mlra)$MLRARSYM,][,-1]
   return(as.numeric(as.character(((coop.pt %over% mlra)$MLRARSYM))))
 
@@ -1629,7 +1629,7 @@ sim_run <- function(pars) {
 # Utility Functions -------------------------------------------------------
 
 ':=' <- function(lhs, rhs) {
-  # Decription: Magical function that allows you to return more than one variable
+  # Description: Magical function that allows you to return more than one variable
   #  from other functions.
   # Code from http://stackoverflow.com/questions/1826519/function-returning-more-than-one-value
 
