@@ -789,9 +789,9 @@ foragePWt<-function(stgg,zonewt,stzone,styear,decision=F){
   }
 
   # Compute annual forage potential weight for zone
-  stfwt=sum(foragewt)
+  forage.potential <- sum(foragewt)
 
-  return(stfwt)
+  forage.potential
 
 }
 
@@ -861,11 +861,11 @@ forageWeights2Intervals<-function(fpwt){
 
 # Calf Weight Functions ---------------------------------------------------
 
-calfDroughtWeight<-function(expected.wn.wt,calf.wt,stfwt){
-  return(calf.wt+(stfwt*(expected.wn.wt-calf.wt)))
+calfDroughtWeight<-function(expected.wn.wt, calf.wt, forage.potential){
+  return(calf.wt + (forage.potential * (expected.wn.wt - calf.wt)))
 }
 
-calfWeanWeight<-function(styr){
+calfWeanWeight <- function(styr){
 
   "
   Compute calf weights based on station/grid cell
@@ -881,21 +881,21 @@ calfWeanWeight<-function(styr){
   `calf_weights_ann`.
   "
 
-  if(!exists("station.gauge",envir=globalenv())){
+  if(!exists("station.gauge", envir = globalenv())){
     stop("Station gauge information is required.")
   }
 
-  if(!exists("constvars",envir=globalenv())){
+  if(!exists("constvars", envir = globalenv())){
     stop("Constant variable information is required.")
   }
 
   attach(station.gauge)
   attach(constvars)
-  forage.weights=unlist(lapply(seq(styr,styr+4),function(i){
-    foragePWt(stgg,zonewt,stzone,i)
+  forage.weights = unlist(lapply(seq(styr, styr + 4),function(i){
+    foragePWt(stgg, zonewt, stzone, i)
   }))
-  calf_weights_ann=unlist(lapply(forage.weights,function(i){ # annual calf weights
-    calfDroughtWeight(expected.wn.wt,calf.wt,i)
+  calf_weights_ann = unlist(lapply(forage.weights, function(i){ # annual calf weights
+    calfDroughtWeight(expected.wn.wt, calf.wt, i)
   }))
   detach(station.gauge)
   detach(constvars)
