@@ -1416,15 +1416,6 @@ sim_run <- function(pars) {
     rma.ins = cbind(yyr[1]:yyr[1]+(t-1),matrix(0,t,2))
   }
 
-  # Base Values: Indicate average year costs and revenues without insurance
-  base.cost <- base.op.cost  # assumes without insurance, cow costs are the only costs for the producer
-  base.rev <- base.sales  # assumes that without insurance, calf sales are only revenue. INTEREST MUST BE TAKEN INTO ACCOUNT.
-  base.prof <- base.rev - base.cost
-
-  base.cost.ins <- base.op.cost + rma.ins[,2] # increment base operating costs with producer premium
-  #base.rev.ins <- base.sales + rma.ins[,3] # increment base revenue with indemnity
-  #base.prof.ins <- base.rev.ins - base.cost.ins
-
   # Base Cow Assets: No sell/replace
   base.assets.cow <- CalcCowAssets(t = t, herd = herd, p.cow = p.cow)
 
