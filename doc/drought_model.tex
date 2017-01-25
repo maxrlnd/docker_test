@@ -18,14 +18,16 @@
 %\section{}
 %\subsection{}
 
+\section{Overview}
+
 
 \section{Indices}
 \begin{itemize}
 \item Time is indexed by $t$, units in years. Variables with this index are allowed to vary by year.
 \item Insurance decision is indexed by $i$, where $i=1$ corresponds to the purchase of insurance and $i=0$
-\item Revenues and costs are indexed by the presence of drought and the drought adaptation measure: 
+\item Revenues and costs are indexed by $d$, the presence of drought and the drought adaptation measure where: 
 	\begin{itemize}
-	\item base (base),
+	\item base (base costs),
 	\item nd (no drought, equivalent to base),
 	\item noadpt (drought, no adaptation), 
 	\item feed (drought, buy feed), 
@@ -131,10 +133,15 @@ The model is currently set for a default to the Central Plans Experimental Range
 
 \section{Profit Model}
 \begin{equation}
-\pi_t = R_{d,t} - C_{d,t}
+\pi_t = R_{total,d,i,t} - C_{total,d,i,t}
 \end{equation}
 
 \subsection{Revenues}
+Total Revenue Function:
+\begin{equation}
+R_{total,d,i,t} = R_{d,t} + indem_{i,t}
+\end{equation}
+
 Base sales: 
 \begin{itemize}
 \item Function: \verb!CalculateExpSales! 
@@ -149,7 +156,7 @@ R_{base, t} = \phi h * \bar{w} * p_t
 \subsection{Costs}
 Total Cost Function:
 \begin{equation}
-C_{total,t} = C_{base, t} + iprem_t
+C_{total,t} = C_{d, t} + iprem_{i,t} 
 \end{equation}
 
 
@@ -399,9 +406,9 @@ R_{sell, 5} &= R_{base, 5}
 Calculating assets and net worth.
 
 \begin{itemize}
-\item Function: CapitalAssets
+\item Function: \verb!CalcCowAssets!
 	\begin{itemize}
-	\item Description: Caluclated the cow assets for each year.
+	\item Description: Calculates the cow assets for each year.
 	\item Inputs: \verb!herd!, $p_{cow}$ = \verb!p.cow!, \verb!sell.year! (year the herd is sold. single numeric value. default is year 1.), \verb!replace.year! (year the herd is replaced. single numeric value. default is year 3).
 	\item Output: $A_{cow}$ = \verb!cow.assets! (6x1 vector of cow assets for each year, including t=0)
 	\end{itemize}
@@ -422,23 +429,57 @@ h * p_{cow}, & \text{if  } t < t_{sell},  t > t_{replace}, \text{or } t_{sell} =
 \end{equation}
 
 \begin{itemize}
-\item Function: CalcCapSalesPurch
+\item Function: \verb!CalcCapSalesPurch!
 	\begin{itemize}
-	\item Description: Calculates vectors of capital sales and capital purchases from changes in assets.cow. Assumes sale/purchase of cows is only capital sales/purchase
+	\item Description: Calculates vectors of capital sales and capital purchases from changes in cow assets and normal culling rates. 
   	\item Inputs: \verb!assets.cow! (tx1 vector of the value of cow assets each year)
-  	\item Outputs: \verb!cap.sales! (tx1 vector of capital sales for each year), \verb!cap.purch! (tx1 vector of capital purchases for each year)
+  	\item Outputs: $S_t$ = \verb!cap.sales! (tx1 vector of capital sales for each year), $P_t$ = \verb!cap.purch! (tx1 vector of capital purchases for each year)
+  	\item Assumptions: Assumes sale/purchase of cows is only capital sales/purchase. Assumes normal culling is counted as a capital sales (\textit{Is this correct?}.
 	\end{itemize}
 \end{itemize}
 
+\begin{equation}
+S_t =
+\begin{cases}
+A_{t-1} - A_{t}, & \text{if  } A_t < A_{t-1} \\
+n_{cull} * p_{cow}, & \text{if } A_t \geq A_{t-1} \text{ and } A_{t-1} \ne 0 \\
+0, & \text{if } A_t \ge A_{t-1} \text{ and } A_{t-1} = 0
+\end{cases} 
+\end{equation}
+
+\begin{equation}
+P_t =
+\begin{cases}
+A_t - A_{t-1}, & \text{if } A_t > A_{t-1} \\
+0, & \text{if } A_t \le A_{t-1}
+\end{cases} 
+\end{equation}
+
 \begin{itemize}
-\item Function: CalcCapTaxes
+\item Function: \verb!CalcCapTaxes!
 	\begin{itemize}
 	\item Description: Calculates capital taxes on herd sales. Tax treatment is different depending on whether herd is sold and replaced by the end of the third year or if the herd is sold and not replaced during a drought emergency.
-	\item Inputs: \verb!cap.sales!, \verb!cap.purch!, \verb!cap.tax.rate!, \verb!drought.emrg! (binary variable to indicate whether drought emergency was in place when the herd was sold currently set to a default of 1. This only matters if the herd is sold and not replaced.)
-	\item Outputs: \verb!cap.taxes! (5x1 vector of capital taxes)
+	\item Inputs: \verb!cap.sales!, \verb!cap.purch!, $r_{cap}$ = \verb!cap.tax.rate!, \verb!drought.emrg! (binary variable to indicate whether drought emergency was in place when the herd was sold currently set to a default of 1. This only matters if the herd is sold and not replaced.)
+	\item Outputs: $\tau$ = \verb!cap.taxes! (5x1 vector of capital taxes)
 	\item Assumptions: Assumes that the entire herd is sold and replaced at the same rate. Not sure how the tax code treats changes in prices. This abstracts away from that. The price dynamics could matter here, but for now we are leaving them out.
 	\end{itemize}
 \end{itemize}
+
+Without a federally declared drought disaster:
+\begin{equation}
+\tau_t = 
+\begin{cases}
+0, & \text{if cows are replaced within two years}  \\
+S_t * r_{tax}, & \text{if cows are not replaced within two years}
+\end{cases}
+\end{equation}
+
+With a federally declared drought disaster, capital taxes are delayed one year:
+\begin{align}
+\tau_t &= 0 \\
+\tau_{t+1} &= S_t * r_{tax}
+\end{align}
+
 
 
 \section{Insurance Model}
@@ -561,6 +602,21 @@ Option "autoSelect.insurance":
 	\item Description: Magical function that allows you to return more than one variable from other functions. Code from http://stackoverflow.com/questions/1826519/function-returning-more-than-one-value
 	\end{itemize}
 \end{itemize}
+
+\section{Simulation Run}
+Function: \verb!sim_run!
+\begin{enumerate}
+\item Load \verb!insurance_base.RData!
+\item Calculate base sales and operating costs with average weaning weights (Functions: \verb!CalculateExpSales!, \verb!CalculateBaseOpCosts!)
+\item Compute insurance premiums and indemnities (Functions: \verb!insMat!)
+\item Calculate base cow assets and capital taxes (Functions: \verb!CalcCowAssets, CalcCapSalePurch, CalcCapTaxes!)
+\item Calculate outputs without a drought (Function: \verb!OptionOutput!)
+\item Calculate forage potential vector (Function: \verb!foragePWt!)
+\item Calculate drought action adjustment (Function: \verb!CalculateAdaptationIntensity!)
+\item Calculate days of action (Function: \verb!CalculateDaysActions!)
+\item Calculate expected sales revenues without adaptation, thus weaning weight is affected by forage potential (Function: \verb!CalculateExpSales!)
+\end{enumerate}
+
 
 \section{Limitations}
 Currently not equipped to handle multi-year droughts. This can be changed. 
