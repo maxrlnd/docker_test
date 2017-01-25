@@ -949,6 +949,27 @@ CalculateDaysAction <- function(act.st.yr, act.st.m, act.end.yr, act.end.m, drou
   days.act.vect
 }
 
+CalculateAdaptationIntensity <- function(forage.potential, drought.adaptation.cost.factor = 1) {
+  " Description: Takes forage potential and an adaptation intensity factor to 
+    provide a scalar of drought action. If forage potential is above 1 (no drought), 
+    then this variable goes to 0 (no adaptation). 
+	  Inputs: 
+      adpt.intensity.factor (parameter that scales adaptation actions to reflect 
+        actual adaptation behavior. Currently defaults to 1 which assumes a 
+        one-to-one ratio of drops in forage percentage to need for forage 
+        replacement.)
+      forage.potential (the percentage of average forage produced in a year 
+        based on rainfall. See forage potential functions.)
+    Output: drght.act.adj (scales action to account for forage potential's 
+      deviation from the norm.)
+    Assumptions: The variable has a maximum of 1, which assumes that drought 
+      actions are parameterized at full forage replacement for the full herd.
+  "
+  drght.act.adj <- ifelse(forage.potential >= 1, 0, (1 - forage.potential) * drought.adaptation.cost.factor)
+  drght.act.adj <- ifelse(drght.act.adj > 1, 1, drght.act.adj)  # putting a ceiling of this variable at 1 (no more than 100% of drought action)
+  drght.act.adj
+}
+
 
 # Costs and Revenues ------------------------------------------------------
 # Baseline Costs and Revenues
@@ -1452,8 +1473,7 @@ sim_run <- function(pars) {
 
   # Calculate vector of days of drought adaptation action for each year
   forage.potential <- sapply(yyr, foragePWt, stgg = stgg, zonewt = zonewt, stzone = stzone)
-  drght.act.adj <- ifelse(forage.potential >= 1, 0, (1 - forage.potential) * drought.adaptation.cost.factor)
-  drght.act.adj <- ifelse(drght.act.adj > 1, 1, drght.act.adj)  # putting a ceiling of this variable at 1 (no more than 100% of drought action)
+  drght.act.adj <- CalculateAdaptationIntensity(forage.potential)
   days.act <- CalculateDaysAction(act.st.yr, act.st.m, act.end.yr, act.end.m, drought.action) * drght.act.adj  # adjusts the days of action by the severity of drought
 
   ## Option 0: No adaptation ##
