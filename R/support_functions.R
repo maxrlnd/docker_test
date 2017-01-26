@@ -1282,12 +1282,10 @@ OptionOutput <- function(t, opt, nodrought = FALSE, rev.calf, rev.oth = NULL,
   #
   # Inputs:
   # t = Number of years
-  # opt = String to label option: "nodrght", "noadpt", etc.
+  # opt = String to label adaptation option: "nodrght", "noadpt", etc.
   # nodrought = OPTIONAL value. default is set to false. set to true for no drought option
   # rev.calf = tx1 vector of revenue from actual calf sales in years 1 through t
   # rev.oth = OPTIONAL tx1 vector of non-calf revenues (created to account for interest on sale of cows in year 1)
-  # int.invst = Interest rate on investments
-  # int.loan = Interest rate on loans
   # rma.ins = tx3 matrix of insurance year, premium, and payouts
   # cost.op = tx1 vector of operating costs for years 1 through t, including any adaptation costs
   # int.invst = interest rate on positive cash assets (savings)
