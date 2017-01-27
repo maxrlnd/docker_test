@@ -98,7 +98,6 @@ getSimVars = function(random.starts = FALSE,
   # (I only have this here because vectors can't be represented well in `constant_vars.csv`)
   assign("p.wn", c(1.31, 1.25, 1.25, 1.25, 1.25), envir = simvars)
 
-
   ## set target insurance years
   attach(simvars)
   assign("yyr", styr:(4 + styr), envir = simvars) # all five years
@@ -901,7 +900,7 @@ calfWeanWeight <- function(styr){
   detach(constvars)
 
   calf_weights_ann
-}˜
+}
 
 # Drought Adaptation Functions --------------------------------------------
 
@@ -973,7 +972,7 @@ CalculateAdaptationIntensity <- function(forage.potential, drought.adaptation.co
 
 # Costs and Revenues ------------------------------------------------------
 # Baseline Costs and Revenues
-CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn) {
+CalculateExpSales <- function(herd, wn.succ, calf.sell, wn.wt, p.wn) {
   "
   Function: CalculateExpSales
   Description: Calculates expected calf revenues for non-drought year
@@ -983,12 +982,14 @@ CalculateExpSales <- function(herd, calf.sell, wn.wt, p.wn) {
   calf.sell = Average percentage of calves sold (%)
   wn.wt = Average weight at weaning (pounds)
   p.wn = Expected sale price of calves ($/pound)
+  wn.succ = Vector of reproductive success percentages that measures how many
+    cows in the herd successfully get pregnant, give birth, and wean their calves
 
   Outputs:
   base.sales = Expected revenues from calf sales for a non-drought year
   "
 
-  base.sales <- herd * calf.sell * wn.wt * p.wn
+  base.sales <- (herd * wn.succ * calf.sell) * wn.wt * p.wn
   return(base.sales)
 }
 
@@ -1058,7 +1059,7 @@ CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days
   return(cost.rentpast)
 }
 
-CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, calf.sell, herd, p.wn) {
+CalculateRentPastRevenue <- function(herd, wn.succ, calf.sell, expected.wn.wt, calf.loss, calf.wt.adj, p.wn) {
   "
   CalculateRentPastRevenue
   Description: Calculates calf sale revenues after trucking pairs to rented pastures
@@ -1070,12 +1071,14 @@ CalculateRentPastRevenue <- function(expected.wn.wt, calf.loss, calf.wt.adj, cal
   wn.wt = Average weight at weaning (pounds)
   p.wn = Expected sale price of calves ($/pound)
   herd = Size of herd (head of cows, does not include calves)
+  wn.succ = Vector of reproductive success percentages that measures how many
+    cows in the herd successfully get pregnant, give birth, and wean their calves
 
   Outputs:
   rev.rentpast = Change in revenue due to mortality and weight loss from trucking to rented pasture
   "
   # Number of calves sold after accounting for calf mortality in transport
-  calf.sales.num <- herd * calf.sell - calf.loss
+  calf.sales.num <- (herd * wn.succ * calf.sell) - calf.loss
 
   # Selling weight after accounting for weight loss due to transport stress
   sell.wt <- expected.wn.wt * (1 + calf.wt.adj)
@@ -1420,8 +1423,10 @@ sim_run <- function(pars) {
   on.exit(detach(pars))
 
   # Calculate No-Drought Revenues from Calf Sales (aka base sales)
+  wn.succ <- AdjWeanSuccess(stgg, zonewt, stzone, styear, noadpt = FALSE, normal.wn.succ, t = t)
   base.sales <- unlist(lapply(1:t,function(i){
-    CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = expected.wn.wt, p.wn = p.wn[i])
+    CalculateExpSales(herd = herd, wn.succ = wn.succ[i], calf.sell = calf.sell, 
+                      wn.wt = expected.wn.wt, p.wn = p.wn[i])
   }))
 
   # Calculate No-Drought Operating Costs
@@ -1476,9 +1481,10 @@ sim_run <- function(pars) {
 
   ## Option 0: No adaptation ##
   # drought revenues
-  noadpt.wn.succ <- AdjWeanSuccess(stgg, zonewt, stzone, styear, noadpt = TRUE, expected.wn.succ)
+  noadpt.wn.succ <- AdjWeanSuccess(stgg, zonewt, stzone, styear, noadpt = TRUE, normal.wn.succ = normal.wn.succ, t = t)
   noadpt.rev.calf <- unlist(lapply(1:t, function(i){
-    CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = wn.wt[i], p.wn = p.wn[i])
+    CalculateExpSales(herd = herd, wn.succ = noadpt.wn.succ[i], calf.sell = calf.sell, 
+                      wn.wt = wn.wt[i], p.wn = p.wn[i])
   }))
 
   out.noadpt <- OptionOutput(t = t,
@@ -1523,6 +1529,7 @@ sim_run <- function(pars) {
                                                 calf.wt.adj = calf.wt.adj,
                                                 calf.sell = calf.sell,
                                                 herd = herd,
+                                                wn.succ = wn.succ,
                                                 p.wn = p.wn)
 
   # Calculate operating costs to truck pairs to rented pasture. Assumes base operating cost is unchanged.

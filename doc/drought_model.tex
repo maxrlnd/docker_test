@@ -21,6 +21,58 @@
 \section{Overview}
 
 
+\section{Simulation Variables}
+\begin{itemize}
+\item Function: \verb!getConstantVars!
+	\begin{itemize}
+	\item Description: Reads in constant variables into a \verb!constvars! environment using the file \verb!data/constant_vars.csv!.
+	\item Inputs: None
+	\item Outputs: \verb!constvars! environment
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\item Function: \verb!getSimVars!
+	\begin{itemize}
+	\item Description: Creates an environment of variables for simulations. Note that this defaults to the excel model variables 
+	\item Inputs: \verb!random.starts! (TRUE: Choose random year to start simulations, then years following are temporally sequential, FALSE: 2002 is the start year), \verb!use.forage! (TRUE: Calf weights without adaptation follow forage potential predictions), \verb!autoSelect.insurance! (TRUE: Choose optimal insurance coverage periods based on forage potential, FALSE: Insure 50\% for 3rd interval and 50\% for 5th interval), \verb!clv! (Coverage level of insurance), \verb!acres! (Size of ranching operation. Modeled to only impact the insurance premium/payout), \verb!pfactor! (Productivity factor relative to other farms in the grid. Relevant only to insurance premium/payout), \verb!drought.adaptation.cost.factor! (Adjusts the impact of the low forage potential on costs of adaptation.)
+	\item Outputs: 
+	\end{itemize}
+\end{itemize}
+
+\begin{enumerate}
+\item Ensures baseline environments exists (\verb!constvars! and \verb!station.gauge!)
+\item Create simvars environment
+\item Set start year: Randomly pick a year from 1948 to 2010 if \verb!random.starts! is true (otherwise set at 2002)
+\item Get calf weaning weights. If use.forage=TRUE, all years of cattle weights are based on forage potential. If use.forage=FALSE, only the first year of cattle weights is based on forage potential, the rest are considered to be equal to average expected weaning weight.
+\item Assign drought action variables (\verb!drought.action!, \verb!calf.loss!, \verb!calf.wt.adj!, \verb!drought.adaptation.cost.factor!)
+\item Assign prices at weaning: $p_t = [1.31, 1.25, 1.25, 1.25, 1.25]$
+\item Assign insurance variables (from constvars). If \verb!random.coverage! = TRUE, then a random coverage level is chosen.
+\item Assign ranch size: if \verb!random.acres! = TRUE, then sample from a random normal distribution with  mean ranch size = 3000 (default) and sd = 500. 
+\item Assign productivity level: if \verb!random.productivity! = TRUE, then pick a random productivity factor between 0.6 and 1.5.
+\item Select insurance coverage: if \verb!autoSelect.Insurance! = TRUE, then insurance is allocated based on which intervals are most important for forage potential. (Using \verb!insAlloc! function)
+\item Assign drought start year and start months from \verb!constvars!.
+\end{enumerate}
+
+\section{Simulation Run}
+Function: \verb!sim_run!
+\begin{enumerate}
+\item Load \verb!insurance_base.RData!
+\item Calculate base sales and operating costs with average weaning weights (Functions: \verb!CalculateExpSales!, \verb!CalculateBaseOpCosts!)
+\item Compute insurance premiums and indemnities (Functions: \verb!insMat!)
+\item Calculate base cow assets and capital taxes (Functions: \verb!CalcCowAssets, CalcCapSalePurch, CalcCapTaxes!)
+\item Calculate outputs without a drought (Function: \verb!OptionOutput!)
+\item Calculate forage potential vector (Function: \verb!foragePWt!)
+\item Calculate drought action adjustment (Function: \verb!CalculateAdaptationIntensity!)
+\item Calculate days of action (Function: \verb!CalculateDaysActions!)
+\item Calculate expected sales revenues without adaptation, thus weaning weight is affected by forage potential (Function: \verb!CalculateExpSales!)
+\item Calculate costs of adaptation for buying feed, renting pasture, and selling (and replacing) cows (Functions: \verb!CalculateFeedCost, CalculateRentPastCost, CalculateSellPrsCost!)
+\item Calculate the revenues under renting pasture and selling and replacing adaptation options. Revenues are unchanged from the base level for buying feed. (Functions: \verb!CalculateRentPastRevenue, CalculateSellPrsRev!)
+\item Calculate changing assets for sell and replace and selling without replacement options. (Functions: \verb!CalcCowAssets, CalcCapSalesPurch, CalcCapTaxes!)
+\item Calculate all outputs for each option. (Function: \verb!OptionOutput!)
+\item Pull all option outputs together into one data-frame for each simulation run.
+\end{enumerate}
+
 \section{Indices}
 \begin{itemize}
 \item Time is indexed by $t$, units in years. Variables with this index are allowed to vary by year.
@@ -131,15 +183,80 @@ The model is currently set for a default to the Central Plans Experimental Range
 	\end{itemize}
 \end{itemize}
 
-\section{Profit Model}
+\section{Profit and Assets Model}
+
+\begin{itemize}
+\item Function: \verb!OptionOutput!
+	\begin{itemize}
+	\item Description: Takes in cost and revenue variables and creates a data-frame with all relevant outcome variables
+	\item Inputs: $t$ = \verb!t! (number of years), \verb!opt! (String to label adaptation option: "nodrght", "noadpt", etc.),  \verb!nodrought! (Optional value. Default is set to false. Set to true for no drought option), $R_{d,t}$ = \verb!rev.calf! (tx1 vector of revenue from actual calf sales in years 1 through t), $R_{oth,t}$ = \verb!rev.oth! (Optional tx1 vector of non-calf revenues (created to account for interest on sale of cows in year 1)), \verb!rma.ins! (tx3 matrix of insurance year, premium, and payouts), $C_{d,t}$ = \verb!cost.op! (tx1 vector of operating costs for years 1 through t, including any adaptation costs), $i_s$ = \verb!int.invst! (interest rate on positive cash assets (savings)), $i_l$ = \verb!int.loan! (interest rate on negative cash assets (loans), \verb!start.cash! (starting cash assets at t=0), \verb!assets.cow! (tx1 vector of the value of cow assets in each year)
+	\item  Outputs: dataframe of all major variables of interest. Each simulation run produces a $2*(t+1)*d$ row dataframe to account for each year, $t$, plus a start point where $t=0$ for each drought adaptation option with and without insurance : \verb!opt!, \verb!yr!, \verb!ins!, \verb!rev.calf!, \verb!rev.ins!, \verb!rev.int!, \verb!rev.tot!, \verb!cost.op!, \verb!cost.ins!, \verb!cost.int!, \verb!cost.tot!, \verb!profit!, \verb!taxes!, \verb!aftax.inc!, \verb!cap.sales!, \verb!cap.purch!, \verb!cap.taxes!, \verb!assets.cow!, \verb!assets.cash!, \verb!net.wrth!
+	\item Includes function calls to:
+	\item Function is called by: 
+	\end{itemize}
+\end{itemize}
+
+\begin{enumerate}
+\item Set up vectors for $t+1$ years for each adaptation option with and without insurance
+\item Pull insurance premiums and indemnities from \verb!rma.ins! vectors for insured outcomes
+\item Calculate total revenues without interest (calf sales, other revenue, indemnities):
 \begin{equation}
-\pi_t = R_{total,d,i,t} - C_{total,d,i,t}
+R_{subtotal,d,i,t} = R_{d,t} + R_{oth,t} +  indem_{i,t}
 \end{equation}
+\item Bring outcome vectors into a single data-frame
+\item Looping over each year from $t=[1,t]$:
+	\begin{itemize}
+	\item Calculate interest revenues and costs based on cash assets:
+	\begin{equation}
+	R_{int,t} = 
+	\begin{cases}
+	A_{cash,t-1} * i_{s} & \text{if } A_{cash,t-1} > 0 \\
+	0 & \text{else}
+	\end{cases}
+	\end{equation}
+	\begin{equation}
+	C_{int,t} = 
+	\begin{cases}
+	A_{cash,t-1} * i_{l} & \text{if } A_{cash,t-1} < 0 \\
+	0 & \text{else}
+	\end{cases}
+	\end{equation}
+	\item Add interest revenue to other revenues:
+	\begin{equation}
+	R_{total,d,i,t} = R_{d,t} + R_{oth,t} +  indem_{i,t} + R_{int,t}
+	\end{equation}
+	\item Add interest cost to other costs:
+	\begin{equation}
+	C_{total,d,i,t} = C_{d,t} + premium_{i,t} + C_{int,t}
+	\end{equation}
+	\item Calculate profits:
+	\begin{equation}
+	\pi_t = R_{total,d,i,t} - C_{total,d,i,t}
+	\end{equation}
+	\item Calculate income taxes:
+	\begin{equation}
+	tax_t = 
+	\begin{cases}
+	\pi_t * (0.124+0.15+0.04) & \text{if } \pi_t > 0 \\
+	0 & \text{else}
+	\end{cases}
+	\end{equation}
+	\item Calculate after-tax income:
+	\begin{equation}
+	I_t = \pi_t - tax_t
+	\end{equation}
+	\item Calculate end of year cash assets:
+	\begin{equation}
+	A_{t} = A_{t-1} +  I_t + cap.sales - cap.purch - cap.taxes
+	\end{equation}
+	\end{itemize}
+\item  Organize output variables in dataframe
+\end{enumerate}
 
 \subsection{Revenues}
 Total Revenue Function:
 \begin{equation}
-R_{total,d,i,t} = R_{d,t} + indem_{i,t}
+R_{total,d,i,t} = R_{d,t} + R_{oth,t} +  indem_{i,t}
 \end{equation}
 
 Base sales: 
@@ -603,19 +720,7 @@ Option "autoSelect.insurance":
 	\end{itemize}
 \end{itemize}
 
-\section{Simulation Run}
-Function: \verb!sim_run!
-\begin{enumerate}
-\item Load \verb!insurance_base.RData!
-\item Calculate base sales and operating costs with average weaning weights (Functions: \verb!CalculateExpSales!, \verb!CalculateBaseOpCosts!)
-\item Compute insurance premiums and indemnities (Functions: \verb!insMat!)
-\item Calculate base cow assets and capital taxes (Functions: \verb!CalcCowAssets, CalcCapSalePurch, CalcCapTaxes!)
-\item Calculate outputs without a drought (Function: \verb!OptionOutput!)
-\item Calculate forage potential vector (Function: \verb!foragePWt!)
-\item Calculate drought action adjustment (Function: \verb!CalculateAdaptationIntensity!)
-\item Calculate days of action (Function: \verb!CalculateDaysActions!)
-\item Calculate expected sales revenues without adaptation, thus weaning weight is affected by forage potential (Function: \verb!CalculateExpSales!)
-\end{enumerate}
+
 
 
 \section{Limitations}

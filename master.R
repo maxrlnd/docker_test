@@ -20,6 +20,7 @@
 # Source functions
 source("R/load.R")
 source("R/support_functions.R")
+source("R/weaning_success.R")
 
 #### Setup ####
 
@@ -34,7 +35,7 @@ getConstantVars()
 #### Generate Model Inputs ####
 generateRunParams <- function(acres.param = 3000){
   getSimVars(random.starts = TRUE, 
-             use.forage = TRUE,
+             use.forage = FALSE,
              random.acres=FALSE, 
              random.productivity=TRUE,
              acres = acres.param) # with simulated vars
@@ -45,7 +46,7 @@ generateRunParams <- function(acres.param = 3000){
 
 #### Non-parallel model run ####
 runs <- 1
-simruns <- rlply(runs, generateRunParams(random.acres = TRUE))  # list of simulation variables for runs
+simruns <- rlply(runs, generateRunParams(acres.param = 3000))  # list of simulation variables for runs
 list.index <- seq_along(simruns)  # creating an index of the list number to store in the sim_outcomes and match back with the simruns variables
 for (i in 1:runs) {
   simruns[[i]]$sim.index <- list.index[i] 
