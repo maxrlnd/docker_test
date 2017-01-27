@@ -901,7 +901,7 @@ calfWeanWeight <- function(styr){
   detach(constvars)
 
   calf_weights_ann
-}
+}˜
 
 # Drought Adaptation Functions --------------------------------------------
 
@@ -1476,6 +1476,7 @@ sim_run <- function(pars) {
 
   ## Option 0: No adaptation ##
   # drought revenues
+  noadpt.wn.succ <- AdjWeanSuccess(stgg, zonewt, stzone, styear, noadpt = TRUE, expected.wn.succ)
   noadpt.rev.calf <- unlist(lapply(1:t, function(i){
     CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = wn.wt[i], p.wn = p.wn[i])
   }))
@@ -1659,8 +1660,5 @@ sim_run <- function(pars) {
   return(invisible(NULL))
 }
 
- 
-act.rainfall.adjustment <- function(f) {
-  forage.potential <- foragePWt(stgg, zonewt, stzone, styear)
-}
+
 
