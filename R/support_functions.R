@@ -219,16 +219,16 @@ getStationGauge<-function(target.loc="CPER"){
   if(target.loc=="CPER"){ # Use COOP sites or CPER: Default to CPER
 
     ## Zone Weights
-    stzone=3 # state forage zone
+    stzone <- 3 # state forage zone
     # multiple operations since reading from
     # external file that may be replaced
-    zonewt=read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx",sheet="Drought Calculator",skip = 5)[5:8,]
-    zonewt=sapply(data.frame(zonewt[,which(names(zonewt)=="Jan"):which(names(zonewt)=="Dec")]),as.numeric)
+    zonewt <- read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx", sheet = "Drought Calculator", skip = 5)[5:8, ]
+    zonewt <- sapply(data.frame(zonewt[, which(names(zonewt) == "Jan"):which(names(zonewt) == "Dec")]), as.numeric)
 
     ## Station precip gauge
-    stgg=data.frame(read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx","CPER Precip",skip = 1))
-    stgg=stgg[,-which(names(stgg) %in% c("TOTAL","Var.15"))]
-    stgg=stgg[stgg$Year %in% c(1948:2016,"AVE"),]
+    stgg <- data.frame(read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx", "CPER Precip", skip = 1))
+    stgg <- stgg[, -which(names(stgg) %in% c("TOTAL", "Var.15"))]
+    stgg <- stgg[stgg$Year %in% c(1948:2016, "AVE"), ]
 
     ## Target grid cell
     tgrd = 25002  # target grid cell - CPER default
@@ -236,39 +236,39 @@ getStationGauge<-function(target.loc="CPER"){
   }else{ #Custom location specified (COOP site and MLRA forage potential weights)
 
     ## Fetch data
-    wrc.state="co" # For pulling COOP sites & mlra forage weights
+    wrc.state <- "co" # For pulling COOP sites & mlra forage weights
     load("data/coops.RData") # Shortcut for sourcing 'R/coop_scraper.R'
     # source("R/coop_scraper.R") # the long way
-    mlra=readOGR("data","mlra_v42") # load MLRA zone data
-    target.coop=coops[[which(names(coops)==target.loc)]]
+    mlra <- readOGR("data", "mlra_v42") # load MLRA zone data
+    target.coop <- coops[[which(names(coops) == target.loc)]]
 
     ## Zone weights
-    mlra.idx=COOP_in_MRLA(target.coop) # MLRA index
-    zonewt=getMRLAWeights(wrc.state) # zone weights
-    stzone=which(zonewt[,1]==mlra.idx) # not a great workaround...should fix 'foragePwt' function instead
-    zonewt=zonewt[,-1] # not a great workaround...should fix 'foragePwt' function instead
+    mlra.idx <- COOP_in_MRLA(target.coop) # MLRA index
+    zonewt <- getMRLAWeights(wrc.state) # zone weights
+    stzone <- which(zonewt[, 1] == mlra.idx) # not a great workaround...should fix 'foragePwt' function instead
+    zonewt <- zonewt[, -1] # not a great workaround...should fix 'foragePwt' function instead
 
     ## Station precip gauge
-    stgg=target.coop$precip
-    stgg=rbind(stgg,rep(NA,ncol(stgg)))
-    stgg[nrow(stgg),][,1]="AVE"
-    stgg[nrow(stgg),][,-1]=colMeans(stgg[-nrow(stgg),][,-1],na.rm=T)
+    stgg <- target.coop$precip
+    stgg <- rbind(stgg, rep(NA, ncol(stgg)))
+    stgg[nrow(stgg), ][, 1] <- "AVE"
+    stgg[nrow(stgg), ][, -1] <- colMeans(stgg[-nrow(stgg), ][, -1],na.rm = TRUE)
 
     ## Target grid cell
-    tgrd = target.coop$grid  # target grid cell - custom site
+    tgrd <- target.coop$grid  # target grid cell - custom site
 
   }
 
   # Write vars to new env
-  station.gauge<<-new.env()
-  assign("zonewt",zonewt,envir=station.gauge)
-  assign("stzone",stzone,envir=station.gauge)
-  assign("stgg",stgg,envir=station.gauge)
-  assign("tgrd",tgrd,envir=station.gauge)
+  station.gauge <<- new.env()
+  assign("zonewt", zonewt, envir = station.gauge)
+  assign("stzone", stzone, envir = station.gauge)
+  assign("stgg", stgg , envir = station.gauge)
+  assign("tgrd", tgrd, envir = station.gauge)
 
   # SpatialPoints representation of target gridcell
   # for fetching insurance results
-  assign("tgrd_pt",rastPt[rastPt@data$layer == tgrd, ],envir=station.gauge)
+  assign("tgrd_pt", rastPt[rastPt@data$layer == tgrd, ],envir = station.gauge)
 
 }
 
@@ -411,7 +411,7 @@ droughtCalculator <- function(yy, clv, acres, pfactor, insPurchase, mask = NULL)
   #   }
 
   ##Get subsidy rate based on coverage level
-  sbdy = covsub[coverage.trigger == clv, subsidy.rate]
+  sbdy <- covsub[coverage.trigger == clv, subsidy.rate]
 
   ##Set up insurance purchase vector
   ip = rep(0, 11)
@@ -712,7 +712,7 @@ insAlloc<-function(fpwt, niv = 2, by.rank = T, max.alloc=0.6, min.alloc = 0.1){
 
 # Forage Functions -------------------------------------------------------
 
-foragePWt<-function(stgg,zonewt,stzone,styear,decision=F){
+foragePWt <- function(stgg, zonewt, stzone, styear, decision = FALSE){
 
   "
   Returns a weight representing
@@ -763,35 +763,35 @@ foragePWt<-function(stgg,zonewt,stzone,styear,decision=F){
   "
 
   ## Subset zone weights and prep index
-  zonewt=zonewt[stzone,] # subset weights by station/grid zone
-  yprecip=stgg[stgg[,1]==styear,][,-1] # monthly precip amounts for start year
-  # ave=stgg[stgg$Year=="AVE",][,-1] # average precip since 1948
-  ave=stgg[nrow(stgg),][,-1] # average precip since 1948
-  pidx=yprecip/ave # Monthly precip "index"
+  zonewt <- zonewt[stzone, ]  # subset weights by station/grid zone
+  yprecip <- stgg[stgg[, 1] == styear, ][, -1]  # monthly precip amounts for start year
+  # ave <- stgg[stgg$Year == "AVE", ][, -1]  # average precip since 1948
+  ave <- stgg[nrow(stgg), ][, -1]  # average monthly precip since 1948
+  pidx  <- yprecip / ave # Monthly precip "index"
 
   if(decision){ #"decision making under uncertainty" mode
 
     ## Group years in period of record by monthly precip
-    cper=stgg[1:which(stgg$Year==2015),] # subset by period 1948-2015
-    cper_clust=pamk(cper[,-1]) # Find optimal groups of years, k = 2-10
-    yy_group=cper_clust[[1]]$clustering[which(cper$Year==styear)] # Group membership for target year
-    yy_ave=colMeans(cper[which(cper_clust[[1]]$clustering==yy_group),][,-1]) # Group mean vector
-    yidx=yy_ave/ave # Expected index values for year (group mean vector / long-term average)
+    cper <- stgg[1:which(stgg$Year == 2015),] # subset by period 1948-2015
+    cper_clust <- pamk(cper[, -1]) # Find optimal groups of years, k = 2-10
+    yy_group <- cper_clust[[1]]$clustering[which(cper$Year == styear)] # Group membership for target year
+    yy_ave <- colMeans(cper[which(cper_clust[[1]]$clustering == yy_group), ][, -1]) # Group mean vector
+    yidx <- yy_ave/ave # Expected index values for year (group mean vector / long-term average)
 
     # Generate forage potential weights
     # not sure why the rows are subsetting as lists!
-    foragewt=unlist(c((zonewt*pidx)[1:dr_start],(zonewt*yidx)[(dr_start+1):12]))
+    foragewt <- unlist(c((zonewt * pidx)[1:dr_start], (zonewt * yidx)[(dr_start + 1):12]))
 
   }else{ #default: long-term precip & zone weights
 
-    foragewt=zonewt*pidx
+    foragewt = zonewt * pidx
 
   }
 
   # Compute annual forage potential weight for zone
-  stfwt=sum(foragewt)
+  forage.potential <- sum(foragewt)
 
-  return(stfwt)
+  forage.potential
 
 }
 
@@ -832,7 +832,7 @@ COOP_in_MRLA<-function(coop){
   coop site is located.
   "
 
-  coop.pt=SpatialPoints(t(rev(coop$loc)),proj4string=CRS(proj4string(mlra)))
+  coop.pt <- SpatialPoints(t(rev(coop$loc)), proj4string = CRS(proj4string(mlra)))
   # fwt=forage_mlra[forage_mlra$MLRA==(coop.pt %over% mlra)$MLRARSYM,][,-1]
   return(as.numeric(as.character(((coop.pt %over% mlra)$MLRARSYM))))
 
@@ -861,11 +861,11 @@ forageWeights2Intervals<-function(fpwt){
 
 # Calf Weight Functions ---------------------------------------------------
 
-calfDroughtWeight<-function(expected.wn.wt,calf.wt,stfwt){
-  return(calf.wt+(stfwt*(expected.wn.wt-calf.wt)))
+calfDroughtWeight<-function(expected.wn.wt, calf.wt, forage.potential){
+  return(calf.wt + (forage.potential * (expected.wn.wt - calf.wt)))
 }
 
-calfWeanWeight<-function(styr){
+calfWeanWeight <- function(styr){
 
   "
   Compute calf weights based on station/grid cell
@@ -881,27 +881,27 @@ calfWeanWeight<-function(styr){
   `calf_weights_ann`.
   "
 
-  if(!exists("station.gauge",envir=globalenv())){
+  if(!exists("station.gauge", envir = globalenv())){
     stop("Station gauge information is required.")
   }
 
-  if(!exists("constvars",envir=globalenv())){
+  if(!exists("constvars", envir = globalenv())){
     stop("Constant variable information is required.")
   }
 
   attach(station.gauge)
   attach(constvars)
-  forage.weights=unlist(lapply(seq(styr,styr+4),function(i){
-    foragePWt(stgg,zonewt,stzone,i)
+  forage.weights = unlist(lapply(seq(styr, styr + 4),function(i){
+    foragePWt(stgg, zonewt, stzone, i)
   }))
-  calf_weights_ann=unlist(lapply(forage.weights,function(i){ # annual calf weights
-    calfDroughtWeight(expected.wn.wt,calf.wt,i)
+  calf_weights_ann = unlist(lapply(forage.weights, function(i){ # annual calf weights
+    calfDroughtWeight(expected.wn.wt, calf.wt, i)
   }))
   detach(station.gauge)
   detach(constvars)
 
   calf_weights_ann
-}
+}˜
 
 # Drought Adaptation Functions --------------------------------------------
 
@@ -947,6 +947,27 @@ CalculateDaysAction <- function(act.st.yr, act.st.m, act.end.yr, act.end.m, drou
 
   days.act.vect <- days.act * drought.action #Creates a vector of days of action
   days.act.vect
+}
+
+CalculateAdaptationIntensity <- function(forage.potential, drought.adaptation.cost.factor = 1) {
+  " Description: Takes forage potential and an adaptation intensity factor to 
+    provide a scalar of drought action. If forage potential is above 1 (no drought), 
+    then this variable goes to 0 (no adaptation). 
+	  Inputs: 
+      adpt.intensity.factor (parameter that scales adaptation actions to reflect 
+        actual adaptation behavior. Currently defaults to 1 which assumes a 
+        one-to-one ratio of drops in forage percentage to need for forage 
+        replacement.)
+      forage.potential (the percentage of average forage produced in a year 
+        based on rainfall. See forage potential functions.)
+    Output: drght.act.adj (scales action to account for forage potential's 
+      deviation from the norm.)
+    Assumptions: The variable has a maximum of 1, which assumes that drought 
+      actions are parameterized at full forage replacement for the full herd.
+  "
+  drght.act.adj <- ifelse(forage.potential >= 1, 0, (1 - forage.potential) * drought.adaptation.cost.factor)
+  drght.act.adj <- ifelse(drght.act.adj > 1, 1, drght.act.adj)  # putting a ceiling of this variable at 1 (no more than 100% of drought action)
+  drght.act.adj
 }
 
 
@@ -1261,12 +1282,10 @@ OptionOutput <- function(t, opt, nodrought = FALSE, rev.calf, rev.oth = NULL,
   #
   # Inputs:
   # t = Number of years
-  # opt = String to label option: "nodrght", "noadpt", etc.
+  # opt = String to label adaptation option: "nodrght", "noadpt", etc.
   # nodrought = OPTIONAL value. default is set to false. set to true for no drought option
   # rev.calf = tx1 vector of revenue from actual calf sales in years 1 through t
   # rev.oth = OPTIONAL tx1 vector of non-calf revenues (created to account for interest on sale of cows in year 1)
-  # int.invst = Interest rate on investments
-  # int.loan = Interest rate on loans
   # rma.ins = tx3 matrix of insurance year, premium, and payouts
   # cost.op = tx1 vector of operating costs for years 1 through t, including any adaptation costs
   # int.invst = interest rate on positive cash assets (savings)
@@ -1416,15 +1435,6 @@ sim_run <- function(pars) {
     rma.ins = cbind(yyr[1]:yyr[1]+(t-1),matrix(0,t,2))
   }
 
-  # Base Values: Indicate average year costs and revenues without insurance
-  base.cost <- base.op.cost  # assumes without insurance, cow costs are the only costs for the producer
-  base.rev <- base.sales  # assumes that without insurance, calf sales are only revenue. INTEREST MUST BE TAKEN INTO ACCOUNT.
-  base.prof <- base.rev - base.cost
-
-  base.cost.ins <- base.op.cost + rma.ins[,2] # increment base operating costs with producer premium
-  #base.rev.ins <- base.sales + rma.ins[,3] # increment base revenue with indemnity
-  #base.prof.ins <- base.rev.ins - base.cost.ins
-
   # Base Cow Assets: No sell/replace
   base.assets.cow <- CalcCowAssets(t = t, herd = herd, p.cow = p.cow)
 
@@ -1461,12 +1471,12 @@ sim_run <- function(pars) {
 
   # Calculate vector of days of drought adaptation action for each year
   forage.potential <- sapply(yyr, foragePWt, stgg = stgg, zonewt = zonewt, stzone = stzone)
-  drght.act.adj <- ifelse(forage.potential >= 1, 0, (1 - forage.potential) * drought.adaptation.cost.factor)
-  drght.act.adj <- ifelse(drght.act.adj > 1, 1, drght.act.adj)  # putting a ceiling of this variable at 1 (no more than 100% of drought action)
+  drght.act.adj <- CalculateAdaptationIntensity(forage.potential)
   days.act <- CalculateDaysAction(act.st.yr, act.st.m, act.end.yr, act.end.m, drought.action) * drght.act.adj  # adjusts the days of action by the severity of drought
 
   ## Option 0: No adaptation ##
   # drought revenues
+  noadpt.wn.succ <- AdjWeanSuccess(stgg, zonewt, stzone, styear, noadpt = TRUE, expected.wn.succ)
   noadpt.rev.calf <- unlist(lapply(1:t, function(i){
     CalculateExpSales(herd = herd, calf.sell = calf.sell, wn.wt = wn.wt[i], p.wn = p.wn[i])
   }))
@@ -1629,7 +1639,7 @@ sim_run <- function(pars) {
 # Utility Functions -------------------------------------------------------
 
 ':=' <- function(lhs, rhs) {
-  # Decription: Magical function that allows you to return more than one variable
+  # Description: Magical function that allows you to return more than one variable
   #  from other functions.
   # Code from http://stackoverflow.com/questions/1826519/function-returning-more-than-one-value
 
@@ -1649,3 +1659,6 @@ sim_run <- function(pars) {
     do.call(`=`, list(lhs[[i]], rhs[[i]]), envir=frame)
   return(invisible(NULL))
 }
+
+
+
