@@ -347,7 +347,7 @@ C_{noadpt,t} = C_{base,t}
 
 
 \subsubsection{Revenues}
-When drought occurs and no adaption is undertaken, revenues are affected by calf sales through both reduced weaning weights and lower weaning success.
+When drought occurs and no adaption is undertaken, revenues are affected by calf sales through both reduced weaning weights and lower weaning success for the year of the drought and the year following.
 
 \begin{itemize}
 \item Function: \verb!calfWeanWeight!
@@ -377,6 +377,26 @@ When drought occurs and no adaption is undertaken, revenues are affected by calf
 \begin{equation} \label{calfdroughtweight}
 w_{noadpt, t} = w_{calf, 0} + \alpha (\bar{w} - w_{calf,0})
 \end{equation}
+
+\begin{itemize}
+\item Function: \verb!AdjWeanSuccess!
+	\begin{itemize}
+	\item Description: Adjusts weaning success downward for the year of the drought and the following year based on a modified logistic equation. 
+	\item Inputs: \verb!stgg!, \verb!zonewt!, \verb!stzone!, \verb!styear!, \verb!noadpt!, \verb!normal.wn.succ!, \verb!t!
+	\item Output: \verb!wn.succ! (tx1 vector of weaning success in percentage of cows that will have calves that survive to be fully weaned)
+	\item Assumptions: This equation is based on what I consider to be ``reasonable" estimates of weaning success based on forage potential. These fall roughly in line with body condition scores from the \textit{Nutrient Requirements of Beef Cattle}, but are only ballpark estimates.
+	\end{itemize}
+\end{itemize}
+
+\begin{align}
+wn.succ_1 = normal.wn.succ * \frac{1}{1 + e^{2(-1 + \alpha)}} 
+\end{align}
+%wn.succ_2 = normal.wn.succ * \frac{1}{1 + e^{(-1 + \alpha)}
+%\verb!wn.succ_3! &= normal.wn.succ \\
+%\verb!wn.succ_4! &= normal.wn.succ \\
+%\verb!wn.succ_5! &= normal.wn.succ \\
+%\end{align}
+
 
 
 \subsection{Drought Adaptation Option: Buy Feed}
