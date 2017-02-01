@@ -860,12 +860,16 @@ forageWeights2Intervals<-function(fpwt){
 
 # Calf Weight Functions ---------------------------------------------------
 
-calfDroughtWeight<-function(expected.wn.wt, calf.wt, forage.potential){
+calfDroughtWeight<-function(normal.wn.wt, forage.potential){
+  "
+  Description: If forage potential is less than 1, then the calf weight is less
+  
+  "
   if(forage.potential < 1) {
-    wn.wt <- calf.wt + (forage.potential * (expected.wn.wt - calf.wt))
+    wn.wt <- normal.wn.wt * (1 - (1 - forage.potential)/3)
   }
   else{
-    wn.wt <- expected.wn.wt
+    wn.wt <- normal.wn.wt
   }
  wn.wt 
 }
@@ -900,7 +904,7 @@ calfWeanWeight <- function(styr){
     foragePWt(stgg, zonewt, stzone, i)
   }))
   calf_weights_ann = unlist(lapply(forage.weights, function(i){ # annual calf weights
-    calfDroughtWeight(expected.wn.wt, calf.wt, i)
+    calfDroughtWeight(normal.wn.wt, i)
   }))
   detach(station.gauge)
   detach(constvars)
