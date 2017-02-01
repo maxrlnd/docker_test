@@ -17,7 +17,7 @@ cow.wt,1200
 calf.wt,375
 expected.wn.wt,600
 calf.sell,0.75
-wn.succ,0.94
+normal.wn.succ,0.94
 p.calf.t0,1.45
 p.cow,850
 cow.cost,500
