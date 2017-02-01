@@ -861,7 +861,13 @@ forageWeights2Intervals<-function(fpwt){
 # Calf Weight Functions ---------------------------------------------------
 
 calfDroughtWeight<-function(expected.wn.wt, calf.wt, forage.potential){
-  return(calf.wt + (forage.potential * (expected.wn.wt - calf.wt)))
+  if(forage.potential < 1) {
+    wn.wt <- calf.wt + (forage.potential * (expected.wn.wt - calf.wt))
+  }
+  else{
+    wn.wt <- expected.wn.wt
+  }
+ wn.wt 
 }
 
 calfWeanWeight <- function(styr){
