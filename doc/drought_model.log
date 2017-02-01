@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  27 JAN 2017 16:02
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  1 FEB 2017 16:51
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -343,24 +343,24 @@ Overfull \hbox (16.72443pt too wide) in paragraph at lines 358--359
 by year, []\OT1/cmtt/m/n/10.95 calf_weights_ann\OT1/cmr/m/n/10.95 . 
  []
 
-[10]
-Overfull \hbox (22.76637pt too wide) in paragraph at lines 409--410
+[10] [11]
+Overfull \hbox (22.76637pt too wide) in paragraph at lines 418--419
 []\OT1/cmr/m/n/10.95 Inputs: $\OML/cmm/m/it/10.95 ration[]$ \OT1/cmr/m/n/10.95 
 = []\OT1/cmtt/m/n/10.95 hay.ration \OT1/cmr/m/n/10.95 (hay ra-tion as-sum-ing n
 o graz-ing (pounds/head/day)
  []
 
-[11] [12] [13] [14] [15] [16] [17] [18]
-Overfull \hbox (38.12871pt too wide) in paragraph at lines 739--740
+[12] [13] [14] [15] [16] [17] [18] [19]
+Overfull \hbox (38.12871pt too wide) in paragraph at lines 748--749
 \OT1/cmr/m/n/10.95 from other func-tions. Code from http://stackoverflow.com/qu
 estions/1826519/function-
  []
 
-[19] (./drought_model.aux) ) 
+[20] (./drought_model.aux) ) 
 Here is how much of TeX's memory you used:
  2890 strings out of 493014
  39276 string characters out of 6133351
- 108519 words of memory out of 5000000
+ 110519 words of memory out of 5000000
  6391 multiletter control sequences out of 15000+600000
  11866 words of font info for 45 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -370,20 +370,22 @@ lic/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/publ
 ic/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/publi
 c/amsfonts/cm/cmex10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public
 /amsfonts/cm/cmmi10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/
-amsfonts/cm/cmmi8.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/am
-sfonts/cm/cmr10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsf
-onts/cm/cmr12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfon
-ts/cm/cmr17.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts
-/cm/cmr8.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm
-/cmsy10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/
-cmsy8.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cm
-ti10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmt
-t10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/symbols
-/msbm10.pfb>
-Output written on drought_model.pdf (19 pages, 209228 bytes).
+amsfonts/cm/cmmi6.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/am
+sfonts/cm/cmmi8.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmr10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfon
+ts/cm/cmr12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts
+/cm/cmr17.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/c
+m/cmr6.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/c
+mr8.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy
+10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8
+.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.
+pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.p
+fb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm
+10.pfb>
+Output written on drought_model.pdf (20 pages, 224850 bytes).
 PDF statistics:
- 122 PDF objects out of 1000 (max. 8388607)
- 86 compressed objects within 1 object stream
+ 133 PDF objects out of 1000 (max. 8388607)
+ 94 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

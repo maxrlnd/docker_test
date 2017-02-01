@@ -375,7 +375,11 @@ When drought occurs and no adaption is undertaken, revenues are affected by calf
 	\end{itemize}
 \end{itemize}
 \begin{equation} \label{calfdroughtweight}
-w_{noadpt, t} = w_{calf, 0} + \alpha (\bar{w} - w_{calf,0})
+w_{noadpt, t} = 
+\begin{cases}
+\bar{w} \left(1 - \frac{(1 - \alpha_t)}{3}\right) & \text{if } \alpha < 1 \\
+\bar{w} & \text{if } \alpha >= 1
+\end{cases}
 \end{equation}
 
 \begin{itemize}
@@ -388,14 +392,19 @@ w_{noadpt, t} = w_{calf, 0} + \alpha (\bar{w} - w_{calf,0})
 	\end{itemize}
 \end{itemize}
 
+If drought adaptation is not undertaken and $\alpha < 1$:
 \begin{align}
-wn.succ_1 = normal.wn.succ * \frac{1}{1 + e^{2(-1 + \alpha)}} 
+wn_1 &= \bar{wn} * \frac{1}{1 + e^{2(-1 + \alpha_1)}} \\
+wn_2 &= \bar{wn} * \frac{1}{1 + e^{(-1 + \alpha_1)}} \\
+wn_3 &= \bar{wn} \\
+wn_4 &= \bar{wn} \\
+wn_5 &= \bar{wn} \\
 \end{align}
-%wn.succ_2 = normal.wn.succ * \frac{1}{1 + e^{(-1 + \alpha)}
-%\verb!wn.succ_3! &= normal.wn.succ \\
-%\verb!wn.succ_4! &= normal.wn.succ \\
-%\verb!wn.succ_5! &= normal.wn.succ \\
-%\end{align}
+
+Otherwise: 
+\begin{equation}
+wn_t = \bar{wn}
+\end{equation}
 
 
 
@@ -748,7 +757,7 @@ Currently not equipped to handle multi-year droughts. This will be changed.
 
 
 
-
+\end{document}
 \section{Model Workflow}
 All functions are run within \verb!master.R! and call additional scripts from the \verb!R! folder.
 
