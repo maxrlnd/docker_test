@@ -7,7 +7,7 @@ AdjWeanSuccess <- function(stgg, zonewt, stzone, styear, noadpt = FALSE, normal.
     forage.potential <- foragePWt(stgg, zonewt, stzone, styear)
     wn.succ <- NULL
     
-      if(noadpt == FALSE) {
+      if(noadpt == FALSE | forage.potential >= 1) {
           wn.succ <- rep(normal.wn.succ, t)
         }
       if(noadpt == TRUE & forage.potential < 1) {

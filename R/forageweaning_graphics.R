@@ -16,5 +16,12 @@ wn.succ_yr2 <- normal.wn.succ * (1 / (1 + exp(-(1 + forage.potential.years$forag
 weaning_weight <- sapply(forage.potential.years$forage.potential, calfDroughtWeight,  normal.wn.wt = normal.wn.wt)
 
 forage.weaning <- data.frame(forage.potential = forage.potential.years$forage.potential, wn.succ_yr1, wn.succ_yr2, weaning_weight)
+
+# PLOTS
 ggplot(forage.weaning) + geom_density(aes(x = forage.potential)) 
+
 ggplot(forage.weaning) + geom_density(aes(x = weaning_weight))
+
+#EVAN: These two densities need to be different colors (either fill or the lines). Ideally with a legend that indicates which is which.
+# The X-axes should just be "Weaning Success"
+ggplot(forage.weaning) + geom_density(aes(x = wn.succ_yr1)) + geom_density(aes(x = wn.succ_yr2)) 
