@@ -1487,7 +1487,7 @@ sim_run <- function(pars) {
   # Calculate vector of days of drought adaptation action for each year
   forage.potential <- sapply(yyr, foragePWt, stgg = stgg, zonewt = zonewt, stzone = stzone)
   intens.adj <- CalculateAdaptationIntensity(forage.potential)
-  days.act <- CalculateDaysAction(act.st.yr, act.st.m, act.end.yr, act.end.m, drought.action) * drght.act.adj  # adjusts the days of action by the severity of drought
+  days.act <- CalculateDaysAction(act.st.yr, act.st.m, act.end.yr, act.end.m, drought.action)
 
   ## Option 0: No adaptation ##
   # drought revenues
