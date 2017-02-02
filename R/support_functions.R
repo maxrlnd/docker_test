@@ -1009,7 +1009,7 @@ CalculateBaseOpCosts <- function(herd, cow.cost) {
 }
 
 # Option 1: Buy feed
-CalculateFeedCost <- function(kHayLbs, kOthLbs, p.hay,p.oth, days.feed, herd) {
+CalculateFeedCost <- function(kHayLbs, kOthLbs, p.hay,p.oth, days.feed, herd, intens.adj) {
   "
   Function: CalculateFeedCost
   Description: Calculating the costs of purchasing additional feed
@@ -1026,7 +1026,7 @@ CalculateFeedCost <- function(kHayLbs, kOthLbs, p.hay,p.oth, days.feed, herd) {
   cost.feed = Additional costs to feed the herd over the remainder of the season ($/year)
   "
   # Calculate cost per cow per day * days of feed for the year * number of cows in the herd
-  feed.cost <- (kHayLbs / 2000 * p.hay + kOthLbs / 2000 * p.oth) * days.feed * herd
+  feed.cost <- (kHayLbs / 2000 * p.hay + kOthLbs / 2000 * p.oth) * days.feed * herd * intens.adj
   return(feed.cost)
 }
 
@@ -1512,10 +1512,9 @@ sim_run <- function(pars) {
 
 
   ## Option 1: Buy additional feed
-  days.feed <- days.act  # Assumes that feeding days are equivalent to drought adaptation action days
 
   # Calculate operating costs including costs to buy feed
-  feed.cost <- CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, days.feed, herd) + base.op.cost
+  feed.cost <- CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, days.act, herd, intens.adj) + base.op.cost
 
   out.feed <- OptionOutput(t = t,
                            opt = "feed",
