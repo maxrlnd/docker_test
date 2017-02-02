@@ -974,9 +974,9 @@ CalculateAdaptationIntensity <- function(forage.potential, drought.adaptation.co
     Assumptions: The variable has a maximum of 1, which assumes that drought 
       actions are parameterized at full forage replacement for the full herd.
   "
-  drght.act.adj <- ifelse(forage.potential >= 1, 0, (1 - forage.potential) * drought.adaptation.cost.factor)
-  drght.act.adj <- ifelse(drght.act.adj > 1, 1, drght.act.adj)  # putting a ceiling of this variable at 1 (no more than 100% of drought action)
-  drght.act.adj
+  intens.adj <- ifelse(forage.potential >= 1, 0, (1 - forage.potential) * drought.adaptation.cost.factor)
+  intens.adj <- ifelse(drght.act.adj > 1, 1, drght.act.adj)  # putting a ceiling of this variable at 1 (no more than 100% of drought action)
+  intens.adj
 }
 
 
@@ -1486,7 +1486,7 @@ sim_run <- function(pars) {
 
   # Calculate vector of days of drought adaptation action for each year
   forage.potential <- sapply(yyr, foragePWt, stgg = stgg, zonewt = zonewt, stzone = stzone)
-  drght.act.adj <- CalculateAdaptationIntensity(forage.potential)
+  intens.adj <- CalculateAdaptationIntensity(forage.potential)
   days.act <- CalculateDaysAction(act.st.yr, act.st.m, act.end.yr, act.end.m, drought.action) * drght.act.adj  # adjusts the days of action by the severity of drought
 
   ## Option 0: No adaptation ##
