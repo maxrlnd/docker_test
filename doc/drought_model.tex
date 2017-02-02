@@ -184,6 +184,31 @@ The model is currently set for a default to the Central Plans Experimental Range
 \end{itemize}
 
 \section{Profit and Assets Model}
+	\begin{equation}
+	\pi_t = R_{total,d,i,t} - C_{total,d,i,t}
+	\end{equation}
+	\begin{align}
+	R_{total,d,i,t} &= R_{d,t} +  R_{indem,i,t} + R_{int,t} \\
+	C_{total,d,i,t} &= C_{d,t} + C_{prem,i,t} + C_{int,t}
+	\end{align}
+
+\begin{equation}
+C_{total,d,i,t} = C^{cc}_{d,t} + C^{ins}_{i,t} + C^{int}_{d,t}
+\end{equation}	
+\begin{itemize}
+\item $C^{cc}_{d,t}$: Costs of cow-calf operation including the costs of drought measures, $d$.
+\item $C^{ins}_{i,t}$: Costs of insurance premium if it is purchased ($i=1$).
+\item $C^{int}_{d,t}$: Costs of borrowing if cash assets are negative. 
+\end{itemize}
+
+\begin{equation}
+R_{total,d,i,t} =R^{cc}_{d,t}+  R^{ins}_{i,t}+ R^{int}_{d,t}
+\end{equation}
+\begin{itemize}
+\item $R^{cc}_{d,t}$: Cow-calf revenues in year $t$ with drought adaptation measure $d$.
+\item $R^{ins}_{i,t}$: Revenues from indemnity payments if insurance is purchased ($i=1$).
+\item $R^{int}_{d,t}$: Interest revenue from cash assets.
+\end{itemize}
 
 \begin{itemize}
 \item Function: \verb!OptionOutput!
