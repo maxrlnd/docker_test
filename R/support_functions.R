@@ -115,9 +115,8 @@ getSimVars = function(station.gauge,
   assign("p.wn", c(1.31, 1.25, 1.25, 1.25, 1.25), envir = simvars)
 
   ## set target insurance years
-  attach(simvars)
-  assign("yyr", styr:(4 + styr), envir = simvars) # all five years
-  detach(simvars)
+  assign("yyr", simvars$styr:(4 + simvars$styr), envir = simvars) # all five years
+  
 
   ## Set Insurance variables
   assign("clv", clv, envir = simvars) # insurance coverage level (0.7 - 0.9 in increments of 0.05)
@@ -910,18 +909,31 @@ calfWeanWeight <- function(styr){
   if(!exists("constvars", envir = globalenv())){
     stop("Constant variable information is required.")
   }
-
-  attach(station.gauge)
-  attach(constvars)
+  
+  ## I honestly don't think these ever need to be attached here (station.gauge might need to be)
+  ## since they're attached in the functions that are calling them and this funciton inherits their environments
+  ## but I kept these just incase
+  constAtt <- F
+  stationAtt <- F
+  if(!any("constvars" %in% search())){
+    attach(constvars)
+    constAtt <- T
+  }
+  if(!any("station.gauge" %in% search())){
+    attach(station.gauge)
+    stationAtt <- T
+  }
+  
+  
   forage.weights = unlist(lapply(seq(styr, styr + 4),function(i){
     foragePWt(stgg, zonewt, stzone, i)
   }))
   calf_weights_ann = unlist(lapply(forage.weights, function(i){ # annual calf weights
     calfDroughtWeight(normal.wn.wt, i)
   }))
-  detach(station.gauge)
-  detach(constvars)
-
+  if(constAtt)detach(constvars)
+  if(stationAtt)detach(station.gauge)
+  
   calf_weights_ann
 }
 
