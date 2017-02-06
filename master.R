@@ -37,6 +37,11 @@ constvars <- getConstantVars()
 
 
 #### Generate Model Inputs ####
+## I don't like this...a funciton in the run file is inconsistent and a bit klunky 
+## especially if we're trying to change any of the parpameters (random.starts etc)
+## what if we move this get rid of this and have simVars return the appended  list
+## of station.gague, constvars, and simvars..it already has them all so why use two
+## functions.
 generateRunParams <- function(acres.param = 3000){
   simvars <- getSimVars(
              station.gauge,         
@@ -59,6 +64,6 @@ for (i in 1:runs) {
   simruns[[i]]$sim.index <- list.index[i] 
 }
 outs <- lapply(simruns, sim_run)
-outs <- do.call("rbind", outs)
+outs <- rbindlist(outs)
 
 
