@@ -32,7 +32,8 @@ source("R/weaning_success.R")
 station.gauge <- getStationGauge()
 
 # Populate a new environment with constant (user) variables
-getConstantVars()
+## Did the same thing as with getStationGauge above
+constvars <- getConstantVars()
 
 
 #### Generate Model Inputs ####
@@ -42,7 +43,7 @@ generateRunParams <- function(acres.param = 3000){
              random.acres=FALSE, 
              random.productivity=TRUE,
              acres = acres.param) # with simulated vars
-  return(append(append(station.gauge, as.list(constvars)), as.list(simvars)))
+  return(append(append(station.gauge, constvars), as.list(simvars)))
 }
 
 

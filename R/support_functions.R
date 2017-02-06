@@ -10,17 +10,22 @@ getConstantVars<-function(){
   "
 
   # Remove the constvars environment if it exists
-  if(exists("constvars")){
-    rm("constvars",envir=globalenv())
-  }
+  ## Once again this doesn't need to be here since were simply reassigning and not
+  ## messing with side effects and environments
+  # if(exists("constvars")){
+  #   rm("constvars",envir=globalenv())
+  # }
 
-  constvars<<-new.env()
-
+  
   cvars=read.csv("data/constant_vars.csv",stringsAsFactors = F)
-  for(i in 1:nrow(cvars)){
-    assign(cvars[i,]$Variable,cvars[i,]$Value,envir=constvars)
-  }
-
+  #Loops are slow vectorization isn't
+  # for(i in 1:nrow(cvars)){
+  #   assign(cvars[i,]$Variable,cvars[i,]$Value,envir=constvars)
+  # }
+  cvars.list <- split(cvars$Value, seq(nrow(cvars)))
+  names(cvars.list) <- cvars$Variable
+  
+  return(cvars.list)
 }
 
 getSimVars = function(random.starts = FALSE,
