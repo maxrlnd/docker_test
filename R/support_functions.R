@@ -61,7 +61,6 @@ getSimVars = function(station.gauge,
   drought.adaptation.cost.factor: Adjusts the impact of the low forage potential on costs of adaptation.
 
   "
-  options(warn = -1) # doesn't seem to get rid of warnings...
   
   ###No longer needed
   
