@@ -38,12 +38,15 @@ constvars <- getConstantVars()
 
 #### Generate Model Inputs ####
 generateRunParams <- function(acres.param = 3000){
-  getSimVars(random.starts = TRUE, 
+  simvars <- getSimVars(
+             station.gauge,         
+             constvars,
+             random.starts = TRUE, 
              use.forage = FALSE,
              random.acres=FALSE, 
              random.productivity=TRUE,
              acres = acres.param) # with simulated vars
-  return(append(append(station.gauge, constvars), as.list(simvars)))
+  return(append(append(station.gauge, constvars), (simvars)))
 }
 
 

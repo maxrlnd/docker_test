@@ -28,7 +28,13 @@ getConstantVars<-function(){
   return(cvars.list)
 }
 
-getSimVars = function(random.starts = FALSE,
+## I put staiton.gauge and constvars in the function statement,
+## this works better now that I changed these to list and makes it clear that 
+## the funciton requires these rather than using stop statements
+
+getSimVars = function(station.gauge,
+                      constvars,
+                      random.starts = FALSE,
                       use.forage = FALSE,
                       autoSelect.insurance = FALSE,
                       clv = 0.9,
@@ -56,23 +62,28 @@ getSimVars = function(random.starts = FALSE,
 
   "
   options(warn = -1) # doesn't seem to get rid of warnings...
-
+  
+  ###No longer needed
+  
   ## Ensure the baseline environments exist
-  if(!exists("station.gauge", envir = globalenv())){
-    stop("Station gauge information is required.")
-  }
-
-  if(!exists("constvars", envir = globalenv())){
-    stop("Constant variable information is required.")
-  }
-
-  # Remove the `simvars` environment if one currently exists
-  if(exists("simvars", envir = globalenv())){
-    rm("simvars", envir = globalenv())
-  }
+  # if(!exists("station.gauge", envir = globalenv())){
+  #   stop("Station gauge information is required.")
+  # }
+  # 
+  # if(!exists("constvars", envir = globalenv())){
+  #   stop("Constant variable information is required.")
+  # }
+  # 
+  # # Remove the `simvars` environment if one currently exists
+  # if(exists("simvars", envir = globalenv())){
+  #   rm("simvars", envir = globalenv())
+  # }
 
   # Create a fresh simulation vars environment
-  simvars <<- new.env()
+  # I removed the <<- here...keeping this environment locally and then converting to a 
+  # list at the end of the function is easier than trying to rewrite this whole function
+  # but gets rid of side effects 
+  simvars <- new.env()
 
   ## Range of years
   # if specified, use a random starting year
@@ -151,8 +162,10 @@ getSimVars = function(random.starts = FALSE,
 
   ## Precip, Forage Potential, and Calf Weight variables
   assign("styear", get("yyr", simvars)[1], envir = simvars) # Starting "drought" year
-  assign("dr_start", get("act.st.m", envir = constvars), envir = simvars) # Drought adaptive action starts
-  assign("dr_end", get("act.end.m", envir = constvars), envir = simvars) # Drought action ends
+  assign("dr_start", constvars$act.st.m, envir = simvars) # Drought adaptive action starts
+  assign("dr_end", constvars$act.end.m, envir = simvars) # Drought action ends
+  
+  return(as.list(simvars))
 
 }
 
