@@ -26,7 +26,10 @@ source("R/weaning_success.R")
 
 # Populate a new environment with station gauge info.
 # Default location is CPER site
-getStationGauge()
+## Currently this creates new variables through side effects (<<-) which
+ # are confusing and bad coding practice, I've changed this to make the code more readable
+ # also these were created using environments which is better done with list I've updated that
+station.gauge <- getStationGauge()
 
 # Populate a new environment with constant (user) variables
 getConstantVars()
@@ -39,7 +42,7 @@ generateRunParams <- function(acres.param = 3000){
              random.acres=FALSE, 
              random.productivity=TRUE,
              acres = acres.param) # with simulated vars
-  return(append(append(as.list(station.gauge), as.list(constvars)), as.list(simvars)))
+  return(append(append(station.gauge, as.list(constvars)), as.list(simvars)))
 }
 
 

@@ -209,11 +209,12 @@ getStationGauge<-function(target.loc="CPER"){
    and `tgrd` based on the target location.
 
   "
-
+  ## This isn't necessary because were simply going to be writing over the list named
+  ## station.gauge in the master.R file
   # clear station gauge environment if previously written
-  if(exists("station.gauge",envir = globalenv())){
-    rm("station.gauge",envir=globalenv())
-  }
+  # if(exists("station.gauge",envir = globalenv())){
+  #   rm("station.gauge",envir=globalenv())
+  # }
 
   if(target.loc=="CPER"){ # Use COOP sites or CPER: Default to CPER
 
@@ -259,16 +260,10 @@ getStationGauge<-function(target.loc="CPER"){
   }
 
   # Write vars to new env
-  station.gauge <<- new.env()
-  assign("zonewt", zonewt, envir = station.gauge)
-  assign("stzone", stzone, envir = station.gauge)
-  assign("stgg", stgg , envir = station.gauge)
-  assign("tgrd", tgrd, envir = station.gauge)
-
-  # SpatialPoints representation of target gridcell
-  # for fetching insurance results
-  assign("tgrd_pt", rastPt[rastPt@data$layer == tgrd, ],envir = station.gauge)
-
+  station.gauge <- vector("list", 5)
+  station.gauge <- list("zonewt" = zonewt, "stzone" = stzone, "stgg" = stgg,
+                        "tgrd" = tgrd, "tgrd_pt" = rastPt[rastPt@data$layer == tgrd, ])
+  return(station.gauge)
 }
 
 
