@@ -10,20 +10,31 @@ getConstantVars<-function(){
   "
 
   # Remove the constvars environment if it exists
-  if(exists("constvars")){
-    rm("constvars",envir=globalenv())
-  }
+  ## Once again this doesn't need to be here since were simply reassigning and not
+  ## messing with side effects and environments
+  # if(exists("constvars")){
+  #   rm("constvars",envir=globalenv())
+  # }
 
-  constvars<<-new.env()
-
+  
   cvars=read.csv("data/constant_vars.csv",stringsAsFactors = F)
-  for(i in 1:nrow(cvars)){
-    assign(cvars[i,]$Variable,cvars[i,]$Value,envir=constvars)
-  }
-
+  #Loops are slow vectorization isn't
+  # for(i in 1:nrow(cvars)){
+  #   assign(cvars[i,]$Variable,cvars[i,]$Value,envir=constvars)
+  # }
+  cvars.list <- split(cvars$Value, seq(nrow(cvars)))
+  names(cvars.list) <- cvars$Variable
+  
+  return(cvars.list)
 }
 
-getSimVars = function(random.starts = FALSE,
+## I put staiton.gauge and constvars in the function statement,
+## this works better now that I changed these to list and makes it clear that 
+## the funciton requires these rather than using stop statements
+
+getSimVars = function(station.gauge,
+                      constvars,
+                      random.starts = FALSE,
                       use.forage = FALSE,
                       autoSelect.insurance = FALSE,
                       clv = 0.9,
@@ -50,24 +61,28 @@ getSimVars = function(random.starts = FALSE,
   drought.adaptation.cost.factor: Adjusts the impact of the low forage potential on costs of adaptation.
 
   "
-  options(warn = -1) # doesn't seem to get rid of warnings...
-
+  
+  ###No longer needed
+  
   ## Ensure the baseline environments exist
-  if(!exists("station.gauge", envir = globalenv())){
-    stop("Station gauge information is required.")
-  }
-
-  if(!exists("constvars", envir = globalenv())){
-    stop("Constant variable information is required.")
-  }
-
-  # Remove the `simvars` environment if one currently exists
-  if(exists("simvars", envir = globalenv())){
-    rm("simvars", envir = globalenv())
-  }
+  # if(!exists("station.gauge", envir = globalenv())){
+  #   stop("Station gauge information is required.")
+  # }
+  # 
+  # if(!exists("constvars", envir = globalenv())){
+  #   stop("Constant variable information is required.")
+  # }
+  # 
+  # # Remove the `simvars` environment if one currently exists
+  # if(exists("simvars", envir = globalenv())){
+  #   rm("simvars", envir = globalenv())
+  # }
 
   # Create a fresh simulation vars environment
-  simvars <<- new.env()
+  # I removed the <<- here...keeping this environment locally and then converting to a 
+  # list at the end of the function is easier than trying to rewrite this whole function
+  # but gets rid of side effects 
+  simvars <- new.env()
 
   ## Range of years
   # if specified, use a random starting year
@@ -99,9 +114,8 @@ getSimVars = function(random.starts = FALSE,
   assign("p.wn", c(1.31, 1.25, 1.25, 1.25, 1.25), envir = simvars)
 
   ## set target insurance years
-  attach(simvars)
-  assign("yyr", styr:(4 + styr), envir = simvars) # all five years
-  detach(simvars)
+  assign("yyr", simvars$styr:(4 + simvars$styr), envir = simvars) # all five years
+  
 
   ## Set Insurance variables
   assign("clv", clv, envir = simvars) # insurance coverage level (0.7 - 0.9 in increments of 0.05)
@@ -146,8 +160,10 @@ getSimVars = function(random.starts = FALSE,
 
   ## Precip, Forage Potential, and Calf Weight variables
   assign("styear", get("yyr", simvars)[1], envir = simvars) # Starting "drought" year
-  assign("dr_start", get("act.st.m", envir = constvars), envir = simvars) # Drought adaptive action starts
-  assign("dr_end", get("act.end.m", envir = constvars), envir = simvars) # Drought action ends
+  assign("dr_start", constvars$act.st.m, envir = simvars) # Drought adaptive action starts
+  assign("dr_end", constvars$act.end.m, envir = simvars) # Drought action ends
+  
+  return(as.list(simvars))
 
 }
 
@@ -209,11 +225,12 @@ getStationGauge<-function(target.loc="CPER"){
    and `tgrd` based on the target location.
 
   "
-
+  ## This isn't necessary because were simply going to be writing over the list named
+  ## station.gauge in the master.R file
   # clear station gauge environment if previously written
-  if(exists("station.gauge",envir = globalenv())){
-    rm("station.gauge",envir=globalenv())
-  }
+  # if(exists("station.gauge",envir = globalenv())){
+  #   rm("station.gauge",envir=globalenv())
+  # }
 
   if(target.loc=="CPER"){ # Use COOP sites or CPER: Default to CPER
 
@@ -259,16 +276,10 @@ getStationGauge<-function(target.loc="CPER"){
   }
 
   # Write vars to new env
-  station.gauge <<- new.env()
-  assign("zonewt", zonewt, envir = station.gauge)
-  assign("stzone", stzone, envir = station.gauge)
-  assign("stgg", stgg , envir = station.gauge)
-  assign("tgrd", tgrd, envir = station.gauge)
-
-  # SpatialPoints representation of target gridcell
-  # for fetching insurance results
-  assign("tgrd_pt", rastPt[rastPt@data$layer == tgrd, ],envir = station.gauge)
-
+  station.gauge <- vector("list", 5)
+  station.gauge <- list("zonewt" = zonewt, "stzone" = stzone, "stgg" = stgg,
+                        "tgrd" = tgrd, "tgrd_pt" = rastPt[rastPt@data$layer == tgrd, ])
+  return(station.gauge)
 }
 
 
@@ -897,18 +908,31 @@ calfWeanWeight <- function(styr){
   if(!exists("constvars", envir = globalenv())){
     stop("Constant variable information is required.")
   }
-
-  attach(station.gauge)
-  attach(constvars)
+  
+  ## I honestly don't think these ever need to be attached here (station.gauge might need to be)
+  ## since they're attached in the functions that are calling them and this funciton inherits their environments
+  ## but I kept these just incase
+  constAtt <- F
+  stationAtt <- F
+  if(!any("constvars" %in% search())){
+    attach(constvars)
+    constAtt <- T
+  }
+  if(!any("station.gauge" %in% search())){
+    attach(station.gauge)
+    stationAtt <- T
+  }
+  
+  
   forage.weights = unlist(lapply(seq(styr, styr + 4),function(i){
     foragePWt(stgg, zonewt, stzone, i)
   }))
   calf_weights_ann = unlist(lapply(forage.weights, function(i){ # annual calf weights
     calfDroughtWeight(normal.wn.wt, i)
   }))
-  detach(station.gauge)
-  detach(constvars)
-
+  if(constAtt)detach(constvars)
+  if(stationAtt)detach(station.gauge)
+  
   calf_weights_ann
 }
 
