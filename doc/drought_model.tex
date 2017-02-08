@@ -402,7 +402,7 @@ When drought occurs and no adaption is undertaken, revenues are affected by calf
 \item Function: \verb!calfDroughtWeight!
 	\begin{itemize}
 	\item Description:
-	\item Inputs: $\bar{w}$ = \verb!expected.wn.wt! (average calf weight at weaning under normal conditions (pounds)), $w_{calf, 0}$ = \verb!calf.wt! ('current' weight of calves at decision point), $\alpha$ = \verb!forage.potential! (annual forage potential weight for zone)
+	\item Inputs: $\bar{w}$ = \verb!normal.wn.wt! (average calf weight at weaning under normal conditions (pounds)), $w_{calf, 0}$ = \verb!calf.wt! ('current' weight of calves at decision point), $\alpha$ = \verb!forage.potential! (annual forage potential weight for zone)
 	\item Output: $w_{noadpt, t}$ = \verb!wn.wt! (calf weight at weaning under no drought adaptation in year t)
 	\end{itemize}
 \end{itemize}
@@ -860,7 +860,7 @@ In \verb!master.R!:
           * *Default: 1200*
         * Average 'current' weight of calves (pounds; `calf.wt`)
           * *Default: 375*
-        * Expected weight of calves at weaning (pounds; `expected.wn.wt`)
+        * Expected weight of calves at weaning (pounds; `normal.wn.wt`)
           * *Default: 600*
           * This variable is used as a placeholder weight for years 2-5 when `use.forage` is set to `FALSE` in `getSimVars.R`
         * Average percentage of calves sold (%; `calf.sell`)
@@ -898,7 +898,7 @@ In \verb!master.R!:
           * *Default: 850*
         * Expected weight of calves at weaning (pounds; `calf.wt`)
           * *Default: 600*
-          * **REDUNDANT WITH `expected.wn.wt`- FIND WHERE THIS IS USED AND REPLACE IT!!**
+          * **REDUNDANT WITH `normal.wn.wt`- FIND WHERE THIS IS USED AND REPLACE IT!!**
 
   * **GENERATE MODEL INPUTS**
     * `generateRunParams` is a wrapper that calls the function `getSimVars` in `xx.R` to populate another environment `simvars` with model inputs. We will call this *n* times where *n* is the number of simulation runs.

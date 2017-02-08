@@ -82,7 +82,7 @@ getSimVars = function(random.starts = FALSE,
   if(use.forage){
     assign("wn.wt", calfWeanWeight(get("styr", simvars)), envir = simvars) # dynamic by year based on precip/forage
   }else{
-    assign("wn.wt", c(calfWeanWeight(get("styr", simvars))[1], rep(expected.wn.wt, 4)), envir = simvars) # year 1 only based on precip/forage
+    assign("wn.wt", c(calfWeanWeight(get("styr", simvars))[1], rep(normal.wn.wt, 4)), envir = simvars) # year 1 only based on precip/forage
   }
 
   # Drought action var's
@@ -1069,7 +1069,7 @@ CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days
   return(cost.rentpast)
 }
 
-CalculateRentPastRevenue <- function(herd, wn.succ, calf.sell, expected.wn.wt, calf.loss, calf.wt.adj, p.wn) {
+CalculateRentPastRevenue <- function(herd, wn.succ, calf.sell, normal.wn.wt, calf.loss, calf.wt.adj, p.wn) {
   "
   CalculateRentPastRevenue
   Description: Calculates calf sale revenues after trucking pairs to rented pastures
@@ -1091,7 +1091,7 @@ CalculateRentPastRevenue <- function(herd, wn.succ, calf.sell, expected.wn.wt, c
   calf.sales.num <- (herd * wn.succ * calf.sell) - calf.loss
 
   # Selling weight after accounting for weight loss due to transport stress
-  sell.wt <- expected.wn.wt * (1 + calf.wt.adj)
+  sell.wt <- normal.wn.wt * (1 + calf.wt.adj)
 
   # Expected calf sale revenues
   rev.rentpast <- calf.sales.num * sell.wt * p.wn
@@ -1436,7 +1436,7 @@ sim_run <- function(pars) {
   wn.succ <- AdjWeanSuccess(stgg, zonewt, stzone, styear, noadpt = FALSE, normal.wn.succ, t = t)
   base.sales <- unlist(lapply(1:t,function(i){
     CalculateExpSales(herd = herd, wn.succ = wn.succ[i], calf.sell = calf.sell, 
-                      wn.wt = expected.wn.wt, p.wn = p.wn[i])
+                      wn.wt = normal.wn.wt, p.wn = p.wn[i])
   }))
 
   # Calculate No-Drought Operating Costs
@@ -1533,7 +1533,7 @@ sim_run <- function(pars) {
   days.rent <- days.act # Assumes that pasture rental days are equivalent to drought adaptation action days
 
   # Calculate calf revenues in drought after trucking pairs to rented pasture
-  calf.rev.rentpast <- CalculateRentPastRevenue(expected.wn.wt = expected.wn.wt,
+  calf.rev.rentpast <- CalculateRentPastRevenue(normal.wn.wt = normal.wn.wt,
                                                 calf.loss = calf.loss,
                                                 calf.wt.adj = calf.wt.adj,
                                                 calf.sell = calf.sell,
