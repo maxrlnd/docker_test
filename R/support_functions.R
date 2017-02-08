@@ -97,7 +97,7 @@ getSimVars = function(station.gauge,
   if(use.forage){
     assign("wn.wt", calfWeanWeight(get("styr", simvars)), envir = simvars) # dynamic by year based on precip/forage
   }else{
-    assign("wn.wt", c(calfWeanWeight(get("styr", simvars))[1], rep(expected.wn.wt, 4)), envir = simvars) # year 1 only based on precip/forage
+    assign("wn.wt", c(calfWeanWeight(get("styr", simvars))[1], rep(normal.wn.wt, 4)), envir = simvars) # year 1 only based on precip/forage
   }
 
   # Drought action var's
@@ -993,13 +993,13 @@ CalculateAdaptationIntensity <- function(forage.potential, drought.adaptation.co
         replacement.)
       forage.potential (the percentage of average forage produced in a year 
         based on rainfall. See forage potential functions.)
-    Output: drght.act.adj (scales action to account for forage potential's 
+    Output: intens.adj (scales action to account for forage potential's 
       deviation from the norm.)
     Assumptions: The variable has a maximum of 1, which assumes that drought 
       actions are parameterized at full forage replacement for the full herd.
   "
   intens.adj <- ifelse(forage.potential >= 1, 0, (1 - forage.potential) * drought.adaptation.cost.factor)
-  intens.adj <- ifelse(drght.act.adj > 1, 1, drght.act.adj)  # putting a ceiling of this variable at 1 (no more than 100% of drought action)
+  intens.adj <- ifelse(intens.adj > 1, 1, intens.adj)  # putting a ceiling of this variable at 1 (no more than 100% of drought action)
   intens.adj
 }
 
@@ -1093,7 +1093,7 @@ CalculateRentPastCost <- function(n.miles, truck.cost, past.rent, oth.cost, days
   return(cost.rentpast)
 }
 
-CalculateRentPastRevenue <- function(herd, wn.succ, calf.sell, expected.wn.wt, calf.loss, calf.wt.adj, p.wn) {
+CalculateRentPastRevenue <- function(herd, wn.succ, calf.sell, normal.wn.wt, calf.loss, calf.wt.adj, p.wn) {
   "
   CalculateRentPastRevenue
   Description: Calculates calf sale revenues after trucking pairs to rented pastures
@@ -1115,7 +1115,7 @@ CalculateRentPastRevenue <- function(herd, wn.succ, calf.sell, expected.wn.wt, c
   calf.sales.num <- (herd * wn.succ * calf.sell) - calf.loss
 
   # Selling weight after accounting for weight loss due to transport stress
-  sell.wt <- expected.wn.wt * (1 + calf.wt.adj)
+  sell.wt <- normal.wn.wt * (1 + calf.wt.adj)
 
   # Expected calf sale revenues
   rev.rentpast <- calf.sales.num * sell.wt * p.wn
@@ -1460,7 +1460,7 @@ sim_run <- function(pars) {
   wn.succ <- AdjWeanSuccess(stgg, zonewt, stzone, styear, noadpt = FALSE, normal.wn.succ, t = t)
   base.sales <- unlist(lapply(1:t,function(i){
     CalculateExpSales(herd = herd, wn.succ = wn.succ[i], calf.sell = calf.sell, 
-                      wn.wt = expected.wn.wt, p.wn = p.wn[i])
+                      wn.wt = normal.wn.wt, p.wn = p.wn[i])
   }))
 
   # Calculate No-Drought Operating Costs
@@ -1557,7 +1557,7 @@ sim_run <- function(pars) {
   days.rent <- days.act # Assumes that pasture rental days are equivalent to drought adaptation action days
 
   # Calculate calf revenues in drought after trucking pairs to rented pasture
-  calf.rev.rentpast <- CalculateRentPastRevenue(expected.wn.wt = expected.wn.wt,
+  calf.rev.rentpast <- CalculateRentPastRevenue(normal.wn.wt = normal.wn.wt,
                                                 calf.loss = calf.loss,
                                                 calf.wt.adj = calf.wt.adj,
                                                 calf.sell = calf.sell,
