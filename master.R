@@ -16,10 +16,12 @@
 # # prevent from erasing custom location/insurance selection if set
  rm(list = ls()[!ls() %in% c("target.loc", "autoSelect.insurance",
                              "random.starts", "masterRunner", "runs")])
+ detach(constvars)
+ detach(station.gauge)
 
 # Source functions
 source("R/load.R")
-source("R/support_functions.R")
+source("R/dynamicFunctions.R")
 source("R/weaning_success.R")
 
 #### Setup ####
@@ -33,7 +35,7 @@ station.gauge <- getStationGauge()
 
 # Populate a new environment with constant (user) variables
 ## Did the same thing as with getStationGauge above
-constvars <- getConstantVars(start_year = 'random')
+constvars <- getConstantVars()
 
 
 #### Generate Model Inputs ####
@@ -46,8 +48,8 @@ generateRunParams <- function(acres.param = 3000){
   simvars <- getSimVars(
              station.gauge,         
              constvars,
-             start_year = 1990, 
-             sim_length = 10,
+             start_year = 2002, 
+             sim_length = 5,
              use.forage = T,
              random.acres=FALSE, 
              random.productivity=TRUE,
@@ -64,7 +66,7 @@ list.index <- seq_along(simruns)  # creating an index of the list number to stor
 for (i in 1:runs) {
   simruns[[i]]$sim.index <- list.index[i] 
 }
-outs <- lapply(simruns, sim_run)
+outs <- lapply(simruns, sim_run_single)
 outs <- rbindlist(outs)
 
 

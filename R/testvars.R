@@ -62,3 +62,6 @@ pfactor <- simvars$pfactor
 yyr <- simvars$yyr
 wn.wt <- simvars$wn.wt
 
+#Ins vars
+yy = 2002
+
