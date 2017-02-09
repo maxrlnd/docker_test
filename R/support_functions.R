@@ -24,17 +24,15 @@ getConstantVars<-function(){
   # }
   cvars.list <- split(cvars$Value, seq(nrow(cvars)))
   names(cvars.list) <- cvars$Variable
-  
   return(cvars.list)
 }
 
-## I put staiton.gauge and constvars in the function statement,
-## this works better now that I changed these to list and makes it clear that 
-## the funciton requires these rather than using stop statements
+
 
 getSimVars = function(station.gauge,
                       constvars,
-                      random.starts = FALSE,
+                      start_year = 'random', 
+                      sim_length = 5,
                       use.forage = FALSE,
                       autoSelect.insurance = FALSE,
                       clv = 0.9,
@@ -50,6 +48,8 @@ getSimVars = function(station.gauge,
   model var's
 
   Inputs:
+  station.gauge = list of station gauge variables generated using the getstationgauge function
+  constvars = list of constant variables generated using the getconstantVars function
   random.starts = TRUE: Choose random year to start simulations, then years following are temporally sequencial
   random.starts = FALSE: 2002 is the start year
   use.forage = TRUE: Calf weights without adaptation follow forage potential predictions
@@ -62,46 +62,27 @@ getSimVars = function(station.gauge,
 
   "
   
-  ###No longer needed
-  
-  ## Ensure the baseline environments exist
-  # if(!exists("station.gauge", envir = globalenv())){
-  #   stop("Station gauge information is required.")
-  # }
-  # 
-  # if(!exists("constvars", envir = globalenv())){
-  #   stop("Constant variable information is required.")
-  # }
-  # 
-  # # Remove the `simvars` environment if one currently exists
-  # if(exists("simvars", envir = globalenv())){
-  #   rm("simvars", envir = globalenv())
-  # }
-
-  # Create a fresh simulation vars environment
-  # I removed the <<- here...keeping this environment locally and then converting to a 
-  # list at the end of the function is easier than trying to rewrite this whole function
-  # but gets rid of side effects 
   simvars <- new.env()
-
+  print(sim_length)
   ## Range of years
   # if specified, use a random starting year
-  if(random.starts){
+  if(start_year == 'random'){
     assign("styr", round(runif(1, 1948, 2010)), envir = simvars)
   }else{
-    assign("styr", 2002, envir = simvars) # starting year in five-year period
+    assign("styr", start_year, envir = simvars) # starting year in five-year period
   }
 
   ## Static vs dynamic vars, based on forage
   attach(constvars) # use direct reference to `constvars` environment
   if(use.forage){
-    assign("wn.wt", calfWeanWeight(get("styr", simvars)), envir = simvars) # dynamic by year based on precip/forage
+    assign("wn.wt", calfWeanWeight(get("styr", simvars), sim_length), envir = simvars) # dynamic by year based on precip/forage
   }else{
-    assign("wn.wt", c(calfWeanWeight(get("styr", simvars))[1], rep(normal.wn.wt, 4)), envir = simvars) # year 1 only based on precip/forage
+    assign("wn.wt", c(calfWeanWeight(get("styr", simvars), sim_length)[1], rep(normal.wn.wt, sim_length-1)), envir = simvars) # year 1 only based on precip/forage
   }
 
   # Drought action var's
-  assign("drought.action", ifelse(1:5 %in% act.st.yr:act.end.yr, 1, 0), envir = simvars)
+  ## ****these are likely all going to need to be changedd
+  assign("drought.action", ifelse(1:sim_length %in% act.st.yr:act.end.yr, 1, 0), envir = simvars)
   assign("calf.loss", ifelse(get("drought.action", simvars) == 1, 2, 0), envir = simvars)
   assign("calf.wt.adj", ifelse(get("drought.action", simvars) == 1, -0.1, 0), envir = simvars)
   detach(constvars)
@@ -111,18 +92,22 @@ getSimVars = function(station.gauge,
   # make this constant??
   # previously 'p.wn.yr1', now vectorized for iteration
   # (I only have this here because vectors can't be represented well in `constant_vars.csv`)
-  assign("p.wn", c(1.31, 1.25, 1.25, 1.25, 1.25), envir = simvars)
+  # ****We likely are going to want to begin varying these but I'll leave them for now
+  assign("p.wn", c(1.31, rep(1.25, sim_length - 1)), envir = simvars)
 
   ## set target insurance years
-  assign("yyr", simvars$styr:(4 + simvars$styr), envir = simvars) # all five years
+  assign("yyr", simvars$styr:((sim_length-1) + simvars$styr), envir = simvars) # all five years
   
 
   ## Set Insurance variables
+  # ****We can probably leave this and then just change things as
+  # users decide whether to buy insurance or not
   assign("clv", clv, envir = simvars) # insurance coverage level (0.7 - 0.9 in increments of 0.05)
   assign("acres", acres, envir = simvars) # ranch acres
   assign("pfactor", pfactor, envir = simvars) # productivity factor (0.6 - 1.5)
 
   # insurance coverage level (0.7 - 0.9 in increments of 0.05)
+  # ****Remove this?
   if(random.coverage){
     assign("clv",round_any(runif(1,0.7,0.9),0.05),envir=simvars)
   }else{
@@ -160,6 +145,8 @@ getSimVars = function(station.gauge,
 
   ## Precip, Forage Potential, and Calf Weight variables
   assign("styear", get("yyr", simvars)[1], envir = simvars) # Starting "drought" year
+  
+  #****These  probably need to go
   assign("dr_start", constvars$act.st.m, envir = simvars) # Drought adaptive action starts
   assign("dr_end", constvars$act.end.m, envir = simvars) # Drought action ends
   
@@ -874,7 +861,7 @@ forageWeights2Intervals<-function(fpwt){
 calfDroughtWeight<-function(normal.wn.wt, forage.potential){
   "
   Description: If forage potential is less than 1, then the calf weight is less
-  
+  #****Is this method of reducing weight back up by the literature?
   "
   if(forage.potential < 1) {
     wn.wt <- normal.wn.wt * (1 - (1 - forage.potential)/3)
@@ -885,7 +872,7 @@ calfDroughtWeight<-function(normal.wn.wt, forage.potential){
  wn.wt 
 }
 
-calfWeanWeight <- function(styr){
+calfWeanWeight <- function(styr, sim_length){
 
   "
   Compute calf weights based on station/grid cell
@@ -923,17 +910,22 @@ calfWeanWeight <- function(styr){
     stationAtt <- T
   }
   
-  
-  forage.weights = unlist(lapply(seq(styr, styr + 4),function(i){
+  ## Calculate for potential for all years of the simulation
+  ## In a dynamic model we may want to decrement these based on previous decisions
+  ## but that might be best done elsewhere in the code
+  forage.weights = unlist(lapply(seq(styr, styr + (sim_length - 1)),function(i){
     foragePWt(stgg, zonewt, stzone, i)
   }))
+  
+  ## Calculate wean weight for each year of the simulation
+  ## Right now this is capped at normal.wn.wt is this correct?
   calf_weights_ann = unlist(lapply(forage.weights, function(i){ # annual calf weights
     calfDroughtWeight(normal.wn.wt, i)
   }))
   if(constAtt)detach(constvars)
   if(stationAtt)detach(station.gauge)
   
-  calf_weights_ann
+  return(calf_weights_ann)
 }
 
 # Drought Adaptation Functions --------------------------------------------

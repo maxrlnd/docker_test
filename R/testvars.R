@@ -45,6 +45,7 @@ tgrd <- station.gauge$tgrd
 stzone <- station.gauge$stzone
 
 # Simvars
+sim_length <- 5
 dr_start <- simvars$dr_start
 dr_end <- simvars$dr_end
 styear <- simvars$styear

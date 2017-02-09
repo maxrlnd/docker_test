@@ -33,7 +33,7 @@ station.gauge <- getStationGauge()
 
 # Populate a new environment with constant (user) variables
 ## Did the same thing as with getStationGauge above
-constvars <- getConstantVars()
+constvars <- getConstantVars(start_year = 'random')
 
 
 #### Generate Model Inputs ####
@@ -46,8 +46,9 @@ generateRunParams <- function(acres.param = 3000){
   simvars <- getSimVars(
              station.gauge,         
              constvars,
-             random.starts = TRUE, 
-             use.forage = FALSE,
+             start_year = 1990, 
+             sim_length = 10,
+             use.forage = T,
              random.acres=FALSE, 
              random.productivity=TRUE,
              acres = acres.param) # with simulated vars
