@@ -11,9 +11,13 @@ AdjWeanSuccess <- function(station.gauge, styear, noadpt = FALSE, normal.wn.succ
           wn.succ <- rep(normal.wn.succ, t)
         }
       if(noadpt == TRUE & forage.potential < 1) {
-        wn.succ[1] <- normal.wn.succ * (1 / (1 + exp(-(1 + forage.potential)*2))) 
-        wn.succ[2] <- normal.wn.succ * (1 / (1 + exp(-(1 + forage.potential))))
-        wn.succ[3:t] <- normal.wn.succ                                
+        if(t > 1){
+          wn.succ[1] <- normal.wn.succ * (1 / (1 + exp(-(1 + forage.potential)*2))) 
+          wn.succ[2] <- normal.wn.succ * (1 / (1 + exp(-(1 + forage.potential))))
+          wn.succ[3:t] <- normal.wn.succ                                
+        }else{
+          wn.succ <- normal.wn.succ * (1 / (1 + exp(-(1 + forage.potential)*2))) 
+        }
       }
     return(wn.succ)
   }  
