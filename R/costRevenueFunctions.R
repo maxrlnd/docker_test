@@ -177,4 +177,24 @@ CalculateSellPrsRev <- function(base.sales, herd, wn.succ, calf.wt, p.calf.t0) {
   calf.sales
 }
 
+getAdaptCost <- function(adpt_choice, pars, days.act, current_herd, intens.adj){
+  adpt_cost <- 0
+  if(adpt_choice == "feed"){
+    adpt_cost <- with(pars, CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, 180, current_herd, intens.adj))
+  }else if(adpt_choice == "rentpast"){
+    adpt_cost <- with(pars, CalculateRentPastCost(n.miles = n.miles,
+                                                         truck.cost = truck.cost,
+                                                         past.rent = past.rent,
+                                                         days.rent = days.act,
+                                                         oth.cost = oth.cost,
+                                                         max.wt = max.wt,
+                                                         cow.wt = cow.wt,
+                                                         calf.wt = calf.wt,
+                                                         herd = current_herd))
+  }else if(adpt_choice == ''){
+    
+  }
+  return(adpt_cost)
+}
+
 

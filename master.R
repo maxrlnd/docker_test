@@ -66,6 +66,13 @@ list.index <- seq_along(simruns)  # creating an index of the list number to stor
 for (i in 1:runs) {
   simruns[[i]]$sim.index <- list.index[i] 
 }
+simruns <- simruns[[1]]
+outs <- iniResults(simruns)
+for(i in 2:nrow(outs)){
+  outs[i,] <- sim_run_single(simruns, station.gauge, 5, 10, (simruns$styear + (i-2)), outs[i -1,])  
+}
+
+
 outs <- lapply(simruns, sim_run_single)
 outs <- rbindlist(outs)
 

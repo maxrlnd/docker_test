@@ -191,7 +191,7 @@ insMat <- function(tgrd, yyr, clv, acres, pfactor, insPurchase){
   
   ## Generate insurance info
   fiveYears = data.table(matrix(0, length(yyr), 3))  # empty matrix - year, indemnity, producer premium x number years
-  setnames(fiveYears, c("year", "indemnity", "producer_prem"))
+  setnames(fiveYears, c("year", "producer_prem", "indemnity"))
   fiveYears[,year := seq(yyr[1], yyr[length(yyr)])]  # populate years in first column
   #**PARALLELIZE THIS??**#
   #Probably not
@@ -210,7 +210,7 @@ insMat <- function(tgrd, yyr, clv, acres, pfactor, insPurchase){
                        tgrd = tgrd)[c("prodPrem", "indemtot")]
                    )
     )
-    fiveYears[year == yy, c("indemnity", "producer_prem") := as.list(ins_info[2:3])]
+    fiveYears[year == yy, c("producer_prem", "indemnity") := as.list(ins_info[2:3])]
   }
   
   return(fiveYears)

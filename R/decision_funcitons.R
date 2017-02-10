@@ -9,7 +9,7 @@ getAdptChoice <- function(station.gauge, decisionMonth, currentYear){
   "
   estForage <- foragePWt(station.gauge, currentYear, T, decisionMonth)
   if(estForage < 1){
-    adptChoice <- "buyFeed"
+    adptChoice <- "feed"
   }else{
     adptChoice <- "noAdpt"
   }
@@ -46,5 +46,19 @@ getInsChoice <- function(){
   "
   insChoice <- T
   return(insChoice)
+}
+
+getBuyDecision <- function(){
+  "
+  Returns a choice repurchaseing cows based on some number of rules...
+  not sure what this should look like
+  Inputs:
+  Not sure what we want to have for this one
+
+  Returns:
+  buyChoice: a boolean for whether to rebuy cows for the current year
+  "
+  buyChoice <- T
+  return(buyChoice)
 }
   
