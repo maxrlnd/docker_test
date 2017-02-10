@@ -1,10 +1,9 @@
-AdjWeanSuccess <- function(station.gauge, styear, noadpt = FALSE, normal.wn.succ, t) {
+AdjWeanSuccess <- function(forage.potential, noadpt = FALSE, normal.wn.succ, t) {
     # Description: Adusts weaning success downward for the year of the drought and the following year
     # NOTE: This equation is based on what I consider to be "reasonable" estimates
     #  of weaning success based on forage potential. We need to find a source
     #  that gives a better idea of the relationship
     
-    forage.potential <- foragePWt(station.gauge, styear)
     wn.succ <- NULL
     
       if(noadpt == FALSE | forage.potential >= 1) {
