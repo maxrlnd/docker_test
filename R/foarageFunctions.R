@@ -91,7 +91,7 @@ foragePWt <- function(station.gauge, styear,
   pidx  <- yearAvg[1,] / yearAvg[2,] 
   
   #Compute Forage Weight Potentials
-  foragewt = zonewt * pidx
+  foragewt = zonewt * pidx[, names(ave), with = F]
     
   
   # Compute annual forage potential weight for zone

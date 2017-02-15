@@ -155,7 +155,7 @@ getSimVars = function(station.gauge,
   detach(station.gauge)
   
   ## Precip, Forage Potential, and Calf Weight variables
-  assign("styear", get("yyr", simvars)[1], envir = simvars) # Starting "drought" year
+  
   
   #****These  probably need to go
   assign("dr_start", constvars$act.st.m, envir = simvars) # Drought adaptive action starts

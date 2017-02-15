@@ -48,7 +48,7 @@ generateRunParams <- function(acres.param = 3000){
              station.gauge,         
              constvars,
              start_year = 2002, 
-             sim_length = 5,
+             sim_length = 10,
              use.forage = T,
              random.acres=FALSE, 
              random.productivity=TRUE,
@@ -68,7 +68,7 @@ for (i in 1:runs) {
 simruns <- simruns[[1]]
 outs <- iniResults(simruns)
 for(i in 2:nrow(outs)){
-  outs[i,] <- sim_run_single(simruns, station.gauge, 5, 10, (simruns$styear + (i-2)), outs[i -1,])  
+  outs[i,] <- sim_run_single(simruns, station.gauge, 5, 10, (simruns$styr + (i-2)), outs[i -1,])  
 }
 
 

@@ -19,9 +19,7 @@ sim_run_single <- function(pars,
                            decisionMonth2,
                            currentYear,
                            prev_sim_results){
-  load("data/insurance_base.RData")
   functionEnv <- environment()
-  
   # Create results data.table
   sim_results <- data.table(matrix(0, 1, 22))
   setnames(sim_results, c("yr","adpt_choice","rev.calf", "rev.ins","rev.int", "rev.tot", "cost.op", "cost.ins", "cost.adpt",
@@ -55,7 +53,7 @@ sim_run_single <- function(pars,
   # Compute insurance premiums and indemnities
   if (purchase_ins & currentHerd > 0){
     rma.ins = with(pars, insMat(yy = currentYear, clv = clv, acres = acres,
-                     pfactor = pfactor, insPurchase  =  insp, grid = tgrd))
+                     pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
   }else{ # if purchase.insurance set to 0 (no insurance), simply set prem/indem = 0
     rma.ins = cbind(currentYear,matrix(0,1,2))
   }
@@ -134,14 +132,14 @@ sim_run_single <- function(pars,
                                              wn.succ = wn.succ, 
                                              calf.sell = calf.sell, 
                                              wn.wt = pars$normal.wn.wt, 
-                                             p.wn = pars$p.wn[currentYear - styear + 1])
+                                             p.wn = pars$p.wn[currentYear - styr + 1])
                           ))
     }else{
       calf.sales <- CalculateExpSales(herd = currentHerd, 
                         wn.succ = wn.succ, 
                         calf.sell = calf.sell, 
                         wn.wt = pars$normal.wn.wt, 
-                        p.wn = pars$p.wn[currentYear - pars$styear + 1])
+                        p.wn = pars$p.wn[currentYear - pars$styr + 1])
       adptCost <- 0
     }
   }

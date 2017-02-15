@@ -1,7 +1,7 @@
 
 # Insurance Functions -----------------------------------------------------
 
-insMat <- function(yy, clv, acres, pfactor, insPurchase, grid){
+insMat <- function(yy, clv, acres, pfactor, insPurchase, tgrd){
   "
   Author: Adam (based loosely on Joe's work)
   
