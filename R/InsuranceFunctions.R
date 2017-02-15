@@ -81,7 +81,7 @@ insMat <- function(yy, clv, acres, pfactor, insPurchase, tgrd){
   monthProtec <- plrt * insPurchase
   
   ## Calculate Premium for each Month
-  monthPrem <- (monthProtec * .01) * prem100[grid == tgrd, -c("grid", "state", "county")]
+  monthPrem <- (monthProtec * .01) * prem100[grid == tgrd, -"grid"]
   
   ## Calculate Premium subsidy for each month
   subSidy <- round(monthPrem * sbdy, 2)
