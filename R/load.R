@@ -24,7 +24,8 @@ library(magrittr)
 library(rgdal)
 library(snowfall)
 
-load("data/grid_base.RData") # Load base grid data
+## gird_base only needs to be loaded if we're going to be doing any raster stuff
+# load("data/grid_base.RData") # Load base grid data
 load("data/insurance_base.RData") # Load base insurance data
 
 # Load gridded precip
