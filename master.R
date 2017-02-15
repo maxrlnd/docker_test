@@ -16,13 +16,12 @@
 # # prevent from erasing custom location/insurance selection if set
  rm(list = ls()[!ls() %in% c("target.loc", "autoSelect.insurance",
                              "random.starts", "masterRunner", "runs")])
- detach(constvars)
- detach(station.gauge)
+detach(constvars)
+detach(station.gauge)
 
 # Source functions
 source("R/load.R")
 source("R/dynamicFunctions.R")
-source("R/weaning_success.R")
 
 #### Setup ####
 

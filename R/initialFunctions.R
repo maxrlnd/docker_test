@@ -274,10 +274,10 @@ getStationGauge<-function(target.loc="CPER"){
   }
   
   # Write vars to new env
+  ## Previously used to create a spatial point on the gridcell "tgrd_pt" = rastPt[rastPt@data$layer == tgrd, ]
   station.gauge <- vector("list", 5)
   station.gauge <- list("zonewt" = zonewt[stzone,], "stgg" = data.table(stgg),
-                        "tgrd" = tgrd, "tgrd_pt" = rastPt[rastPt@data$layer == tgrd, ],
-                        avg = data.table(stgg[nrow(stgg), ][, -1]))
+                        "tgrd" = tgrd, avg = data.table(stgg[nrow(stgg), ][, -1]))
   return(station.gauge)
 }
 
