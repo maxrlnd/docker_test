@@ -1,7 +1,8 @@
 
 # Forage Functions -------------------------------------------------------
 
-foragePWt <- function(station.gauge, styear, decision = FALSE, decisionMonth = 5){
+foragePWt <- function(station.gauge, styear, 
+                      decision = FALSE, decisionMonth = 5, farmYearStart = 11){
   
   "
   Returns a weight representing
@@ -53,11 +54,14 @@ foragePWt <- function(station.gauge, styear, decision = FALSE, decisionMonth = 5
   
   ## Subset zone weights and prep index
   
-  yprecip <- as.numeric(station.gauge$stgg[Year == styear, ][, -1])  # monthly precip amounts for start year
+  yprecip <- station.gauge$stgg[Year %in% (styear-1):styear, ]  # monthly precip amounts for start year
   zonewt <- station.gauge$zonewt
+  yprecip <- cbind((yprecip[Year == styear - 1, c("NOV", "DEC")]), 
+                   (yprecip[Year == styear, -c("NOV", "DEC", "Year")]))
+  ave <- station.gauge$avg
+  yearAvg <- rbindlist(list(yprecip, ave), use.names = T)
   
-  ave <- as.numeric(station.gauge$avg)  # average monthly precip since 1948
-  pidx  <- yprecip / ave # Monthly precip "index"
+  
   
   ##****This is an interesting approach does it work? CV results needed
   # Also the year we're working with should be removed
@@ -78,15 +82,17 @@ foragePWt <- function(station.gauge, styear, decision = FALSE, decisionMonth = 5
     # not sure why the rows are subsetting as lists!
     # foragewt <- unlist(c((zonewt * pidx), (zonewt * yidx)))
     
-    yprecip[decisionMonth:12] <- ave[decisionMonth:12]
-    pidx <- yprecip / ave
-    foragewt <- zonewt * pidx
+    # Replace Months forage in unknown months with the average
     
-  }else{ #default: long-term precip & zone weights
-    
-    foragewt = zonewt * pidx
-    
+    yearAvg[1, (names(ave)[decisionMonth:(farmYearStart -1)]) := ave[,decisionMonth:(farmYearStart -1)]] 
   }
+  
+  # Monthly precip "index"
+  pidx  <- yearAvg[1,] / yearAvg[2,] 
+  
+  #Compute Forage Weight Potentials
+  foragewt = zonewt * pidx
+    
   
   # Compute annual forage potential weight for zone
   forage.potential <- sum(foragewt)
