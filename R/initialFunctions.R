@@ -281,22 +281,35 @@ getStationGauge<-function(target.loc="CPER"){
   return(station.gauge)
 }
 
-iniResults <- function(pars){
+createResultsFrame <- function(pars = NULL){
   "
     This function creates a theoretical previous result from the year before the simultaion begins
     right now this assumes that there was no drought the year before the simulation and 
     revenues were 0. These assumptions are likely unrealistic and can be adjusted to accomidated different
     scenarios.
   "
-  sim_results <- data.table(matrix(0, pars$sim_length + 1, 23))
-  setnames(sim_results, c("yr","adpt_choice","rev.calf", "rev.ins","rev.int", "rev.tot", "cost.op", "cost.ins", "cost.adpt",
-                          "cost.int", "cost.tot", "profit", "taxes", "aftax.inc", "cap.sales",
-                          "cap.purch", "cap.taxes", "assets.cow", "assets.cash", "net.wrth", "wn.succ", "forage.potential", "herd") )
-  sim_results[1, herd := pars$herd]
-  sim_results[1, assets.cow := with(pars, CalcCowAssets(t = 1, herd = herd, p.cow = p.cow))]
-  sim_results[1, net.wrth := assets.cow + assets.cash]
-  sim_results[, adpt_choice := as.character(adpt_choice)]
-  sim_results[1, adpt_choice := "noadpt"]
-  sim_results[1, forage.potential := 1]
-  sim_results[1, wn.succ := pars$normal.wn.succ]
+  resultNames <- c("yr","adpt_choice","rev.calf", "rev.ins","rev.int", 
+                   "rev.tot", "cost.op", "cost.ins", "cost.adpt",
+                   "cost.int", "cost.tot", "profit", "taxes", "aftax.inc", 
+                   "cap.sales", "cap.purch", "cap.taxes", "assets.cow", 
+                   "assets.cash", "net.wrth", "wn.succ", "forage.potential", 
+                   "herd", "calves.sold", "cows.culled")
+  
+  if(!is.null(pars)){
+    sim_results <- data.table(matrix(0, pars$sim_length + 1, length(resultNames)))
+    setnames(sim_results, resultNames )
+    sim_results[1, herd := pars$herd]
+    sim_results[1, assets.cow := with(pars, CalcCowAssets(t = 1, herd = herd, p.cow = p.cow))]
+    sim_results[1, net.wrth := assets.cow + assets.cash]
+    sim_results[, adpt_choice := as.character(adpt_choice)]
+    sim_results[1, adpt_choice := "noadpt"]
+    sim_results[1, forage.potential := 1]
+    sim_results[1, wn.succ := pars$normal.wn.succ]
+    sim_results[1, calves.sold := pars$calf.sell]
+    sim_results[1, cows.culled := pars$cull.num]
+  }else{
+    sim_results <- data.table(matrix(0, 1, length(resultNames)))
+    setnames(sim_results, resultNames ) 
+  }
+  return(sim_results)
 }

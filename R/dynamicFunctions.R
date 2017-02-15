@@ -5,7 +5,7 @@ source("R/adaptationFunctions.R")
 source("R/assetFunctions.R")
 source("R/costRevenueFunctions.R")
 source("R/initialFunctions.R")
-source("R/weaning_success.R")
+source("R/calfCowFunctions.R")
 
 
 
@@ -18,16 +18,21 @@ sim_run_single <- function(pars,
                            decisionMonth1,
                            decisionMonth2,
                            currentYear,
-                           prev_sim_results){
+                           results_1ya,
+                           results_2ya){
+  
   functionEnv <- environment()
   # Create results data.table
-  sim_results <- data.table(matrix(0, 1, 22))
-  setnames(sim_results, c("yr","adpt_choice","rev.calf", "rev.ins","rev.int", "rev.tot", "cost.op", "cost.ins", "cost.adpt",
-                          "cost.int", "cost.tot", "profit", "taxes", "aftax.inc", "cap.sales",
-                          "cap.purch", "cap.taxes", "assets.cow", "assets.cash", "net.wrth", "wn.succ", "forage.potential") )
+  sim_results <- createResultsFrame()
+  
   
   # Use herd size from the end of previous simulation
-  currentHerd <- prev_sim_results$herd
+
+  currentHerd <- getHerdSize(results_1ya, results_2ya, pars$death.rate)
+  
+  
+  #Set current cull rate at standard
+  currentCull <- pars$cull.num
   
   # 
   # stopifnot(is.list(pars))
@@ -66,15 +71,15 @@ sim_run_single <- function(pars,
   
   # Calculate vector of days of drought adaptation action for each year
   
-  if(prev_sim_results$adpt_choice == "sellprs"){
+  if(results_1ya$adpt_choice == "sellprs"){
     
     # Find out whether cows are being repurchased
     buyDecision <- getBuyDecision()
     if(buyDecision){
       base.cap.purch <- pars$herd * pars$p.cow
       currentHerd <- pars$herd
-    }else if(prev_sim_results$cap.sales > 0){ # If cows aren't being repurchased then 
-      base.cap.taxes <- prev_sim_results$cap.sales * pars$cap.tax.rate
+    }else if(results_1ya$cap.sales > 0){ # If cows aren't being repurchased then 
+      base.cap.taxes <- results_1ya$cap.sales * pars$cap.tax.rate
     }
   }
   if(adpt_choice %in% c("sellprs", "sellprs.norepl") & currentHerd > 0){
@@ -107,7 +112,7 @@ sim_run_single <- function(pars,
     
     # Standard Culling
     #****This probably needs to be a percentage rather than a constant
-    base.cap.sales <- with(pars, cull.num * p.cow)
+    base.cap.sales <- with(pars, (currentCull * currentHerd) * p.cow)
     base.cap.taxes <- base.cap.sales * pars$cap.tax.rate
     
     if(adpt_choice != "noAdpt"){
@@ -143,24 +148,21 @@ sim_run_single <- function(pars,
       adptCost <- 0
     }
   }
-  if(currentHerd == 0 & prev_sim_results$adpt_choice == "sellprs.norepl"){
+  if(currentHerd == 0 & results_1ya$adpt_choice == "sellprs.norepl"){
     base.op.cost <- pars$herdless.op.cost
     adpt_choice <- "sellprs.norepl"
   }
   
  
-  setnames(sim_results, c("yr","adpt_choice","rev.calf", "rev.ins","rev.int", "rev.tot", "cost.op", "cost.ins", "cost.adpt",
-                          "cost.int", "cost.tot", "profit", "taxes", "aftax.inc", "cap.sales",
-                          "cap.purch", "cap.taxes", "assets.cow", "assets.cash", "net.wrth", "wn.succ", "forage.potential") )
   sim_results[, yr := currentYear]
   sim_results[, rev.calf := calf.sales]
   sim_results[, rev.ins := rma.ins$indemnity]
-  sim_results[, rev.int := prev_sim_results$assets.cash * pars$invst.int]
+  sim_results[, rev.int := results_1ya$assets.cash * pars$invst.int]
   sim_results[, rev.tot := rev.calf + rev.ins + rev.int]
   sim_results[, cost.op := base.op.cost]
   sim_results[, cost.ins := rma.ins$producer_prem]
-  sim_results[, cost.int := ifelse(prev_sim_results$assets.cash < 0,
-                                   prev_sim_results$assets.cash * -1 * loan.int,
+  sim_results[, cost.int := ifelse(results_1ya$assets.cash < 0,
+                                   results_1ya$assets.cash * -1 * loan.int,
                                    0)]
   sim_results[, cost.adpt := adptCost]
   sim_results[, cost.tot := cost.op + cost.ins + cost.int + cost.adpt]
@@ -173,7 +175,7 @@ sim_run_single <- function(pars,
   sim_results[, cap.sales := base.cap.sales]
   sim_results[, cap.taxes := base.cap.taxes]
   sim_results[, aftax.inc := profit - taxes]
-  sim_results[, assets.cash := prev_sim_results$assets.cash + aftax.inc + 
+  sim_results[, assets.cash := results_1ya$assets.cash + aftax.inc + 
                 cap.sales - cap.purch - cap.taxes]
   sim_results[, assets.cow := base.assets.cow]
   sim_results[, net.wrth := assets.cash + assets.cow]
@@ -181,6 +183,8 @@ sim_run_single <- function(pars,
   sim_results[, herd := currentHerd]
   sim_results[, forage.potential := get("forage.potential", envir = functionEnv)]
   sim_results[, adpt_choice := get("adpt_choice", envir = functionEnv)]
+  sim_results[, cows.culled := currentCull]
+  sim_results[, calves.sold := calf.sell]
 }
 
 
