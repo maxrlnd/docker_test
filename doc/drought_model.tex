@@ -802,24 +802,7 @@ Currently not equipped to handle multi-year droughts. This will be changed.
 
 
 \section{Dynamic Forage}
-
-Forage potential increases or decreases based on the grazing pressure on the land. 
-
-\begin{equation}
-\alpha_t = \alpha_{t-1} (1 - G_{t-1})
-\end{equation}
-
-Grazing pressure depends on the forage production, the herd size, and the level of investment in adaptation. In a year where drought adaptation is not needed ($\alpha_t > 0$), grazing pressure is determined by forage availability per cow-calf pair, $F_t$. If the forage availability is equal to 1, then there is no grazing pressure and forage potential for the following year remains unchanged. If $F_t > 1$, then forage potential increases (subject to a maximum). If $F_t < 1$, then forage potential decreases. In a year where drought adaptation is needed, grazing pressure depends on forage availability and how much drought adaptation is undertaken. With full drought adaptation, grazing pressure is the same as in a normal year. The double counting of forage availability in drought years helps to account for the possibility that during drought years, there is much more sensitivity to grazing intensity.  
-
-\begin{equation}
-G_t = 
-\begin{cases}
-1 - F_t & \text{if } \tilde{a_t} = 0 \\
-1 - F_t(2 - \frac{\tilde{a_t} - a_t}{\tilde{a_t}}) & \text{if } \tilde{a_t} > 0  
-\end{cases}
-\end{equation}
-
-Forage production per pair is the dot product of forage potential, $\alpha_t$, and the monthly rainfall, $\rho_t$, divided by the ratio of acres per cow and carrying capacity. In an average rainfall year with undegraded forage potential, if the herd size is equal to the carrying capacity, then $F_t = 1$. As forage increases or herd decreases, $F_t$ increases.
+Forage production per pair, $F_t$, is the dot product of forage potential, $\alpha_t$, and the monthly rainfall, $\rho_t$, divided by the ratio of acres per cow and carrying capacity. In an average rainfall year with undegraded forage potential, if the herd size is equal to the carrying capacity, then $F_t = 1$. As forage increases or herd decreases, $F_t$ increases.
 
 \begin{equation}
 F_t = \frac{\alpha_t \cdot \rho_t}{\%K}
@@ -829,8 +812,34 @@ F_t = \frac{\alpha_t \cdot \rho_t}{\%K}
 \end{equation}
 where $K$ is defined as the sustainable carrying capacity of the ranch in an average year (acres/cow).
 
+
+
+Grazing pressure depends on the forage production, the herd size, and the level of investment in adaptation. In a year where drought adaptation is not needed ($\alpha_t > 0$, thus $\tilde{a_t} = 0$), grazing pressure is determined by forage availability per cow-calf pair, $F_t$. If the forage availability is equal to 1, then $G_t$ goes to zero: there is no grazing pressure and forage potential for the following year remains unchanged. If $F_t > 1$, then forage potential increases (subject to a maximum, $\bar{\alpha}$). If $F_t < 1$, then forage potential decreases. 
+
+In a year where drought adaptation is needed, grazing pressure depends on forage availability and how much drought adaptation is undertaken. With full drought adaptation, grazing pressure is the same as in a normal year. The double counting of forage availability in drought years helps to account for the possibility that during drought years, there is much more sensitivity to grazing intensity.  
+
+\begin{equation}
+G_t = 
+\begin{cases}
+1 - F_t & \text{if } \tilde{a_t} = 0 \\
+1 - F_t(2 - \frac{\tilde{a_t} - a_t}{\tilde{a_t}}) & \text{if } \tilde{a_t} > 0  
+\end{cases}
+\end{equation}
+
+Forage potential increases or decreases based on the grazing pressure on the land. For each monthly value in the vector $\alpha_{t}$, the previous years' forage value is multiplied by a percentage that is determined by the grazing pressure and a scaling factor, $x$. The parameter $x$ will be determined by testing the equation for a variety of values. The end goal is to decrease the forage potential by 1-2\% per year when grazing pressure is high, as recommended by the team of ranching experts at the University of Wyoming. 
+
+When there is negative grazing pressure, the forage potential may increase to a maximum of $\bar{\alpha}$ which is determined by the MLRA plant growth curves. The sum of the elements of the $\bar{\alpha}$ vector must equal to 1.
+\begin{equation}
+\alpha_t = \alpha_{t-1} \left(1 - \frac{G_{t-1}}{x}\right)
+\end{equation}
+
+\begin{equation}
+\sum_{i=1}^{12} \bar{\alpha_{i}} = 1
+\end{equation}
+where $i$ indexes the twelve elements of the vector that represent the forage growth potential for each month.
+
 \section{Dynamic Herd Size}
-Herd size in year $t$ is a function of herd size in the previous year, $\theta_{t-1}$, percentage of cows culled in the previous year, $m_{t-1}$, death rate of cows in the previous year, $d_{t-1}$, herd size two years prior, $\theta_{t-2}$, weaning percentage two years prior, $y_{t-2}$, and percentage of calves sold two years prior, $m_{t-2}$:
+Herd size in year $t$ is a function of herd size in the previous year, $\theta_{t-1}$, percentage of cows culled in the previous year, $z_{t-1}$, death rate of cows in the previous year, $d_{t-1}$, herd size two years prior, $\theta_{t-2}$, weaning percentage two years prior, $y_{t-2}$, and percentage of calves sold two years prior, $m_{t-2}$:
 
 \begin{equation}
 \theta_t = \theta_{t-1} (1- d_{t-1}) (1 - z_{t-1}) + \theta_{t-2} y_{t-2} (1 - m_{t-2})
