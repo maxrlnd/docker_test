@@ -1,37 +1,13 @@
 
 # Insurance Functions -----------------------------------------------------
 
-dcInfo <- function(dc, tgrd){
-  
+insMat <- function(yy, clv, acres, pfactor, insPurchase, grid){
   "
-  Author: Joe
+  Author: Adam (based loosely on Joe's work)
   
-  Extracts drought calculator info from a
-  grid cell.
-  
-  dc: 'droughtCalculator' output (class LIST)
-  
-  tgrd: target grid cell ID
-  "
-  
-  dcinf = lapply(dc, function(X){
-    extract(X, rastPt[rastPt$layer == tgrd, ])
-  })
-  return(dcinf)
-}
-
-#***Ohhh boy this needs work... 
-
-droughtCalculator <- function(yy, clv, acres, pfactor, insPurchase, mask = NULL){
-  "
-  Author: Joe
-  
-  Emulates RMA's precipitation-based
-  insurance index in raster. NOTE
-  that premium/indemnity estimates
-  will be slightly off those of RMA
-  because our index values 'intervalNOAA'
-  slightly disagree.
+  Calculates premium and indemification for a specific year and
+  grid cell. Currently returns are summed bu this could be done
+  on a index interval basis instead.
   
   yy: Year of interest.
   
@@ -50,15 +26,12 @@ droughtCalculator <- function(yy, clv, acres, pfactor, insPurchase, mask = NULL)
   `rbind(c(3,0.5),c(5,0.5))`
   
   Consecutive intervals are not allowed.
+  Returns a data.table of outputs:
   
-  Returns a list of outputs:
-  
-  $prem_noSbdy: total premium with subsidy
-  $prem_wSbdy: total premium without subsidy
-  $prodPrem: producer premium
-  $indemrate: indemnity rate (stack, by month)
-  $indemnity: indemnity (stack, by month)
-  #indemtot: total indemnity
+  year: year of calculations
+  prod_prem: producer premium
+  indemnity: total indemnity
+  full_prem: premium without subsidy
   
   "
   
@@ -87,16 +60,7 @@ droughtCalculator <- function(yy, clv, acres, pfactor, insPurchase, mask = NULL)
   if(sum(insPurchase[, 2]) != 1){
     stop("Insurance allocation must sum to 100%.")
   }
-  
-  #   ##Clip by mask if specified
-  #   if(!is.null(mask)){
-  #     mask=subRast(gridRast,mask) #assign grid indices to mask
-  #     basePrice=subRast(basePrice,mask)
-  #     prem100=prem100[grid %in% as.numeric(as.matrix(mask)),]
-  #     intervalNOAA=intervalNOAA[grid %in% as.numeric(as.matrix(mask)),]
-  #     grid_elig=grid_elig[grid_elig$grid %in% as.numeric(as.matrix(mask)),]
-  #   }
-  
+
   ##Get subsidy rate based on coverage level
   sbdy <- covsub[coverage.trigger == clv, subsidy.rate]
   
@@ -105,117 +69,43 @@ droughtCalculator <- function(yy, clv, acres, pfactor, insPurchase, mask = NULL)
   ip[insPurchase[, 1]] = insPurchase[, 2]  # replaces 0's with interval allocations
   insPurchase = ip
   
-  ##Calculate policy rate
-  plrt = prod(clv, acres, pfactor) * basePrice  # why use prod() instead of multiplying?
-  
-  ##Generate inputs for computing premiums
-  premInt=stack() #Premium/$100 rate
-  protection=stack() #Protection amount
-  actualidx=stack() #"Actual Index Value" from RMA (precip index)
-  eligmask=stack() #eligibility mask
-  for (i in which(insPurchase>0)){
-    
-    premInt=stack(premInt,
-                  dataToRast(prem100,paste0("i",i)))
-    
-    protection=stack(protection,
-                     plrt*insPurchase[i])
-    
-    actualidx=stack(actualidx,
-                    dataToRast(intervalNOAA[Year==yy & interval==i,value,grid],"value")/100)
-    
-    eligmask=stack(eligmask,
-                   dataToRast(data.frame(grid=grid_elig$grid,
-                                         value=ifelse(grid_elig[[paste0("i",i)]]==1,1,NA)),"value"))
-    
+  ## Make sure interval selecitons are eligible for insurance
+  if(min(as.numeric(grid_elig[grid == tgrd, -"grid"]) - insPurchase) < 0){
+    stop("Ineligible index intervals for this grid cell selected")
   }
   
-  # names(premInt)=paste0("i",which(insPurchase>0))
-  # names(protection)=paste0("i",which(insPurchase>0))
-  # names(actualidx)=paste0("i",which(insPurchase>0))
+  ##Calculate policy rate
+  plrt = prod(clv, acres, pfactor) * basePrice[grid == tgrd, value]  # why use prod() instead of multiplying?
   
-  ##Compute premiums
-  prem_noSbdy=sum(premInt*protection*0.01)
-  prem_wSbdy=prem_noSbdy*sbdy
-  prodPrem=prem_noSbdy*(1-sbdy)
+  ## Calculate the protection for each index interval
+  monthProtec <- plrt * insPurchase
   
-  ##round premiums to match RMA
-  #(as closely as possible)
-  prem_noSbdy=round(prem_noSbdy,2)
-  prem_wSbdy=round(prem_wSbdy,2)
-  prodPrem=round(prodPrem,2)
-  actualidx=round(actualidx,3)
+  ## Calculate Premium for each Month
+  monthPrem <- (monthProtec * .01) * prem100[grid == tgrd, -c("grid", "state", "county")]
   
-  ##Compute indemnities
-  rma_rc=rbind(c(-Inf,clv,1),c(clv,Inf,0))
-  iscov=reclassify(actualidx,rma_rc) #binary raster of payouts triggered at 'clv'
-  indemrate=((clv-actualidx)/clv)*iscov*eligmask #pct diff from 'clv' if payout triggered
-  indemnity=indemrate*protection
-  indemtot=sum(indemnity) #total indemnity amount
+  ## Calculate Premium subsidy for each month
+  subSidy <- round(monthPrem * sbdy, 2)
   
-  ##Prepare outputs
-  outList=list()
-  outList$prem_noSbdy=prem_noSbdy
-  outList$prem_wSbdy=prem_wSbdy
-  outList$prodPrem=prodPrem
-  outList$indemrate=indemrate
-  outList$indemnity=indemnity
-  outList$indemtot=indemtot
+  ## Calculate subsidised premium for each month
+  subPrem <- round(monthPrem * (1-sbdy), 2)
   
-  return(outList)
+  ## Fetch index intervals
+  intervalIndicies <- data.table(t(intervalNOAA[Year == yy & grid == tgrd, value]))
+  setnames(intervalIndicies, names(subPrem))
+  
+  ## Calcualte the percent coverage for each month
+  ## Rounding can make a significant difference here RMA uses 3 decimals
+  coverageAmount <- round(clv - (intervalIndicies * .01), 3)
+  
+  ## Calculate Indemnities
+  indem <- unlist(ifelse(coverageAmount > 0, coverageAmount/clv * monthProtec, 0))
+
+  returnTable = data.table(matrix(nrow = 1, ncol = 4, data = c(yy, sum(subPrem), sum(indem), sum(monthPrem))))  # empty matrix - year, indemnity, producer premium x number years
+  setnames(returnTable, c("year", "producer_prem", "indemnity", "full_prem"))
+  
+  return(returnTable)
 }
 
-insMat <- function(tgrd, yyr, clv, acres, pfactor, insPurchase){
-  
-  "
-  
-  Generates a matrix representing insurance
-  premium payments and indemnities for a
-  specified grid cell over a five-year interval.
-  
-  tgrd: target grid cell
-  
-  yyr: starting year
-  
-  clv: coverage level
-  
-  acres: insured acres
-  
-  pfactor: land productivity factor
-  
-  insPurchase: a matrix representing
-  insurance allocation to two-month
-  intervals, with rows written in the
-  format [mm,amt]
-  "
-  
-  ## Generate insurance info
-  fiveYears = data.table(matrix(0, length(yyr), 3))  # empty matrix - year, indemnity, producer premium x number years
-  setnames(fiveYears, c("year", "producer_prem", "indemnity"))
-  fiveYears[,year := seq(yyr[1], yyr[length(yyr)])]  # populate years in first column
-  #**PARALLELIZE THIS??**#
-  #Probably not
-  for(yy in yyr){
-    
-    ins_info <-  c(yy,
-                   unlist(
-                     dcInfo(
-                       dc = droughtCalculator(
-                         yy = yy,
-                         clv = clv,
-                         acres = acres,
-                         pfactor = pfactor,
-                         insPurchase = insPurchase
-                       ),
-                       tgrd = tgrd)[c("prodPrem", "indemtot")]
-                   )
-    )
-    fiveYears[year == yy, c("producer_prem", "indemnity") := as.list(ins_info[2:3])]
-  }
-  
-  return(fiveYears)
-  
-}
 
 rescaleInsAlloc<-function(alloc_choice,max.alloc=0.6,min.alloc=0.1){
   
@@ -396,46 +286,6 @@ insAlloc<-function(fpwt, niv = 2, by.rank = T, max.alloc=0.6, min.alloc = 0.1){
   }
   
   return(wt_out)
-  
-}
-
-# Raster Functions --------------------------------------------------------
-
-gridToRaster <- function(grid, rasterTemplate){
-  # Author: Adam
-  #
-  # Simple wrapper to turn a matrix into a raster using a template
-  #
-  # Args:
-  #   grid: data in matrix format
-  #   rasterTemplate: template to use in rasterization of the matrix
-  #
-  # Returns: Raster of grid data
-  #
-  require(raster)
-  return(raster(grid, template = rasterTemplate))
-}
-
-dataToRast<-function(inData,target.var=NULL){
-  
-  "
-  Author: Joe
-  
-  Convert a data.frame/data.table field
-  to raster.
-  
-  inData: input data frame/table.
-  
-  target.var: character representing fields
-  to map to raster grid
-  "
-  
-  grd.idx=match(inData$grid,as.numeric(gridMatrix))
-  dataRast=gridMatrix
-  dataRast[grd.idx]=inData[[target.var]]
-  dataRast[-grd.idx]=NA
-  dataRast=gridToRaster(dataRast,tempRaster)
-  return(dataRast)
   
 }
 

@@ -54,8 +54,8 @@ sim_run_single <- function(pars,
   
   # Compute insurance premiums and indemnities
   if (purchase_ins & currentHerd > 0){
-    rma.ins = with(pars, insMat(tgrd = tgrd, yyr = currentYear, clv = clv, acres = acres,
-                     pfactor = pfactor, insPurchase  =  insp))
+    rma.ins = with(pars, insMat(yy = currentYear, clv = clv, acres = acres,
+                     pfactor = pfactor, insPurchase  =  insp, grid = tgrd))
   }else{ # if purchase.insurance set to 0 (no insurance), simply set prem/indem = 0
     rma.ins = cbind(currentYear,matrix(0,1,2))
   }
