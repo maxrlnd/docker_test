@@ -1,7 +1,7 @@
 
 # Forage Functions -------------------------------------------------------
 
-foragePWt <- function(station.gauge, styear, 
+foragePWt <- function(station.gauge, styear, herd, carryingCap,
                       decision = FALSE, decisionMonth = 5, farmYearStart = 11){
   
   "
@@ -96,6 +96,9 @@ foragePWt <- function(station.gauge, styear,
   
   # Compute annual forage potential weight for zone
   forage.potential <- sum(foragewt)
+  
+  ## Adjust for carying Capacity
+  forage.potential <- 
   
   return(forage.potential)
   

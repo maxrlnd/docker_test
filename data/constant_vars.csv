@@ -33,3 +33,5 @@ sell.cost,20
 replc.cost,850
 calf_wean,600
 death.rate,0.25
+carrying.cap,0.2
+forage.constant,10

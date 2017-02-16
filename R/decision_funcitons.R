@@ -1,5 +1,5 @@
 # Decision Functions-----------------------------------------------------------------------------
-getAdptChoice <- function(station.gauge, decisionMonth, currentYear){
+getAdptChoice <- function(station.gauge, decisionMonth, currentYear, estForage){
   "
   reads in precip to decision month and applys a rule for adaptation
   Inputs:
@@ -7,7 +7,7 @@ getAdptChoice <- function(station.gauge, decisionMonth, currentYear){
   decisionMonth: month the adaptation must be made
   currentYear: the current year
   "
-  estForage <- foragePWt(station.gauge, currentYear, T, decisionMonth)
+
   if(estForage < 1){
     adptChoice <- "feed"
   }else{
@@ -16,7 +16,7 @@ getAdptChoice <- function(station.gauge, decisionMonth, currentYear){
   return(adptChoice)
 }
 
-getCalfSales <- function(station.gauge, adpt_choice, decisionMonth, currentYear, calf.sell){
+getCalfSales <- function(station.gauge, adpt_choice, decisionMonth, currentYear, calf.sell, estForage){
   "
   reads in precip to decision month and applys a rule for the number of calves to sell
   Inputs:
@@ -28,7 +28,7 @@ getCalfSales <- function(station.gauge, adpt_choice, decisionMonth, currentYear,
   Returns:
   calf.sell: the percentage of calves to sell
   "
-  estForage <- foragePWt(station.gauge, currentYear, T, decisionMonth)
+  
   if(estForage < 1 & adpt_choice == "noAdpt"){
     calf.sell <- .9
   }
