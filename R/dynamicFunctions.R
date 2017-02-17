@@ -196,10 +196,11 @@ sim_run_single <- function(pars,
   sim_results[, adpt_choice := get("adpt_choice", envir = functionEnv)]
   sim_results[, cows.culled := currentCull]
   sim_results[, calves.sold := calf.sell]
-  sim_results[, zone.change := sum(origZoneWT) / sum(station.gauge$zonewt)]
+  sim_results[, zone.change :=  sum(station.gauge$zonewt) / sum(origZoneWT)]
   sim_results[, forage.factor := ifelse(forage.potential < 1 & adpt_choice == "noAdpt", 
                                         1 - forage.potential + forage.potential * (1 - (.5)),  # the .5 should be the "adaptation deficit"
-                                        1 - ifelse(forage.potential > 1, 1, forage.potential))]
+                                        # 0)]
+                                        1 - ifelse(forage.potential > 55, 1, forage.potential))]
 }
 
 
