@@ -25,10 +25,12 @@ purchase.insurance,1
 invst.int,0.0125
 cap.tax.rate,0.15
 t,5
-cull.num,15
+cull.num,0.025
 loan.int,0.065
 op.cost.adj,-100
 herdless.op.cost,30000
 sell.cost,20
 replc.cost,850
 calf_wean,600
+calf_wean,600
+death.rate,0.25

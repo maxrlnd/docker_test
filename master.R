@@ -66,13 +66,11 @@ for (i in 1:runs) {
   simruns[[i]]$sim.index <- list.index[i] 
 }
 simruns <- simruns[[1]]
-outs <- iniResults(simruns)
+outs <- createResultsFrame(simruns)
 for(i in 2:nrow(outs)){
-  outs[i,] <- sim_run_single(simruns, station.gauge, 5, 10, (simruns$styr + (i-2)), outs[i -1,])  
+  outs[i,] <- sim_run_single(simruns, station.gauge, 5, 10, 
+                             (simruns$styr + (i-2)), outs[i -1,],
+                             outs[i - ifelse(i == 2, 1, 2)])
 }
-
-
-outs <- lapply(simruns, sim_run_single)
-outs <- rbindlist(outs)
 
 
