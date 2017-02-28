@@ -83,14 +83,15 @@ getSimVars = function(station.gauge,
   }
   assign("sim_length", sim_length, env = simvars)
   
-  ## Static vs dynamic vars, based on forage
+  # Static vs dynamic vars, based on forage
   attach(constvars) # use direct reference to `constvars` environment
-  if(use.forage){
-    assign("wn.wt", calfWeanWeight(get("styr", simvars), sim_length), envir = simvars) # dynamic by year based on precip/forage
-  }else{
-    assign("wn.wt", c(calfWeanWeight(get("styr", simvars), sim_length)[1], rep(normal.wn.wt, sim_length-1)), envir = simvars) # year 1 only based on precip/forage
-  }
   
+  # if(use.forage){
+  #   assign("wn.wt", calfWeanWeight(get("styr", simvars), sim_length), envir = simvars) # dynamic by year based on precip/forage
+  # }else{
+  #   assign("wn.wt", c(calfWeanWeight(get("styr", simvars), sim_length)[1], rep(normal.wn.wt, sim_length-1)), envir = simvars) # year 1 only based on precip/forage
+  # }
+  # 
   # Drought action var's
   ## ****these are likely all going to need to be changedd
   assign("drought.action", ifelse(1:sim_length %in% act.st.yr:act.end.yr, 1, 0), envir = simvars)
@@ -288,12 +289,12 @@ createResultsFrame <- function(pars = NULL){
     revenues were 0. These assumptions are likely unrealistic and can be adjusted to accomidated different
     scenarios.
   "
-  resultNames <- c("yr","adpt_choice","rev.calf", "rev.ins","rev.int", 
+  resultNames <- c("yr","adapt_choice","rev.calf", "rev.ins","rev.int", 
                    "rev.tot", "cost.op", "cost.ins", "cost.adpt",
                    "cost.int", "cost.tot", "profit", "taxes", "aftax.inc", 
                    "cap.sales", "cap.purch", "cap.taxes", "assets.cow", 
                    "assets.cash", "net.wrth", "wn.succ", "forage.potential", 
-                   "herd", "calves.sold", "cows.culled")
+                   "herd", "calves.sold", "cows.culled", "zone.change", "forage.factor")
   
   if(!is.null(pars)){
     sim_results <- data.table(matrix(0, pars$sim_length + 1, length(resultNames)))
@@ -301,12 +302,14 @@ createResultsFrame <- function(pars = NULL){
     sim_results[1, herd := pars$herd]
     sim_results[1, assets.cow := with(pars, CalcCowAssets(t = 1, herd = herd, p.cow = p.cow))]
     sim_results[1, net.wrth := assets.cow + assets.cash]
-    sim_results[, adpt_choice := as.character(adpt_choice)]
-    sim_results[1, adpt_choice := "noadpt"]
+    sim_results[, adapt_choice := as.character(adapt_choice)]
+    sim_results[1, adapt_choice := "noadpt"]
     sim_results[1, forage.potential := 1]
     sim_results[1, wn.succ := pars$normal.wn.succ]
     sim_results[1, calves.sold := pars$calf.sell]
     sim_results[1, cows.culled := pars$cull.num]
+    sim_results[1, zone.change := 1]
+    sim_results[1, forage.factor := 0]
   }else{
     sim_results <- data.table(matrix(0, 1, length(resultNames)))
     setnames(sim_results, resultNames ) 
