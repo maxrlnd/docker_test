@@ -6,12 +6,10 @@ source("R/assetFunctions.R")
 source("R/costRevenueFunctions.R")
 source("R/initialFunctions.R")
 source("R/calfCowFunctions.R")
-
+source("R/herdFunctions.R")
 
 
 # Simulation Run Functions -------------------------------------------------
-
-
 
 sim_run_single <- function(pars,
                            station.gauge,
@@ -20,8 +18,6 @@ sim_run_single <- function(pars,
                            currentYear,
                            results_1ya,
                            results_2ya){
-  
-  functionEnv <- environment()
   
   # Create results data.table
   sim_results <- createResultsFrame()
@@ -32,23 +28,13 @@ sim_run_single <- function(pars,
   ## Adjust zonewt based on forage results from previous simulation
   station.gauge$zonewt <- results_1ya$zone.change * pars$zonewt * (1 - (results_1ya$forage.factor)/pars$forage.constant)
   
-  # print(station.gauge$zonewt)
-  
   # Use herd size from the end of previous simulation
   currentHerd <- getHerdSize(results_1ya, results_2ya, pars$death.rate)
   
-  
-  #Set current cull rate at standard
+  # Set current cull rate at standard
   currentCull <- pars$cull.num
   
-  # 
-  # stopifnot(is.list(pars))
-  # attach(pars)
-  # on.exit(detach(pars))
-  
-  # Calculate No-Drought Revenues from Calf Sales (aka base sales)
-  #****right now this will work but there won't be any carryover effects from
-  #    not adapting this needs to be fixed
+  ## Run Decision Functions
   purchase_ins <- getInsChoice()
   adpt_choice <- foragePWt(station.gauge, currentYear, currentHerd, pars$carrying.cap, T, decisionMonth1) %>%
                 getAdptChoice(station.gauge = station.gauge, decisionMonth = decisionMonth1, currentYear =  currentYear)
@@ -58,8 +44,8 @@ sim_run_single <- function(pars,
                            currentYear =  currentYear, calf.sell = pars$calf.sell)
   
   ## Calculate forage and weening 
-  forage.potential <- foragePWt(station.gauge, currentYear, currentHerd, pars$carrying.cap)
-  wn.succ <- AdjWeanSuccess(forage.potential, 
+  fp.current <- foragePWt(station.gauge, currentYear, currentHerd, pars$carrying.cap)
+  wn.succ.current <- AdjWeanSuccess(fp.current, 
                             noadpt = ifelse(adpt_choice == "noAdpt", T, F), 
                             pars$normal.wn.succ, t = 1)
   
@@ -80,9 +66,8 @@ sim_run_single <- function(pars,
   # Default purchases to 0 this will need to be adjusted
   base.cap.purch <- 0
   
-  # Calculate vector of days of drought adaptation action for each year
-  
-  if(results_1ya$adpt_choice == "sellprs"){
+  # Calculate outcome varialbes based on decisions above
+  if(results_1ya$adapt_choice == "sellprs"){
     
     # Find out whether cows are being repurchased
     buyDecision <- getBuyDecision()
@@ -122,12 +107,11 @@ sim_run_single <- function(pars,
   }else{
     
     # Standard Culling
-    #****This probably needs to be a percentage rather than a constant
     base.cap.sales <- with(pars, (currentCull * currentHerd) * p.cow)
     base.cap.taxes <- base.cap.sales * pars$cap.tax.rate
     
     if(adpt_choice != "noAdpt"){
-      intens.adj <- CalculateAdaptationIntensity(forage.potential)
+      intens.adj <- CalculateAdaptationIntensity(fp.current)
       
       #****Right now this is always going to come put as 180...this probably needs to be reworked
       #    to take into account the possiblity of selling early...maybe it starts as the time between
@@ -135,6 +119,7 @@ sim_run_single <- function(pars,
       
       days.act <- with(pars, CalculateDaysAction(act.st.yr, act.st.m, act.end.yr, act.end.m, 1))
       adptCost <- getAdaptCost(adpt_choice, pars, days.act, currentHerd, intens.adj)
+      
       ## calculate calf sales
       calf.sales <- with(pars, ifelse(adpt_choice == "rentpast",
                            CalculateRentPastRevenue(normal.wn.wt = normal.wn.wt,
@@ -142,29 +127,31 @@ sim_run_single <- function(pars,
                                                     calf.wt.adj = calf.wt.adj,
                                                     calf.sell = calf.sell,
                                                     herd = currentHerd,
-                                                    wn.succ = wn.succ,
+                                                    wn.succ = wn.succ.current,
                                                     p.wn = p.wn),
                            CalculateExpSales(herd = currentHerd, 
-                                             wn.succ = wn.succ, 
+                                             wn.succ = wn.succ.current, 
                                              calf.sell = calf.sell, 
                                              wn.wt = pars$normal.wn.wt, 
                                              p.wn = pars$p.wn[currentYear - styr + 1])
                           ))
     }else{
       calf.sales <- CalculateExpSales(herd = currentHerd, 
-                        wn.succ = wn.succ, 
+                        wn.succ = wn.succ.current, 
                         calf.sell = calf.sell, 
-                        wn.wt = calfDroughtWeight(pars$normal.wn.wt, forage.potential), 
+                        wn.wt = calfDroughtWeight(pars$normal.wn.wt, fp.current), 
                         p.wn = pars$p.wn[currentYear - pars$styr + 1])
       adptCost <- 0
     }
   }
-  if(currentHerd == 0 & results_1ya$adpt_choice == "sellprs.norepl"){
+  
+  # Adjustments if cows were sold the previous year with no replacement
+  if(currentHerd == 0 & results_1ya$adapt_choice == "sellprs.norepl"){
     base.op.cost <- pars$herdless.op.cost
     adpt_choice <- "sellprs.norepl"
   }
   
- 
+  # Assign resutls to the return frame 
   sim_results[, yr := currentYear]
   sim_results[, rev.calf := calf.sales]
   sim_results[, rev.ins := rma.ins$indemnity]
@@ -190,14 +177,14 @@ sim_run_single <- function(pars,
                 cap.sales - cap.purch - cap.taxes]
   sim_results[, assets.cow := base.assets.cow]
   sim_results[, net.wrth := assets.cash + assets.cow]
-  sim_results[, wn.succ := get("wn.succ", envir = functionEnv)]
+  sim_results[, wn.succ := wn.succ.current]
   sim_results[, herd := currentHerd]
-  sim_results[, forage.potential := get("forage.potential", envir = functionEnv)]
-  sim_results[, adpt_choice := get("adpt_choice", envir = functionEnv)]
+  sim_results[, forage.potential := fp.current]
+  sim_results[, adapt_choice := adpt_choice]
   sim_results[, cows.culled := currentCull]
   sim_results[, calves.sold := calf.sell]
   sim_results[, zone.change :=  sum(station.gauge$zonewt) / sum(origZoneWT)]
-  sim_results[, forage.factor := ifelse(forage.potential < 1 & adpt_choice == "noAdpt", 
+  sim_results[, forage.factor := ifelse(forage.potential < 1 & adapt_choice == "noAdpt", 
                                         1 - forage.potential + forage.potential * (1 - (.5)),  # the .5 should be the "adaptation deficit"
                                         # 0)]
                                         1 - ifelse(forage.potential > 55, 1, forage.potential))]

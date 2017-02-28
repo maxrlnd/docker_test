@@ -289,7 +289,7 @@ createResultsFrame <- function(pars = NULL){
     revenues were 0. These assumptions are likely unrealistic and can be adjusted to accomidated different
     scenarios.
   "
-  resultNames <- c("yr","adpt_choice","rev.calf", "rev.ins","rev.int", 
+  resultNames <- c("yr","adapt_choice","rev.calf", "rev.ins","rev.int", 
                    "rev.tot", "cost.op", "cost.ins", "cost.adpt",
                    "cost.int", "cost.tot", "profit", "taxes", "aftax.inc", 
                    "cap.sales", "cap.purch", "cap.taxes", "assets.cow", 
@@ -302,8 +302,8 @@ createResultsFrame <- function(pars = NULL){
     sim_results[1, herd := pars$herd]
     sim_results[1, assets.cow := with(pars, CalcCowAssets(t = 1, herd = herd, p.cow = p.cow))]
     sim_results[1, net.wrth := assets.cow + assets.cash]
-    sim_results[, adpt_choice := as.character(adpt_choice)]
-    sim_results[1, adpt_choice := "noadpt"]
+    sim_results[, adapt_choice := as.character(adapt_choice)]
+    sim_results[1, adapt_choice := "noadpt"]
     sim_results[1, forage.potential := 1]
     sim_results[1, wn.succ := pars$normal.wn.succ]
     sim_results[1, calves.sold := pars$calf.sell]

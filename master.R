@@ -16,8 +16,6 @@
 # # prevent from erasing custom location/insurance selection if set
  rm(list = ls()[!ls() %in% c("target.loc", "autoSelect.insurance",
                              "random.starts", "masterRunner", "runs")])
-detach(constvars)
-detach(station.gauge)
 
 # Source functions
 source("R/load.R")
@@ -27,13 +25,9 @@ source("R/dynamicFunctions.R")
 
 # Populate a new environment with station gauge info.
 # Default location is CPER site
-## Currently this creates new variables through side effects (<<-) which
- # are confusing and bad coding practice, I've changed this to make the code more readable
- # also these were created using environments which is better done with list I've updated that
 station.gauge <- getStationGauge()
 
 # Populate a new environment with constant (user) variables
-## Did the same thing as with getStationGauge above
 constvars <- getConstantVars()
 
 
@@ -59,14 +53,20 @@ generateRunParams <- function(acres.param = 3000){
 
 
 #### Non-parallel model run ####
+
+##Code used to run the simulation multiple times, currently not needed
 runs <- 1
 simruns <- rlply(runs, generateRunParams(acres.param = 3000))  # list of simulation variables for runs
 list.index <- seq_along(simruns)  # creating an index of the list number to store in the sim_outcomes and match back with the simruns variables
 for (i in 1:runs) {
   simruns[[i]]$sim.index <- list.index[i] 
 }
+
+##Create a output frame
 simruns <- simruns[[1]]
 outs <- createResultsFrame(simruns)
+
+##Run simulation
 for(i in 2:nrow(outs)){
   outs[i,] <- sim_run_single(simruns, station.gauge, 5, 10, 
                              (simruns$styr + (i-2)), outs[i -1,],
