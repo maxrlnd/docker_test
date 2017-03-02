@@ -26,7 +26,7 @@ sim_run_single <- function(pars,
   origZoneWT <- station.gauge$zonewt
   
   ## Adjust zonewt based on forage results from previous simulation
-  station.gauge$zonewt <- results_1ya$zone.change * pars$zonewt * (1 - (results_1ya$forage.factor)/pars$forage.constant)
+  station.gauge$zonewt <- results_1ya$zone.change * pars$zonewt * (1 - (results_1ya$Gt)/pars$forage.constant)
   
   # Use herd size from the end of previous simulation
   currentHerd <- getHerdSize(results_1ya, results_2ya, pars$death.rate)
@@ -183,8 +183,8 @@ sim_run_single <- function(pars,
   sim_results[, adapt_choice := adpt_choice]
   sim_results[, cows.culled := currentCull]
   sim_results[, calves.sold := calf.sell]
-  sim_results[, zone.change :=  sum(station.gauge$zonewt) / sum(origZoneWT)]
-  sim_results[, forage.factor := ifelse(forage.potential < 1 & adapt_choice == "noAdpt", 
+  sim_results[, zone.change :=  sum(station.gauge$zonewt)]
+  sim_results[, Gt := ifelse(forage.potential < 1 & adapt_choice == "noAdpt", 
                                         1 - forage.potential + forage.potential * (1 - (.5)),  # the .5 should be the "adaptation deficit"
                                         # 0)]
                                         1 - ifelse(forage.potential > 55, 1, forage.potential))]

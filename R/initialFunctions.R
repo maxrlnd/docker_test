@@ -294,7 +294,7 @@ createResultsFrame <- function(pars = NULL){
                    "cost.int", "cost.tot", "profit", "taxes", "aftax.inc", 
                    "cap.sales", "cap.purch", "cap.taxes", "assets.cow", 
                    "assets.cash", "net.wrth", "wn.succ", "forage.potential", 
-                   "herd", "calves.sold", "cows.culled", "zone.change", "forage.factor")
+                   "herd", "calves.sold", "cows.culled", "zone.change", "Gt")
   
   if(!is.null(pars)){
     sim_results <- data.table(matrix(0, pars$sim_length + 1, length(resultNames)))
@@ -309,7 +309,7 @@ createResultsFrame <- function(pars = NULL){
     sim_results[1, calves.sold := pars$calf.sell]
     sim_results[1, cows.culled := pars$cull.num]
     sim_results[1, zone.change := 1]
-    sim_results[1, forage.factor := 0]
+    sim_results[1, Gt := 0]
   }else{
     sim_results <- data.table(matrix(0, 1, length(resultNames)))
     setnames(sim_results, resultNames ) 
