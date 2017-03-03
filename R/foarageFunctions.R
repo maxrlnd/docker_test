@@ -98,7 +98,7 @@ foragePWt <- function(station.gauge, styear, herd, carryingCap,
   forage.potential <- sum(foragewt)
   
   ## Adjust for carying Capacity
-  # forage.potential <- 
+  forage.potential <-forage.potential/carryingCap
   
   return(forage.potential)
   

@@ -22,6 +22,11 @@ sim_run_single <- function(pars,
   # Create results data.table
   sim_results <- createResultsFrame()
   
+  ## This calculates the forage potential based only on the amount of precip recieved
+  # and doesn't account for past impacts on the range or carrying capacity, this is 
+  # used for calculating G(t) not sure if it makes sense ####
+  rainForage <- foragePWt(station.gauge, currentYear, currentHerd, currentHerd)
+  
   # Preserve Original zonewt
   origZoneWT <- station.gauge$zonewt
   
@@ -185,9 +190,9 @@ sim_run_single <- function(pars,
   sim_results[, calves.sold := calf.sell]
   sim_results[, zone.change :=  sum(station.gauge$zonewt)]
   sim_results[, Gt := ifelse(forage.potential < 1 & adapt_choice == "noAdpt", 
-                                        1 - forage.potential + forage.potential * (1 - (.5)),  # the .5 should be the "adaptation deficit"
+                                        1 - forage.potential + forage.potential * (1 - rainForage)/rainForage,  # the .5 should be the "adaptation deficit"
                                         # 0)]
-                                        1 - ifelse(forage.potential > 55, 1, forage.potential))]
+                                        1 - forage.potential)]
 }
 
 
