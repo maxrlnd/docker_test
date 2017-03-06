@@ -22,34 +22,39 @@ sim_run_single <- function(pars,
   # Create results data.table
   sim_results <- createResultsFrame()
   
+  # Use herd size from the end of previous simulation
+  # currentHerd <- getHerdSize(results_1ya, results_2ya, pars$death.rate)
+  currentHerd <- pars$herd
+  
+  carryRatio <- currentHerd / (pars$carrying.cap * pars$acres)
   ## This calculates the forage potential based only on the amount of precip recieved
   # and doesn't account for past impacts on the range or carrying capacity, this is 
   # used for calculating G(t) not sure if it makes sense ####
-  rainForage <- foragePWt(station.gauge, currentYear, currentHerd, currentHerd)
-  
+  rainForage <- foragePWt(station.gauge, currentYear, currentHerd, 1)
+
   # Preserve Original zonewt
   origZoneWT <- station.gauge$zonewt
   
   ## Adjust zonewt based on forage results from previous simulation
   station.gauge$zonewt <- results_1ya$zone.change * pars$zonewt * (1 - (results_1ya$Gt)/pars$forage.constant)
   
-  # Use herd size from the end of previous simulation
-  currentHerd <- getHerdSize(results_1ya, results_2ya, pars$death.rate)
+
   
   # Set current cull rate at standard
   currentCull <- pars$cull.num
   
   ## Run Decision Functions
   purchase_ins <- getInsChoice()
-  adpt_choice <- foragePWt(station.gauge, currentYear, currentHerd, pars$carrying.cap, T, decisionMonth1) %>%
+  print(foragePWt(station.gauge, currentYear, currentHerd, carryRatio, T, decisionMonth1))
+  adpt_choice <- foragePWt(station.gauge, currentYear, currentHerd, carryRatio, T, decisionMonth1) %>%
                 getAdptChoice(station.gauge = station.gauge, decisionMonth = decisionMonth1, currentYear =  currentYear)
-  
-  calf.sell <- foragePWt(station.gauge, currentYear, currentHerd, pars$carrying.cap, T, decisionMonth2)  %>%
+  print(adpt_choice)
+  calf.sell <- foragePWt(station.gauge, currentYear, currentHerd, carryRatio, T, decisionMonth2)  %>%
               getCalfSales(station.gauge = station.gauge, adpt_choice = adpt_choice, decisionMonth = decisionMonth2, 
                            currentYear =  currentYear, calf.sell = pars$calf.sell)
   
   ## Calculate forage and weening 
-  fp.current <- foragePWt(station.gauge, currentYear, currentHerd, pars$carrying.cap)
+  fp.current <- foragePWt(station.gauge, currentYear, currentHerd, carryRatio)
   wn.succ.current <- AdjWeanSuccess(fp.current, 
                             noadpt = ifelse(adpt_choice == "noAdpt", T, F), 
                             pars$normal.wn.succ, t = 1)
@@ -189,10 +194,12 @@ sim_run_single <- function(pars,
   sim_results[, cows.culled := currentCull]
   sim_results[, calves.sold := calf.sell]
   sim_results[, zone.change :=  sum(station.gauge$zonewt)]
+  
+  #### This is going to need some work once we start incorporating user adaptation choices
   sim_results[, Gt := ifelse(forage.potential < 1 & adapt_choice == "noAdpt", 
                                         1 - forage.potential + forage.potential * (1 - rainForage)/rainForage,  # the .5 should be the "adaptation deficit"
                                         # 0)]
-                                        1 - forage.potential)]
+                                        1 - max(forage.potential, .9))]
 }
 
 
