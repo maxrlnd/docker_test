@@ -93,7 +93,6 @@ getSimVars = function(station.gauge,
   # }
   # 
   # Drought action var's
-  ## ****these are likely all going to need to be changedd
   assign("drought.action", ifelse(1:sim_length %in% act.st.yr:act.end.yr, 1, 0), envir = simvars)
   assign("calf.loss", ifelse(get("drought.action", simvars) == 1, 2, 0), envir = simvars)
   assign("calf.wt.adj", ifelse(get("drought.action", simvars) == 1, -0.1, 0), envir = simvars)

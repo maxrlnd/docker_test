@@ -70,7 +70,6 @@ foragePWt <- function(station.gauge, styear, herd, carryingCap,
     ## Group years in period of record by monthly precip
     #****Do we want to change the way year is done  here?
     #****This method gives very high forage potentials I might have messed something up
-    #****I need to double check to  make sure I didn't fuck something up
     
     # cper <- station.gauge$stgg[1:which(Year == 2015),] # subset by period 1948-2015
     # cper_clust <- pamk(cper[, -1]) # Find optimal groups of years, k = 2-10

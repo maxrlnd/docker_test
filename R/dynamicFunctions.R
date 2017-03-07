@@ -45,10 +45,8 @@ sim_run_single <- function(pars,
   
   ## Run Decision Functions
   purchase_ins <- getInsChoice()
-  print(foragePWt(station.gauge, currentYear, currentHerd, carryRatio, T, decisionMonth1))
   adpt_choice <- foragePWt(station.gauge, currentYear, currentHerd, carryRatio, T, decisionMonth1) %>%
                 getAdptChoice(station.gauge = station.gauge, decisionMonth = decisionMonth1, currentYear =  currentYear)
-  print(adpt_choice)
   calf.sell <- foragePWt(station.gauge, currentYear, currentHerd, carryRatio, T, decisionMonth2)  %>%
               getCalfSales(station.gauge = station.gauge, adpt_choice = adpt_choice, decisionMonth = decisionMonth2, 
                            currentYear =  currentYear, calf.sell = pars$calf.sell)
