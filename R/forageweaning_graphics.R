@@ -4,12 +4,16 @@
 
 library(ggplot2)
 
-# Graph forage potential
-years <- 1948:2015
-forage.potential <- sapply(years, foragePWt, stgg = stgg, zonewt = zonewt, stzone = stzone)
-forage.potential.years <- data.frame(years, forage.potential)
-qplot(forage.potential, data = forage.potential.years, geom = "density")
-ggplot(forage.potential.years, aes(x = forage.potential)) + geom_density()
+# Forage potential over years
+years <- 1949:2015
+foragePWt(station.gauge = station.gauge, styear = 2015, herd = herd, carryingCap = 1)
+forage.potential <- sapply(1949:2015, foragePWt, station.gauge = station.gauge, herd = herd, carryingCap = 1)
+forage.potential_df <- data.frame(years, forage.potential)
+
+
+
+
+
 
 forage.drought <- ifelse(forage.potential < 1, forage.potential, 1)
 wn.succ_yr1 <- normal.wn.succ - (1 - forage.drought)/9
