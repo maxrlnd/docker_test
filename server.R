@@ -111,6 +111,23 @@ function(input, output, session) {
       textInput("expExplain", "Please explain your previous ranch experience")
     }
   })
+  
+  observe({
+    toggleClass(condition = input$foo,
+                class = "disabled",
+                selector = "#navBar li a[data-value=Demographics]")
+  })
+  
+  observe({
+    toggleClass(selector = "#navbar li a[data-value=Demographics]")
+  })
+  
+  observeEvent(input$agree, {
+    toggleClass(class = "disabled",
+                selector = "#navBar li a[data-value=Demographics]")
+    session$sendCustomMessage("myCallbackHandler", "1")
+  })
+  
   output$map <- renderLeaflet({
     leaflet() %>%
       addTiles(

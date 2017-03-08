@@ -8,12 +8,38 @@ library(shiny)
 library(markdown)
 library(leaflet)
 library(RColorBrewer)
+library(shinyjs)
 
 source("R/load.R")
 source("R/dynamicFunctions.R")
 source("R/shinny_support.R")
 source("R/weaning_success.R")
 
+## Code to disable tab
+jscode <- '
+shinyjs.init = function() {
+$(".nav").on("click", ".disabled", function (e) {
+e.preventDefault();
+return false;
+});
+}
+'
+
+css <- '
+.disabled {
+background: white !important;
+cursor: default !important;
+color: white !important;
+}
+'
+
+navbarPageWithJS <- function(..., text) {
+  navbar <- navbarPage(...)
+  textEl <- tags$p(class = "navbar-text", text)
+  navbar[[3]][[1]]$children[[1]] <- htmltools::tagAppendChild(
+    navbar[[3]][[1]]$children[[1]], textEl)
+  navbar
+}
 
 #### Setup ####
 
@@ -25,9 +51,22 @@ getStationGauge()
 getConstantVars()
 
 ##
-
-navbarPage("Ranch Drought",
- #       tags$head(tags$script("
+tagList(
+  useShinyjs(),
+  extendShinyjs(text = jscode, functions = "init"),
+  tags$style(css),
+  tags$head(tags$script('Shiny.addCustomMessageHandler("myCallbackHandler",
+                          function(typeMessage) {console.log(typeMessage)
+                          if(typeMessage == 1){
+                          console.log("got here");
+                          $("a:contains(Demographics)").click();
+                          }
+                          if(typeMessage == 2){
+                          $("a:contains(Select Data range)").click();
+                          }
+                          });
+                          ')),
+ #  tags$head(tags$script("
  #    window.onload = function() {
  #        $('#mynavlist a:contains(\"Demographics\")').parent().addClass('disabled');
  #        $('#mynavlist a:contains(\"Input\")').parent().addClass('disabled');
@@ -39,16 +78,19 @@ navbarPage("Ranch Drought",
  #        $('#mynavlist a:contains(\"' + nav_label + '\")').parent().removeClass('disabled');
  #    });
  # ")),
+navbarPage("Ranch Drought", id = "navBar",
+
  tabPanel("Instructions",
     fluidRow(
       column(12,
+             checkboxInput("foo", "Disable tab2", T),
              h4("Background"),
              p("This is background on what the model is and what it does blah blah balh"),
              h4("Instructions"),
              p("These are instructions for what you should do"),
              h4("Release/Agreeement"),
              p("You must agree to continue"),
-             radioButtons("agreement", "Agreement", c("I do not agree" = F, "I agree with everything above" = T))
+             actionButton("agree", "I Agree")
       )
     )),
            
@@ -204,6 +246,6 @@ navbarPage("Ranch Drought",
     )
   )
 )
-# )
+)
 
 
