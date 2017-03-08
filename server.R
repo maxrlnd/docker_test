@@ -106,6 +106,11 @@ function(input, output, session) {
     }
   })
   
+  output$exp <- renderUI({
+    if(input$experience == "Yes"){
+      textInput("expExplain", "Please explain your previous ranch experience")
+    }
+  })
   output$map <- renderLeaflet({
     leaflet() %>%
       addTiles(

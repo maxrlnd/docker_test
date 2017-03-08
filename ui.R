@@ -10,7 +10,7 @@ library(leaflet)
 library(RColorBrewer)
 
 source("R/load.R")
-source("R/support_functions.R")
+source("R/dynamicFunctions.R")
 source("R/shinny_support.R")
 source("R/weaning_success.R")
 
@@ -26,10 +26,52 @@ getConstantVars()
 
 ##
 
-
-
 navbarPage("Ranch Drought",
-
+ #       tags$head(tags$script("
+ #    window.onload = function() {
+ #        $('#mynavlist a:contains(\"Demographics\")').parent().addClass('disabled');
+ #        $('#mynavlist a:contains(\"Input\")').parent().addClass('disabled');
+ #        $('#mynavlist a:contains(\"Results\")').parent().addClass('disabled');
+ #        $('#mynavlist a:contains(\"Results\")').parent().addClass('disabled');
+ #    };
+ # 
+ #    Shiny.addCustomMessageHandler('activeNavs', function(nav_label) {
+ #        $('#mynavlist a:contains(\"' + nav_label + '\")').parent().removeClass('disabled');
+ #    });
+ # ")),
+ tabPanel("Instructions",
+    fluidRow(
+      column(12,
+             h4("Background"),
+             p("This is background on what the model is and what it does blah blah balh"),
+             h4("Instructions"),
+             p("These are instructions for what you should do"),
+             h4("Release/Agreeement"),
+             p("You must agree to continue"),
+             radioButtons("agreement", "Agreement", c("I do not agree" = F, "I agree with everything above" = T))
+      )
+    )),
+           
+  tabPanel("Demographics",
+    fluidRow(
+      column(3,
+        selectInput("gender", "Select Gender", c("No answer", "Female", "Male")),
+        textInput("age", "Enter Age")
+        ),
+      column(4,
+        selectInput("experience", "Have you ever worked on a ranch", c("No", "Yes")),
+        
+        ## You can create dynamic inputs using the uiOutput function see the corresponding section in the
+        ## server file under output$exp
+        uiOutput("exp"),
+        
+        ## This is silly just here as an example
+        sliderInput("like", "On a scale of 1 to 10 rate how you feel about ranchers with 1 being hate
+                    and 10 being love", min = 1, max = 10, value = 5)
+        )
+        
+    )),
+  
   # Input pane with all inputs from Excel UI
   tabPanel("Input",
     fluidRow(
@@ -120,62 +162,7 @@ navbarPage("Ranch Drought",
       )
     )
   ),
-  tabPanel("Insurance",
-   div(class="outer",
-       
-       tags$head(
-         # Include our custom CSS
-         includeCSS("styles.css")
-         # includeScript("gomap.js")
-        ),
-       leafletOutput("map", width = "100%", height = "100%"),
-       
-       absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-         draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
-         width = 330, height = "auto",
-         
-         h3("Insurance"),
-         # Purchase Insurance?
-         ## Change all further options to be dynamic based on this input
-         selectInput("purchase.insurance", h4("Purchase Insurance"),
-                     c("Yes" = 1, "No" = 0)),
-         selectInput("pfactor",label=h4("Productivity Factor"),choices=60:150,selected=100),
-         selectInput("clv",label=h4("Coverage Level"),choices=seq(70,90,by=5),selected=90),
-         numericInput("acres.param", label = h4("Acres"), 2000, min = 0, step = 100),
-         h4("Insurance Allocation"),
-         column(4,
-                selectInput("i1",label="Jan-Feb",
-                            choices=seq(0,1,by=0.1)),
-                selectInput("i4",label="Apr-May",
-                            choices=seq(0,1,by=0.1)),
-                selectInput("i7",label="Jul-Aug",
-                            choices=seq(0,1,by=0.1)),
-                selectInput("i10",label="Oct-Nov",
-                            choices=seq(0,1,by=0.1))
-         ),
-         column(4,
-                selectInput("i2",label="Feb-Mar",
-                            choices=seq(0,1,by=0.1)),
-                selectInput("i5",label="May-Jun",
-                            choices=seq(0,1,by=0.1),selected=0.5),
-                selectInput("i8",label="Aug-Sep",
-                            choices=seq(0,1,by=0.1)),
-                selectInput("i11",label="Nov-Dec",
-                            choices=seq(0,1,by=0.1))
-         ),
-         column(4,
-                selectInput("i3",label="Mar-Apr",
-                            choices=seq(0,1,by=0.1),selected=0.5),
-                selectInput("i6",label="Jun-Jul",
-                            choices=seq(0,1,by=0.1)),
-                selectInput("i9",label="Sep-Oct",
-                            choices=seq(0,1,by=0.1))
-         ),
-         actionButton("updateIns", "Update Insurance"),
-         h4(textOutput("text1"))
-       )
-     )
-  ),
+  
   tabPanel("Results",
     fluidPage(
       titlePanel("Simulation Results"),
@@ -217,4 +204,6 @@ navbarPage("Ranch Drought",
     )
   )
 )
+# )
+
 

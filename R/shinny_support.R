@@ -5,4 +5,4 @@ filter.titles <- list("opt" = c("Buy Feed", "Drought and No Adaptation", "No Dro
                                  "aftax.inc", "cap.sales", "cap.purch", "cap.taxes", "assets.cow", 
                                  "assets.cash", "net.wrth", "sim.index"))
 shapeDrawn <- F
-load("data/insGridShp.RData")
+# load("data/insGridShp.RData")
