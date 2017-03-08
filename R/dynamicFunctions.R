@@ -1,6 +1,6 @@
-source("R/decision_funcitons.R")
+source("R/decisionFunctions.R")
 source("R/InsuranceFunctions.R")
-source("R/foarageFunctions.R")
+source("R/forageFunctions.R")
 source("R/adaptationFunctions.R")
 source("R/assetFunctions.R")
 source("R/costRevenueFunctions.R")
