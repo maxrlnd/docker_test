@@ -72,7 +72,7 @@ if("random.starts"){
 if(use.forage){
   wn.wt <- calfWeanWeight(styr) # dynamic by year based on precip/forage
 }else{
-  wn.wt <- c(calfWeanWeight(styr)[1],rep(expected.wn.wt,4)) # year 1 only based on precip/forage
+  wn.wt <- c(calfWeanWeight(styr)[1],rep(normal.wn.wt,4)) # year 1 only based on precip/forage
 }
 
 # Drought action var's
@@ -101,7 +101,7 @@ p.wn<-c(1.31,1.25,1.25,1.25,1.25)
 # max.wt <- 40000
 # cow.wt <- 1200
 # calf.wt <- 375
-# expected.wn.wt <- 600 # expected calf weight at weaning
+# normal.wn.wt <- 600 # expected calf weight at weaning
 # calf.loss <- ifelse(drought.action==1,2,0) 
 # calf.wt.adj <- ifelse(drought.action==1,-0.1,0)
 # calf.sell <- 0.75

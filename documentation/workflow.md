@@ -55,7 +55,7 @@ All functions are run within `master.R` and call additional scripts from the `R`
           * *Default: 1200*
         * Average 'current' weight of calves (pounds; `calf.wt`)
           * *Default: 375*
-        * Expected weight of calves at weaning (pounds; `expected.wn.wt`)
+        * Expected weight of calves at weaning without drought (pounds; `normal.wn.wt`)
           * *Default: 600*
           * This variable is used as a placeholder weight for years 2-5 when `use.forage` is set to `FALSE` in `getSimVars.R`
         * Average percentage of calves sold (%; `calf.sell`)
@@ -93,7 +93,7 @@ All functions are run within `master.R` and call additional scripts from the `R`
           * *Default: 850*
         * Expected weight of calves at weaning (pounds; `calf.wt`)
           * *Default: 600*
-          * **REDUNDANT WITH `expected.wn.wt`- FIND WHERE THIS IS USED AND REPLACE IT!!**
+          * **REDUNDANT WITH `normal.wn.wt`- FIND WHERE THIS IS USED AND REPLACE IT!!**
 
   * **GENERATE MODEL INPUTS**
     * `generateRunParams` is a wrapper that calls the function `getSimVars` in `xx.R` to populate another environment `simvars` with model inputs. We will call this *n* times where *n* is the number of simulation runs.
