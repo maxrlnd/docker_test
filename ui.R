@@ -66,18 +66,7 @@ tagList(
                           }
                           });
                           ')),
- #  tags$head(tags$script("
- #    window.onload = function() {
- #        $('#mynavlist a:contains(\"Demographics\")').parent().addClass('disabled');
- #        $('#mynavlist a:contains(\"Input\")').parent().addClass('disabled');
- #        $('#mynavlist a:contains(\"Results\")').parent().addClass('disabled');
- #        $('#mynavlist a:contains(\"Results\")').parent().addClass('disabled');
- #    };
- # 
- #    Shiny.addCustomMessageHandler('activeNavs', function(nav_label) {
- #        $('#mynavlist a:contains(\"' + nav_label + '\")').parent().removeClass('disabled');
- #    });
- # ")),
+
 navbarPage("Ranch Drought", id = "navBar",
 
  tabPanel("Instructions",
