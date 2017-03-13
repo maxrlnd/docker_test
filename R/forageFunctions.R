@@ -103,6 +103,41 @@ foragePWt <- function(station.gauge, styear, herd, carryingCap,
   
 }
 
+whatIfForage <- function(station.gauge, zonewt, styear, herd, carryingCap,
+                         currentMonth, farmYearStart = 11, expectedFuture){
+  yprecip <- station.gauge$stgg[Year %in% (styear-1):styear, ]  # monthly precip amounts for start year
+  yprecip <- cbind((yprecip[Year == styear - 1, c("NOV", "DEC")]), 
+                   (yprecip[Year == styear, -c("NOV", "DEC", "Year")]))
+  ave <- station.gauge$avg
+  yearAvg <- rbindlist(list(yprecip, ave), use.names = T)
+  
+  if(expectedFuture == "normal"){
+    yearAvg[1, (names(ave)[currentMonth:(farmYearStart -1)]) := ave[,currentMonth:(farmYearStart -1)]]
+  }
+  if(expectedFuture == "low"){
+    yearAvg[1, (names(ave)[currentMonth:(farmYearStart -1)]) := ave[,currentMonth:(farmYearStart -1)] * .5]
+  }
+  if(expectedFuture == "high"){
+    yearAvg[1, (names(ave)[currentMonth:(farmYearStart -1)]) := ave[,currentMonth:(farmYearStart -1)] * 1.5]
+  }
+  
+  # Monthly precip "index"
+  pidx  <- yearAvg[1,] / yearAvg[2,] 
+  
+  #Compute Forage Weight Potentials
+  foragewt = zonewt * pidx[, names(ave), with = F]
+  
+  
+  # Compute annual forage potential weight for zone
+  forage.potential <- sum(foragewt)
+  
+  ## Adjust for carying Capacity
+  forage.potential <-forage.potential/carryingCap
+  
+  return(forage.potential)
+  
+  
+}
 
 getMRLAWeights<-function(state.code){
   
