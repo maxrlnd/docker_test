@@ -51,8 +51,9 @@ function(input, output, session) {
   })
   
   output$text1 <- renderText({
-    print(input$map_zoom)
-    input$map_zoom
+    print(input$agree[[1]])
+    # print(input$map_zoom)
+    # input$map_zoom
     })
   
   output$table <- DT::renderDataTable(DT::datatable({
@@ -112,13 +113,24 @@ function(input, output, session) {
     }
   })
   
-  output$test <- renderUI({
-    tagList(  
-      tabPanel(paste("year", runif(1,1,1000))),
-      p("hello")
-    )
+
+  output$decision1 <- renderUI({
+    if(input$year1Start == 1){
+      getJulyInfo()
+    }
   })
   
+  output$winterInfo <- renderUI({
+    getWinterInfo()
+  })
+  
+  ########## Functions to Print out state information
+  
+  output$julyRain <- renderTable({
+    julyRain <- station.gauge$stgg[Year == (startYear + currentYear - 1),-1]/station.gauge$avg * 100
+    julyRain[, 7:12 := "?"]
+  })
+ 
   observe({
     toggleClass(condition = input$foo,
                 class = "disabled",
@@ -127,6 +139,10 @@ function(input, output, session) {
   
   observe({
     toggleClass(selector = "#navbar li a[data-value=Demographics]")
+  })
+  
+  observeEvent(input$year1Start, {
+    shinyjs::disable("year1Start")
   })
   
   observeEvent(input$agree, {
