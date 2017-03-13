@@ -112,6 +112,13 @@ function(input, output, session) {
     }
   })
   
+  output$test <- renderUI({
+    tagList(  
+      tabPanel(paste("year", runif(1,1,1000))),
+      p("hello")
+    )
+  })
+  
   observe({
     toggleClass(condition = input$foo,
                 class = "disabled",
