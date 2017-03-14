@@ -97,6 +97,7 @@ getHerdSize <- function(results_1ya, results_2ya, deathRate){
   currentHerd <- (results_1ya$herd * (1 - deathRate) * 
                     (1 - results_1ya$cows.culled) + 
                     (results_2ya$herd * results_2ya$wn.succ) *
-                    (1 - results_2ya$calves.sold))
+                    (1 - results_2ya$calves.sold) * (1 - deathRate))
   return(currentHerd)
 }
+
