@@ -53,8 +53,6 @@ generateRunParams <- function(acres.param = 3000){
 
 
 #### Non-parallel model run ####
-
-##Code used to run the simulation multiple times, currently not needed
 runs <- 1
 simruns <- rlply(runs, generateRunParams(acres.param = 3000))  # list of simulation variables for runs
 list.index <- seq_along(simruns)  # creating an index of the list number to store in the sim_outcomes and match back with the simruns variables
