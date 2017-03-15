@@ -4,35 +4,6 @@
   #   statement in the server to change them to numerics (http://stackoverflow.com/questions/24960407/r-shiny-numeric-input-without-selectors)
 
 
-library(shiny)
-library(markdown)
-library(leaflet)
-library(RColorBrewer)
-library(shinyjs)
-
-source("R/load.R")
-source("R/dynamicFunctions.R")
-source("R/shinny_support.R")
-source("R/weaning_success.R")
-
-## Code to disable tab
-jscode <- '
-shinyjs.init = function() {
-$(".nav").on("click", ".disabled", function (e) {
-e.preventDefault();
-return false;
-});
-}
-'
-
-css <- '
-.disabled {
-background: white !important;
-cursor: default !important;
-color: white !important;
-}
-'
-
 navbarPageWithJS <- function(..., text) {
   navbar <- navbarPage(...)
   textEl <- tags$p(class = "navbar-text", text)
@@ -103,7 +74,7 @@ tabsetPanel(
 
  tabPanel("Year 1",
     fluidRow(
-      column(6,
+      column(8,
         uiOutput("winterInfo"),
         fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
         uiOutput("decision1")

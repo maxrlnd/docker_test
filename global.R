@@ -1,5 +1,32 @@
 #### Setup ####
+library(shiny)
+library(markdown)
+library(leaflet)
+library(RColorBrewer)
+library(shinyjs)
 
+source("R/load.R")
+source("R/dynamicFunctions.R")
+source("R/shinny_support.R")
+source("R/weaning_success.R")
+
+## Code to disable tab
+jscode <- '
+shinyjs.init = function() {
+$(".nav").on("click", ".disabled", function (e) {
+e.preventDefault();
+return false;
+});
+}
+'
+
+css <- '
+.disabled {
+background: white !important;
+cursor: default !important;
+color: white !important;
+}
+'
 # Populate a new environment with station gauge info.
 # Default location is CPER site
 station.gauge <- getStationGauge()
