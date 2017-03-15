@@ -41,11 +41,11 @@ calfWeanWeight <- function(styr, sim_length){
   
   "
   Compute calf weights based on station/grid cell
-  forage potential for a five-year period.
+  forage potential for a n-year period.
   
   Inputs:
   
-  styr: starting year of the five-year period.
+  styr: starting year of the n-year period.
   
   Wean weights are computed for each of the five years as a summed product of
   the target location's forage potential weights and precipitation index by

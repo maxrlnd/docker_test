@@ -7,10 +7,30 @@ library(ggplot2)
 # Forage potential over years
 years <- 1949:2015
 foragePWt(station.gauge = station.gauge, styear = 2015, herd = herd, carryingCap = 1)
-forage.potential <- sapply(1949:2015, foragePWt, station.gauge = station.gauge, herd = herd, carryingCap = 1)
-forage.potential_df <- data.frame(years, forage.potential)
+forage <- sapply(1949:2015, foragePWt, station.gauge = station.gauge, herd = herd, carryingCap = 1)
+forage_df <- data.frame(years, forage)
+
+# How is forage related to weaning weights? Assuming no adaptation:
+carryingCap <- 1
+avg_wean_weights <- sapply(1949:2015, calfWeanWeight, 1)  # This isn't working...
+wean_weights_df <- data.frame(years, forage, avg_wean_weights)
+
+# How is forage related to weaning percentage? Assuming no adaptation:
+wean_percentage <- lapply(forage, AdjWeanSuccess, noadpt = TRUE, normal.wn.succ, 3)
+wean_percentage_yr1 <- sapply(wean_percentage, `[[`, 1)
+wean_percentage_yr2 <- sapply(wean_percentage, `[[`, 2)
+wean_percentage_df <- data.frame(years, forage, wean_percentage_yr1, wean_percentage_yr2)
 
 
+
+
+
+
+
+
+
+
+####### Old Code
 
 
 
