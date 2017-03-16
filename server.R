@@ -107,6 +107,8 @@ function(input, output, session) {
     }
   })
   
+  #####Dynamic UI Functions#####################
+  
   output$exp <- renderUI({
     if(input$experience == "Yes"){
       textInput("expExplain", "Please explain your previous ranch experience")
@@ -120,9 +122,44 @@ function(input, output, session) {
     }
   })
   
+  output$continue1 <- renderUI({
+    if(input$year1Start == 1){
+      actionButton("year1Summer", "Continue")
+    }
+  })
+  
   output$winterInfo <- renderUI({
     getWinterInfo()
   })
+  
+  output$insuranceUpdate <- renderUI({
+    if(!is.null(input$year1Summer)){
+      if(input$year1Summer == 1){
+        rma.ins = with(simRuns, insMat(yy = styr + currentYear - 1, clv = clv, acres = acres,
+                                       pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+        indem <- round(rma.ins$indemnity, 0)
+        tagList(
+          h4("Insurance Payout"),
+          if(indem > 0){
+            p(paste0("You have received a check for $", indem, " from your rain insurance policy."))
+          }else{
+            p("You did not recieve a check for your rain insurance policy")
+          }
+        )
+      }
+    }
+  })
+    
+    output$cowSell <- renderUI({
+      if(!is.null(input$year1Summer)){
+        if(input$year1Summer == 1){
+          getCowSell()
+        }
+      }
+    })
+
+
+
   
   ########## Functions to Print out state information
   
@@ -143,6 +180,12 @@ function(input, output, session) {
   
   observeEvent(input$year1Start, {
     shinyjs::disable("year1Start")
+  })
+
+  observeEvent(input$year1Summer, {
+    shinyjs::disable("year1Summer")
+    shinyjs::disable("d1AdaptSpent")
+    
   })
   
   observeEvent(input$agree, {

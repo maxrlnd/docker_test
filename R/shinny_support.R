@@ -55,7 +55,7 @@ getJulyInfo <- function(){
     p(paste0("If rainfall for the rest of the year is average your available forage will be ", forageList[1], "% of normal")),
     p(paste0("If rainfall for the rest of the year is above average your available forage will be ", forageList[2], "% of normal")),
     p(paste0("If rainfall for the rest of the year is below average your available forage will be ", forageList[3], "% of normal")),
-    sliderInput("d1AdaptSpent", "How much hay, if any, do you want to purchase for your herd",
+    sliderInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd",
                 min = 0, max = adaptationCost[4], value = 0, step = 100, width = "600px"),
     p(paste0("If rainfall over the next few months is normal, you should buy $", adaptationCost[1], 
             " of hay to get your herd in ideal shape for market.")),
@@ -63,5 +63,24 @@ getJulyInfo <- function(){
             " of hay to get your herd in ideal shape for market.")),
     p(paste0("If rainfall over the next few months is below normal, you should buy $", adaptationCost[3], 
             " of hay to get your herd in ideal shape for market."))
+  )
+}
+
+getCowSell <- function(){
+  
+  tagList(
+    h4("Fall Cow and Calf Sales"),
+    sliderInput(paste0("calve", currentYear, "Sale"), "How many calves do you want to sell",
+                min = 0, max = myOuts[currentYear, herd], value =  20, step = 1, width = "600px"),
+    sliderInput(paste0("cow", currentYear, "Sale"), "How many cows do you want to sell",
+                min = 0, max = myOuts[currentYear, herd], value =  20, step = 1, width = "600px"),
+    tags$li("If you sell X calves and Y cows, your herd will stay approximately the 
+            same size as it is now. If you sell more, then your herd size will decrease. 
+            If you sell fewer, then your herd size will grow."),
+    tags$li("Selling a cow now means that you get more revenue this year, 
+            but you will produce fewer calves next year."),
+    tags$li("Keeping a calf now means that you get less revenue this year, 
+            but that calf will start producing calves the year after next.")
+    
   )
 }

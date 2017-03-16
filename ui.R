@@ -20,17 +20,18 @@ tagList(
   useShinyjs(),
   extendShinyjs(text = jscode, functions = "init"),
   tags$style(css),
-  tags$head(tags$script('Shiny.addCustomMessageHandler("myCallbackHandler",
-                          function(typeMessage) {console.log(typeMessage)
-                          if(typeMessage == 1){
-                          console.log("got here");
-                          $("a:contains(Demographics)").click();
-                          }
-                          if(typeMessage == 2){
-                          $("a:contains(Select Data range)").click();
-                          }
-                          });
-                          ')),
+  tags$head(
+    tags$script('Shiny.addCustomMessageHandler("myCallbackHandler",
+                  function(typeMessage) {console.log(typeMessage)
+                  if(typeMessage == 1){
+                  console.log("got here");
+                  $("a:contains(Demographics)").click();
+                  }
+                  if(typeMessage == 2){
+                  $("a:contains(Select Data range)").click();
+                  }
+                  });
+                  ')),
 
 fluidPage("Ranch Drought", id = "navBar",
 
@@ -77,11 +78,15 @@ tabsetPanel(
       column(8,
         uiOutput("winterInfo"),
         fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
-        uiOutput("decision1")
+        uiOutput("decision1"),
+        uiOutput("insuranceUpdate"),
+        uiOutput("cowSell")
       ),
       column(2,
         fluidRow(column(12, style = "background-color:white;", div(style = "height:170px;"))),
-        actionButton("year1Start", "Begin Simulation")
+        actionButton("year1Start", "Begin Simulation"),
+        fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
+        uiOutput("continue1")
       )
     )
  ),
