@@ -8,7 +8,7 @@ library(shinyjs)
 source("R/load.R")
 source("R/dynamicFunctions.R")
 source("R/shinny_support.R")
-source("R/weaning_success.R")
+
 
 ## Code to disable tab
 jscode <- '
@@ -69,3 +69,8 @@ startYear <- 2002
 acres <- 3000
 
 carryingCapacity <- constvars$carrying.cap * acres
+
+# purchaseInsurance <- sample(c(T, F), 1)
+purchaseInsurance <- T
+
+showSummer <- T
