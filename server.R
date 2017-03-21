@@ -153,8 +153,10 @@ function(input, output, session) {
     output$cowSell <- renderUI({
       if(!is.null(input$year1Summer)){
         if(input$year1Summer == 1){
-          
-          getCowSell(effectiveForage())
+          tagList(
+            getCowSell(effectiveForage(), wean()),
+            plotOutput("cowPlot")
+          )
         }
       }
     })
@@ -196,10 +198,11 @@ function(input, output, session) {
   })
   
   output$cowPlot <- renderPlot({
-    cows <- input[[paste0("cow", currentYear, "Sale")]]
-    calves <- input[[paste0("calves", currentYear, "Sale", input)]]
-    
-    
+    years <- (startYear + currentYear - 1):(startYear + currentYear + 1)
+    cows <- data.table("Year" = years, "Herd Size" = c(myOuts[currentYear, herd], 
+                                                       herdSize(), herdSizey1()))
+    print(cows)
+    ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity")
   })
   
   effectiveForage <- reactive({
@@ -230,22 +233,34 @@ function(input, output, session) {
   
   herdSize <- reactive({
     cows <- input[[paste0("cow", currentYear, "Sale")]]
-    calves <- input[[paste0("calves", currentYear, "Sale", input)]]
-    if(currentYear %in% c(1,2)){
-      getHerdSize(myOuts[1,], myOuts[1,], simRuns$death.rate)
+    if(currentYear == 1){
+      herd <- myOuts[currentYear, herd]
+      shinyHerd(herd1 = herd, cull1 = cows, herd2 = herd, 
+                calves2 = herd * simRuns$normal.wn.succ * (1 - simRuns$calf.sell),
+                deathRate = simRuns$death.rate)
     }else{
-      getHerdSize(myOuts[currentYear - 1,], myOuts[currentYear - 2,], simRuns$death.rate )
+      herd <- myOuts[currentYear, herd]
+      herd2 <- myOuts[currentYear - 1, herd]
+      wean2 <- myOuts[currentYear - 1, wn.succ]
+      calvesSold <- myOuts[currentYear - 1, calves.sold]
+      
+      shinyHerd(herd1 = herd, cull1 = cows, herd2 = herd2, 
+                calves2 = herd2 * wean2 * (1 - calvesSold),
+                deathRate = simRuns$death.rate)
     }
   })
   
   herdSizey1 <- reactive({
     cows <- input[[paste0("cow", currentYear, "Sale")]]
-    calves <- input[[paste0("calves", currentYear, "Sale", input)]]
-    if(currentYear %in% c(1,2)){
-      getHerdSize(myOuts[1,], myOuts[1,], simRuns$death.rate)
-    }else{
-      getHerdSize(myOuts[currentYear - 1,], myOuts[currentYear - 2,], simRuns$death.rate )
-    }
+    calves <- input[[paste0("calves", currentYear, "Sale")]]
+    herd <- myOuts[currentYear, herd]
+    herdy1 <- shinyHerd(herd1 = herdSize(), cull1 = cows, herd2 = herd,
+              calves2 = (herd - calves), deathRate = simRuns$death.rate)
+    return(herdy1)
+  })
+  
+  wean <- reactive({
+    AdjWeanSuccess(effectiveForage(), T, simRuns$normal.wn.succ, 1)
   })
 
 }
