@@ -132,6 +132,7 @@ whatIfForage <- function(station.gauge, zonewt, styear, herd, carryingCap,
   forage.potential <- sum(foragewt)
   
   ## Adjust for carying Capacity
+  carryingCap <- herd/carryingCap
   forage.potential <-forage.potential/carryingCap
   
   return(forage.potential)
