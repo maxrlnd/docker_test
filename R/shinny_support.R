@@ -68,7 +68,7 @@ getJulyInfo <- function(){
   )
 }
 
-getCowSell <- function(forage){
+getCowSell <- function(forage, wean){
   
   ## Calcualte how many cows to sell
   ## Establish current state variables
@@ -76,7 +76,6 @@ getCowSell <- function(forage){
   
   
   ## Calcuatle weaned Calves
-  wean <- AdjWeanSuccess(forage, T, simRuns$normal.wn.succ, 1)
   calvesAvailable <- floor(herd * wean)
   
   ## Calculate Standard Sales
