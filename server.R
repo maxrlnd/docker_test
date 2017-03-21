@@ -153,7 +153,8 @@ function(input, output, session) {
     output$cowSell <- renderUI({
       if(!is.null(input$year1Summer)){
         if(input$year1Summer == 1){
-          getCowSell()
+          
+          getCowSell(effectiveForage())
         }
       }
     })
@@ -194,13 +195,57 @@ function(input, output, session) {
     session$sendCustomMessage("myCallbackHandler", "1")
   })
   
-  output$map <- renderLeaflet({
-    leaflet() %>%
-      addTiles(
-        urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
-        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
-      ) %>%
-      setView(lng = -93.85, lat = 37.45, zoom = 4)
+  output$cowPlot <- renderPlot({
+    cows <- input[[paste0("cow", currentYear, "Sale")]]
+    calves <- input[[paste0("calves", currentYear, "Sale", input)]]
+    
+    
   })
   
+  effectiveForage <- reactive({
+    myYear <- startYear + currentYear - 1
+    herd <- myOuts[currentYear, herd]
+    zones <- station.gauge$zonewt
+    
+    ## Calcualte available forage
+    if(currentYear == 1){
+      zones <- zones * (1 - (0)/simRuns$forage.constant)
+    }else{
+      zones <- myOuts[currentYear - 1, zone.change] * zones * 
+        (1 - (myOuts[currentYear - 1, Gt])/simRuns$forage.constant)
+    }
+    forage <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
+    
+    ## Calculate Necessary Adaptation
+    adaptationInten <- CalculateAdaptationIntensity(forage)
+    adaptationCost <-getAdaptCost(adpt_choice = "feed", pars = simRuns, 
+                                  days.act = 180, current_herd = herd, intens.adj = adaptationInten)
+    
+    adaptationPercent <- input[[paste0("d", currentYear, "AdaptSpent")]]/adaptationCost
+    # adaptationPercent <- eval(parse(text = paste0("input$d", currentYear, "AdaptSpent")))/adaptationCost
+    
+    ## Adjust Forage based on adaptation
+    forage <- (1 - forage) * adaptationPercent + forage 
+  })
+  
+  herdSize <- reactive({
+    cows <- input[[paste0("cow", currentYear, "Sale")]]
+    calves <- input[[paste0("calves", currentYear, "Sale", input)]]
+    if(currentYear %in% c(1,2)){
+      getHerdSize(myOuts[1,], myOuts[1,], simRuns$death.rate)
+    }else{
+      getHerdSize(myOuts[currentYear - 1,], myOuts[currentYear - 2,], simRuns$death.rate )
+    }
+  })
+  
+  herdSizey1 <- reactive({
+    cows <- input[[paste0("cow", currentYear, "Sale")]]
+    calves <- input[[paste0("calves", currentYear, "Sale", input)]]
+    if(currentYear %in% c(1,2)){
+      getHerdSize(myOuts[1,], myOuts[1,], simRuns$death.rate)
+    }else{
+      getHerdSize(myOuts[currentYear - 1,], myOuts[currentYear - 2,], simRuns$death.rate )
+    }
+  })
+
 }
