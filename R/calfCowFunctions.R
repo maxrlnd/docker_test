@@ -101,3 +101,8 @@ getHerdSize <- function(results_1ya, results_2ya, deathRate){
   return(currentHerd)
 }
 
+shinyHerd <- function(herd1, cull1, herd2, calves2, deathRate){
+  currentHerd <- (herd1 * (1 - deathRate) - cull1 + 
+                    calves2 * (1 - deathRate))
+  return(currentHerd)
+}
