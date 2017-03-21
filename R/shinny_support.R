@@ -31,15 +31,17 @@ getJulyInfo <- function(){
   forargeList <- vector("numeric", 3)
   if(currentYear == 1){
     zones <- zones * (1 - (0)/simRuns$forage.constant)
-    
   }else{
     zones <- myOuts[currentYear - 1, zone.change] * zones * 
       (1 - (myOuts[currentYear - 1, Gt])/simRuns$forage.constant)
   }
+
   forageList <- vector("numeric", 3)
-  forageList[1] <- whatIfForage(station.gauge, zones, myYear, herd, 1, 7, 11, "normal")
-  forageList[2] <- whatIfForage(station.gauge, zones, myYear, herd, 1, 7, 11, "high")
-  forageList[3] <- whatIfForage(station.gauge, zones, myYear, herd, 1, 7, 11, "low")
+  forageList[1] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "normal")
+  forageList[2] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "high")
+  forageList[3] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "low")
+  
+  print(forageList)
   
   ## Calculate cost of Adaptaiton
   adaptationInten <- sapply(forageList, CalculateAdaptationIntensity)
@@ -66,14 +68,26 @@ getJulyInfo <- function(){
   )
 }
 
-getCowSell <- function(){
+getCowSell <- function(forage){
   
+  ## Calcualte how many cows to sell
+  ## Establish current state variables
+  herd <- myOuts[currentYear, herd]
+  
+  
+  ## Calcuatle weaned Calves
+  wean <- AdjWeanSuccess(forage, T, simRuns$normal.wn.succ, 1)
+  calvesAvailable <- floor(herd * wean)
+  
+  ## Calculate Standard Sales
+  standardCowSale <- herd * simRuns$cull.num
+  standardCalfSale <- calvesAvailable * simRuns$calf.sell
   tagList(
     h4("Fall Cow and Calf Sales"),
-    sliderInput(paste0("calve", currentYear, "Sale"), "How many calves do you want to sell",
-                min = 0, max = myOuts[currentYear, herd], value =  20, step = 1, width = "600px"),
+    sliderInput(paste0("calves", currentYear, "Sale"), "How many calves do you want to sell",
+                min = 0, max = calvesAvailable, value =  standardCalfSale, step = 1, width = "600px"),
     sliderInput(paste0("cow", currentYear, "Sale"), "How many cows do you want to sell",
-                min = 0, max = myOuts[currentYear, herd], value =  20, step = 1, width = "600px"),
+                min = 0, max = myOuts[currentYear, herd], value = standardCowSale, step = 1, width = "600px"),
     tags$li("If you sell X calves and Y cows, your herd will stay approximately the 
             same size as it is now. If you sell more, then your herd size will decrease. 
             If you sell fewer, then your herd size will grow."),
