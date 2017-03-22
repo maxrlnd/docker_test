@@ -16,8 +16,11 @@ CalculateExpSales <- function(herd, wn.succ, calf.sell, wn.wt, p.wn) {
   Outputs:
   base.sales = Expected revenues from calf sales for a non-drought year
   "
-  
-  base.sales <- (herd * wn.succ * calf.sell) * wn.wt * p.wn
+  if(is.na(herd)){
+    base.sales <- calf.sell * wn.wt * p.wn
+  }else{
+    base.sales <- (herd * wn.succ * calf.sell) * wn.wt * p.wn  
+  }
   return(base.sales)
 }
 
