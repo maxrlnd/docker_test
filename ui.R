@@ -86,7 +86,9 @@ tabsetPanel(
         fluidRow(column(12, style = "background-color:white;", div(style = "height:170px;"))),
         actionButton("year1Start", "Begin Simulation"),
         fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
-        uiOutput("continue1")
+        uiOutput("continue1"),
+        fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
+        uiOutput("sellButton1")
       )
     )
  ),
