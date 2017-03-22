@@ -41,7 +41,6 @@ getJulyInfo <- function(){
   forageList[2] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "high")
   forageList[3] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "low")
   
-  print(forageList)
   
   ## Calculate cost of Adaptaiton
   adaptationInten <- sapply(forageList, CalculateAdaptationIntensity)
@@ -96,4 +95,49 @@ getCowSell <- function(forage, wean){
             but that calf will start producing calves the year after next.")
     
   )
+}
+
+updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHerd, zones, adaptInten){
+  currentHerd <- myOuts[currentYear, herd]
+  pastYear <- currentYear
+  advanceCurrentYear()
+  myOuts[currentYear, yr := startYear + currentYear - 1]
+  myOuts[currentYear, rev.calf := CalculateExpSales(herd = NA, wn.succ = NA, 
+                                                     wn.wt = calfDroughtWeight(simRuns$normal.wn.wt, forage), 
+                                                     calf.sell = calfSale, p.wn = simRuns$p.wn[pastYear])]
+  myOuts[currentYear, rev.ins := indem$indemnity]
+  myOuts[currentYear, rev.int := myOuts[pastYear, assets.cash] * simRuns$invst.int]
+  myOuts[currentYear, rev.tot := myOuts[currentYear, rev.ins] + myOuts[currentYear, rev.int] + myOuts[currentYear, rev.calf]]
+  myOuts[currentYear, cost.op := CalculateBaseOpCosts(herd = currentHerd, cow.cost = simRuns$cow.cost)]
+  myOuts[currentYear, cost.ins := indem$producer_prem]
+  myOuts[currentYear, cost.adpt := adaptCost]
+  myOuts[currentYear, cost.int := ifelse(myOuts[pastYear, assets.cash] < 0,
+                                          myOuts[pastYear, assets.cash] * -1 * simRuns$loan.int,
+                                          0)]
+
+  myOuts[currentYear, cost.tot := myOuts[currentYear, cost.op] + myOuts[currentYear, cost.ins] +
+                                    myOuts[currentYear, cost.adpt] + myOuts[currentYear, cost.int]]
+  myOuts[currentYear, profit := myOuts[currentYear, rev.tot] - myOuts[currentYear, cost.tot]]
+  myOuts[currentYear, taxes := ifelse(myOuts[currentYear, profit] > 0, myOuts[currentYear, profit] * (0.124+0.15+0.04), 0)]
+  myOuts[currentYear, aftax.inc := myOuts[currentYear, profit] - myOuts[currentYear, taxes]]
+  myOuts[currentYear, cap.sales := cowSales * simRuns$p.cow]
+  myOuts[currentYear, cap.taxes := myOuts[currentYear, cap.sales] * simRuns$cap.tax.rate]
+  myOuts[currentYear, assets.cow := newHerd * simRuns$p.cow]
+  myOuts[currentYear, assets.cash := myOuts[pastYear, assets.cash] + myOuts[currentYear, aftax.inc] +
+                                      myOuts[currentYear, cap.sales] - myOuts[currentYear, cap.purch] -
+                                      myOuts[currentYear, cap.taxes]]
+  myOuts[currentYear, net.wrth := myOuts[currentYear, assets.cash] + myOuts[currentYear, assets.cow]]
+  myOuts[currentYear, wn.succ := wean]
+  myOuts[currentYear, forage.potential := forage]
+  myOuts[currentYear, herd := newHerd]
+  myOuts[currentYear, calves.sold := calfSale / floor(currentHerd * wean)]
+  myOuts[currentYear, cows.culled := cowSales / currentHerd]
+  myOuts[currentYear, zone.change := sum(zones)]
+  myOuts[currentYear, Gt := ifelse(forage < 1, 
+                                    1 - forage + forage * adaptCost/getAdaptCost(adpt_choice = "feed", 
+                                                                                 pars = simRuns, 
+                                                                                 days.act = 180, 
+                                                                                 current_herd = currentHerd, 
+                                                                                 intens.adj = adaptInten),  
+                                    1 - forage)]
 }
