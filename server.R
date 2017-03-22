@@ -132,16 +132,22 @@ function(input, output, session) {
     getWinterInfo()
   })
   
+  output$sellButton1 <- renderUI({
+    if(!is.null(input$year1Summer)){
+      if(input$year1Summer == 1){
+        actionButton("sell1", "Sell Calves and Cows")
+      }
+    }
+  })
+  
   output$insuranceUpdate <- renderUI({
     if(!is.null(input$year1Summer)){
       if(input$year1Summer == 1){
-        rma.ins = with(simRuns, insMat(yy = styr + currentYear - 1, clv = clv, acres = acres,
-                                       pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
-        indem <- round(rma.ins$indemnity, 0)
+        currentIndem <- round(indem()$indemnity, 0)
         tagList(
           h4("Insurance Payout"),
-          if(indem > 0){
-            p(paste0("You have received a check for $", indem, " from your rain insurance policy."))
+          if(currentIndem > 0){
+            p(paste0("You have received a check for $", currentIndem, " from your rain insurance policy."))
           }else{
             p("You did not recieve a check for your rain insurance policy")
           }
@@ -161,7 +167,9 @@ function(input, output, session) {
       }
     })
 
-
+   output$finalAccount <- renderUI({
+     
+   })  
 
   
   ########## Functions to Print out state information
@@ -184,6 +192,17 @@ function(input, output, session) {
   observeEvent(input$year1Start, {
     shinyjs::disable("year1Start")
   })
+  
+  observeEvent(input$sell1, {
+    disable("sell1")
+    disable(("calves1Sale"))
+    disable(paste0("cow1Sale"))
+    myOuts <<- updateOuts(wean = wean(), forage = effectiveForage(), calfSale = input$calves1Sale,
+                          indem = indem(), adaptCost = input$d1AdaptSpent, cowSales = input$cow1Sale, 
+                          newHerd = herdSize(), zones = currentZones(), adaptInten = adaptInten()
+                          )
+    print(myOuts)
+  })
 
   observeEvent(input$year1Summer, {
     shinyjs::disable("year1Summer")
@@ -201,26 +220,46 @@ function(input, output, session) {
     years <- (startYear + currentYear - 1):(startYear + currentYear + 1)
     cows <- data.table("Year" = years, "Herd Size" = c(myOuts[currentYear, herd], 
                                                        herdSize(), herdSizey1()))
-    print(cows)
     ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity")
   })
   
-  effectiveForage <- reactive({
-    myYear <- startYear + currentYear - 1
-    herd <- myOuts[currentYear, herd]
+  currentZones <- reactive({
     zones <- station.gauge$zonewt
-    
-    ## Calcualte available forage
     if(currentYear == 1){
       zones <- zones * (1 - (0)/simRuns$forage.constant)
     }else{
       zones <- myOuts[currentYear - 1, zone.change] * zones * 
         (1 - (myOuts[currentYear - 1, Gt])/simRuns$forage.constant)
     }
+    return(zones)
+  })
+  
+  
+  adaptInten <- reactive({
+    myYear <- startYear + currentYear - 1
+    herd <- myOuts[currentYear, herd]
+    zones <- currentZones()
+    
+    ## Calcualte available forage
+    
     forage <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
     
     ## Calculate Necessary Adaptation
     adaptationInten <- CalculateAdaptationIntensity(forage)
+    return(adaptationInten)
+  })
+  
+  effectiveForage <- reactive({
+    myYear <- startYear + currentYear - 1
+    herd <- myOuts[currentYear, herd]
+    zones <- currentZones()
+    
+    ## Calcualte available forage
+    
+    forage <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
+    
+    ## Calculate Necessary Adaptation
+    adaptationInten <- adaptInten()
     adaptationCost <-getAdaptCost(adpt_choice = "feed", pars = simRuns, 
                                   days.act = 180, current_herd = herd, intens.adj = adaptationInten)
     
@@ -262,5 +301,12 @@ function(input, output, session) {
   wean <- reactive({
     AdjWeanSuccess(effectiveForage(), T, simRuns$normal.wn.succ, 1)
   })
+  
+  indem <- eventReactive(input[[paste0("year", currentYear, "Summer")]], {
+    rma.ins = with(simRuns, insMat(yy = styr + currentYear - 1, clv = clv, acres = acres,
+                                   pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+    return(rma.ins)
+  })
+  
 
 }
