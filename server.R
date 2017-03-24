@@ -173,7 +173,7 @@ function(input, output, session) {
         if(input[[paste0("year", i, "Summer")]] == 1){
           tagList(
             getCowSell(effectiveForage(), wean()),
-            plotOutput("cowPlot")
+            plotOutput(paste0("cowPlot", i))
           )
         }
       }
@@ -201,7 +201,40 @@ function(input, output, session) {
       julyRain[, 7:12 := "?"]
     })
     
-  })
+    output[[paste0("cowPlot", i)]] <- renderPlot({
+      if(!is.null(input[[paste0("year", i, "Summer")]])){
+        if(input[[paste0("year", i, "Summer")]] == 1){
+          years <- (startYear + i - 1):(startYear + i + 1)
+          cows <- data.table("Year" = years, "Herd Size" = c(myOuts[i, herd],
+                                                             herdSize(), herdSizey1()))
+          ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity")
+        }
+      }
+    })
+    
+    observeEvent(input[[paste0("year", i, "Start")]], {
+      shinyjs::disable(paste0("year", i, "Start"))
+    })
+    
+    observeEvent(input[[paste0("sell", i)]], {
+      disable(paste0("sell", i))
+      disable(paste0("calves", i, "Sale"))
+      disable(paste0("cow", i, "Sale"))
+      myOuts <<- updateOuts(wean = wean(), forage = effectiveForage(), calfSale = input$calves1Sale,
+                            indem = indem(), adaptCost = input$d1AdaptSpent, cowSales = input$cow1Sale, 
+                            newHerd = herdSize(), zones = currentZones(), adaptInten = adaptInten()
+      )
+      print(myOuts)
+    })
+    
+    observeEvent(input[[paste0("year", i, "Summer")]], {
+      shinyjs::disable(paste0("year", i, "Summer"))
+      shinyjs::disable(paste0("d", i, "AdaptSpent"))
+      
+    })
+    
+    
+  }) ##End of lapply
   
   
 
@@ -211,45 +244,17 @@ function(input, output, session) {
   
  
   
-  observeEvent(input$year1Start, {
-    shinyjs::disable("year1Start")
-  })
+
   
-  observeEvent(input$sell1, {
-    disable("sell1")
-    disable(("calves1Sale"))
-    disable(paste0("cow1Sale"))
-    myOuts <<- updateOuts(wean = wean(), forage = effectiveForage(), calfSale = input$calves1Sale,
-                          indem = indem(), adaptCost = input$d1AdaptSpent, cowSales = input$cow1Sale, 
-                          newHerd = herdSize(), zones = currentZones(), adaptInten = adaptInten()
-    )
-    print(myOuts)
-  })
   
-  observeEvent(input$year1Summer, {
-    shinyjs::disable("year1Summer")
-    shinyjs::disable("d1AdaptSpent")
-    
-  })
   
-  output$cowPlot <- renderPlot({
-    years <- (startYear + currentYear - 1):(startYear + currentYear + 1)
-    cows <- data.table("Year" = years, "Herd Size" = c(myOuts[currentYear, herd], 
-                                                       herdSize(), herdSizey1()))
-    ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity")
-  })
-  
+
   
   ########## Functions to Print out state information
   
 
  
-  observe({
-    toggleClass(condition = input$foo,
-                class = "disabled",
-                selector = "#navBar li a[data-value=Demographics]")
-  })
-  
+
   observe({
     toggleClass(selector = "#navbar li a[data-value=Demographics]")
   })
@@ -339,11 +344,54 @@ function(input, output, session) {
     AdjWeanSuccess(effectiveForage(), T, simRuns$normal.wn.succ, 1)
   })
   
-  indem <- eventReactive(input[[paste0("year", currentYear, "Summer")]], {
-    rma.ins = with(simRuns, insMat(yy = styr + currentYear - 1, clv = clv, acres = acres,
+  indem <- reactive({
+
+    rma.ins = with(simRuns, insMat(yy = startYear + currentYear - 1, clv = clv, acres = acres,
                                    pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
     return(rma.ins)
   })
   
+  values <- reactiveValues("currentYear" = 1)
+  
+  # Important! : creationPool should be hidden to avoid elements flashing before they are moved.
+  #              But hidden elements are ignored by shiny, unless this option below is set.
+  output$creationPool <- renderUI({})
+  outputOptions(output, "creationPool", suspendWhenHidden = FALSE)
+  # End Important
+  
+  # Important! : This is the make-easy wrapper for adding new tabPanels.
+  addTabToTabset <- function(Panels, tabsetName){
+    titles <- lapply(Panels, function(Panel){return(Panel$attribs$title)})
+    Panels <- lapply(Panels, function(Panel){Panel$attribs$title <- NULL; return(Panel)})
+    
+    output$creationPool <- renderUI({Panels})
+    session$sendCustomMessage(type = "addTabToTabset", message = list(titles = titles, tabsetName = tabsetName))
+  }
+  # End Important 
+
+  yearTabs <-  
+    lapply(1:5, function(z){
+      tabPanel(paste("Year", z),
+               fluidRow(
+                 column(8,
+                        uiOutput(paste0("winterInfo", z)),
+                        fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
+                        uiOutput(paste0("decision", z)),
+                        uiOutput(paste0("insuranceUpdate", z)),
+                        uiOutput(paste0("cowSell", z))
+                 ),
+                 column(2,
+                        fluidRow(column(12, style = "background-color:white;", div(style = "height:170px;"))),
+                        actionButton(paste0("year", z, "Start"), "Begin Simulation"),
+                        fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
+                        uiOutput(paste0("continue", z)),
+                        fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
+                        uiOutput(paste0("sellButton", z))
+                 )
+               )
+      )
+    })
+  addTabToTabset(yearTabs, "mainPanels")
+    
 
 }

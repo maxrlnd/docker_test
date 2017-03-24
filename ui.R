@@ -31,18 +31,66 @@ tagList(
                   $("a:contains(Select Data range)").click();
                   }
                   });
-                  ')),
+                  '),
+    tags$script(HTML("
+    /* In coherence with the original Shiny way, tab names are created with random numbers. 
+                     To avoid duplicate IDs, we collect all generated IDs.  */
+                     var hrefCollection = [];
+                     
+                     Shiny.addCustomMessageHandler('addTabToTabset', function(message){
+                     var hrefCodes = [];
+                     /* Getting the right tabsetPanel */
+                     var tabsetTarget = document.getElementById(message.tabsetName);
+                     
+                     /* Iterating through all Panel elements */
+                     for(var i = 0; i < message.titles.length; i++){
+                     /* Creating 6-digit tab ID and check, whether it was already assigned. */
+                     do {
+                     hrefCodes[i] = Math.floor(Math.random()*100000);
+                     } 
+                     while(hrefCollection.indexOf(hrefCodes[i]) != -1);
+                     hrefCollection = hrefCollection.concat(hrefCodes[i]);
+                     
+                     /* Creating node in the navigation bar */
+                     var navNode = document.createElement('li');
+                     var linkNode = document.createElement('a');
+                     
+                     linkNode.appendChild(document.createTextNode(message.titles[i]));
+                     linkNode.setAttribute('data-toggle', 'tab');
+                     linkNode.setAttribute('data-value', message.titles[i]);
+                     linkNode.setAttribute('href', '#tab-' + hrefCodes[i]);
+                     
+                     navNode.appendChild(linkNode);
+                     tabsetTarget.appendChild(navNode);
+                     };
+                     
+                     /* Move the tabs content to where they are normally stored. Using timeout, because
+                     it can take some 20-50 millis until the elements are created. */ 
+                     setTimeout(function(){
+                     var creationPool = document.getElementById('creationPool').childNodes;
+                     var tabContainerTarget = document.getElementsByClassName('tab-content')[0];
+                     
+                     /* Again iterate through all Panels. */
+                     for(var i = 0; i < creationPool.length; i++){
+                     var tabContent = creationPool[i];
+                     tabContent.setAttribute('id', 'tab-' + hrefCodes[i]);
+                     
+                     tabContainerTarget.appendChild(tabContent);
+                     };
+                     }, 100);
+                     });
+                     "))
+    ),
 
 fluidPage("Ranch Drought", id = "navBar",
 
 
-tabsetPanel(
+tabsetPanel(id = "mainPanels",
   
   
  tabPanel("Instructions",
     fluidRow(
       column(12,
-             checkboxInput("foo", "Disable tab2", T),
              h4("Background"),
              p("This is background on what the model is and what it does blah blah balh"),
              h4("Instructions"),
@@ -73,30 +121,6 @@ tabsetPanel(
         
     )),
  
- 
-  # lapply(1:5, function(z){
-   tabPanel(paste("Year", z),
-      fluidRow(
-        column(8,
-          uiOutput(paste0("winterInfo", z)),
-          fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
-          uiOutput(paste0("decision", z)),
-          uiOutput(paste0("insuranceUpdate", z)),
-          uiOutput(paste0("cowSell", z))
-        ),
-        column(2,
-          fluidRow(column(12, style = "background-color:white;", div(style = "height:170px;"))),
-          actionButton(paste0("year", z, "Start"), "Begin Simulation"),
-          fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
-          uiOutput(paste0("continue", z)),
-          fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
-          uiOutput(paste0("sellButton", z))
-        )
-      )
-   ),
-# }), 
- 
-
   
   tabPanel("Results",
     fluidPage(
@@ -138,6 +162,11 @@ tabsetPanel(
       )
     )
   )
-)
+
+
+),
+# Important! : 'Freshly baked' tabs first enter here.
+uiOutput("creationPool", style = "display: none;")
+# End Important
 )
 )
