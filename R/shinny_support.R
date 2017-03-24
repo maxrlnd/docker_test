@@ -10,7 +10,7 @@ advanceCurrentYear <- function(){
   currentYear <<- currentYear + 1
 }
 
-getWinterInfo <- function(){
+getWinterInfo <- function(currentYear){
   tagList(
     h4("Winter Finance Assessment"),
     p(paste0("Your Current Net Worth is: $", myOuts[currentYear, net.wrth])),
@@ -52,7 +52,7 @@ getJulyInfo <- function(){
   tagList(
     h4("Summer Adaptation Investment Decision"),
     h5("Rainfall as a percent of normal (100 is average rainfall)"),
-    tableOutput("julyRain"),
+    tableOutput(paste0("julyRain", currentYear)),
     p(paste0("If rainfall for the rest of the year is average your available forage will be ", forageList[1], "% of normal")),
     p(paste0("If rainfall for the rest of the year is above average your available forage will be ", forageList[2], "% of normal")),
     p(paste0("If rainfall for the rest of the year is below average your available forage will be ", forageList[3], "% of normal")),

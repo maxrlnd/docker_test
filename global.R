@@ -66,6 +66,8 @@ practiceYear <- 1
 
 startYear <- 2002
 
+z <- 1
+
 acres <- 3000
 
 carryingCapacity <- constvars$carrying.cap * acres

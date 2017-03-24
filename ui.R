@@ -72,26 +72,29 @@ tabsetPanel(
         )
         
     )),
-
- tabPanel("Year 1",
-    fluidRow(
-      column(8,
-        uiOutput("winterInfo"),
-        fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
-        uiOutput("decision1"),
-        uiOutput("insuranceUpdate"),
-        uiOutput("cowSell")
-      ),
-      column(2,
-        fluidRow(column(12, style = "background-color:white;", div(style = "height:170px;"))),
-        actionButton("year1Start", "Begin Simulation"),
-        fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
-        uiOutput("continue1"),
-        fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
-        uiOutput("sellButton1")
+ 
+ 
+  # lapply(1:5, function(z){
+   tabPanel(paste("Year", z),
+      fluidRow(
+        column(8,
+          uiOutput(paste0("winterInfo", z)),
+          fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
+          uiOutput(paste0("decision", z)),
+          uiOutput(paste0("insuranceUpdate", z)),
+          uiOutput(paste0("cowSell", z))
+        ),
+        column(2,
+          fluidRow(column(12, style = "background-color:white;", div(style = "height:170px;"))),
+          actionButton(paste0("year", z, "Start"), "Begin Simulation"),
+          fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
+          uiOutput(paste0("continue", z)),
+          fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
+          uiOutput(paste0("sellButton", z))
+        )
       )
-    )
- ),
+   ),
+# }), 
  
 
   

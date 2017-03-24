@@ -106,59 +106,71 @@ function(input, output, session) {
         ggtitle("Year-End Net Worth")
     }
   })
-  
-  #####Dynamic UI Functions#####################
-  
   output$exp <- renderUI({
     if(input$experience == "Yes"){
       textInput("expExplain", "Please explain your previous ranch experience")
     }
   })
   
-
-  output$decision1 <- renderUI({
-    if(input$year1Start == 1){
-      getJulyInfo()
-    }
-  })
+  #####Dynamic UI Functions#####################
   
-  output$continue1 <- renderUI({
-    if(input$year1Start == 1){
-      actionButton("year1Summer", "Continue")
-    }
-  })
+  ## Display Winter info for year x
+  # output[[paste0("winterInfo", 1)]] <- renderUI({
+  #   getWinterInfo(currentYear)
+  # })
   
-  output$winterInfo <- renderUI({
-    getWinterInfo()
-  })
-  
-  output$sellButton1 <- renderUI({
-    if(!is.null(input$year1Summer)){
-      if(input$year1Summer == 1){
-        actionButton("sell1", "Sell Calves and Cows")
-      }
-    }
-  })
-  
-  output$insuranceUpdate <- renderUI({
-    if(!is.null(input$year1Summer)){
-      if(input$year1Summer == 1){
-        currentIndem <- round(indem()$indemnity, 0)
-        tagList(
-          h4("Insurance Payout"),
-          if(currentIndem > 0){
-            p(paste0("You have received a check for $", currentIndem, " from your rain insurance policy."))
-          }else{
-            p("You did not recieve a check for your rain insurance policy")
-          }
-        )
-      }
-    }
-  })
+  lapply(1:5, function(i){
+    assign(paste0("reactiveWinter", i), reactive({
+      input[[paste0("sell", i-1)]]
+      tagList(
+        h4("Winter Finance Assessment"),
+        p(paste0("Your Current Net Worth is: $", round(myOuts[i, net.wrth], 0))),
+        p(paste0("Your Current Herd is: ", round(myOuts[i, herd], 0))),
+        p(paste0("Your Bank Balance is: $", round(myOuts[i, assets.cash], 0))),
+        p(paste0("Your range is currently at: ", round(myOuts[i, forage.potential] * 100, 0), "%")),
+        p(paste0("You paid: $", round(myOuts[i, cost.ins], 0), " for insurance"))
+      )
+    }))
     
-    output$cowSell <- renderUI({
-      if(!is.null(input$year1Summer)){
-        if(input$year1Summer == 1){
+    
+    output[[paste0("winterInfo", i)]] <- renderUI({
+     # if(!is.null(input[[paste0("sell",i)]])){
+     #   print("hello")
+     #   if(input[[paste0("sell",i)]] == 1){
+         get(paste0("reactiveWinter", i))()
+     #   }
+     # }
+    })
+    
+    ## Display rain info up to July and allow user to choose adaptation level
+    output[[paste0("decision", i)]] <- renderUI({
+      if(input[[paste0("year", currentYear, "Start")]] == 1){
+        getJulyInfo()
+      }
+    })
+    
+    ## Display Update for insurance info
+    output[[paste0("insuranceUpdate", i)]] <- renderUI({
+      if(!is.null(input[[paste0("year", i, "Summer")]])){
+        if(input[[paste0("year", i, "Summer")]]){
+          currentIndem <- round(indem()$indemnity, 0)
+          tagList(
+            h4("Insurance Payout"),
+            if(currentIndem > 0){
+              p(paste0("You have received a check for $", currentIndem, " from your rain insurance policy."))
+            }else{
+              p("You did not recieve a check for your rain insurance policy")
+            }
+          )
+        }
+      }
+    })
+    
+    
+    ## Present options to sell cows
+    output[[paste0("cowSell", i)]] <- renderUI({
+      if(!is.null(input[[paste0("year", i, "Summer")]])){
+        if(input[[paste0("year", i, "Summer")]] == 1){
           tagList(
             getCowSell(effectiveForage(), wean()),
             plotOutput("cowPlot")
@@ -166,28 +178,38 @@ function(input, output, session) {
         }
       }
     })
-
-   output$finalAccount <- renderUI({
-     
-   })  
-
-  
-  ########## Functions to Print out state information
-  
-  output$julyRain <- renderTable({
-    julyRain <- station.gauge$stgg[Year == (startYear + currentYear - 1),-1]/station.gauge$avg * 100
-    julyRain[, 7:12 := "?"]
+    
+    output[[paste0("continue", i)]] <- renderUI({
+      if(!is.null(input[[paste0("year", i, "Start")]])){
+        if(input[[paste0("year", i, "Start")]] == 1){
+          actionButton(paste0("year", i, "Summer"), "Continue")
+        }
+      }
+    })
+    
+    
+    output[[paste0("sellButton", i)]] <- renderUI({
+      if(!is.null(input[[paste0("year", i, "Summer")]])){
+        if(input[[paste0("year", i, "Summer")]] == 1){
+          actionButton(paste0("sell", i), "Sell Calves and Cows")
+        }
+      }
+    })
+    
+    output[[paste0("julyRain", i)]] <- renderTable({
+      julyRain <- station.gauge$stgg[Year == (startYear + currentYear - 1),-1]/station.gauge$avg * 100
+      julyRain[, 7:12 := "?"]
+    })
+    
   })
+  
+  
+
+  
+
+  
+  
  
-  observe({
-    toggleClass(condition = input$foo,
-                class = "disabled",
-                selector = "#navBar li a[data-value=Demographics]")
-  })
-  
-  observe({
-    toggleClass(selector = "#navbar li a[data-value=Demographics]")
-  })
   
   observeEvent(input$year1Start, {
     shinyjs::disable("year1Start")
@@ -200,20 +222,14 @@ function(input, output, session) {
     myOuts <<- updateOuts(wean = wean(), forage = effectiveForage(), calfSale = input$calves1Sale,
                           indem = indem(), adaptCost = input$d1AdaptSpent, cowSales = input$cow1Sale, 
                           newHerd = herdSize(), zones = currentZones(), adaptInten = adaptInten()
-                          )
+    )
     print(myOuts)
   })
-
+  
   observeEvent(input$year1Summer, {
     shinyjs::disable("year1Summer")
     shinyjs::disable("d1AdaptSpent")
     
-  })
-  
-  observeEvent(input$agree, {
-    toggleClass(class = "disabled",
-                selector = "#navBar li a[data-value=Demographics]")
-    session$sendCustomMessage("myCallbackHandler", "1")
   })
   
   output$cowPlot <- renderPlot({
@@ -221,6 +237,27 @@ function(input, output, session) {
     cows <- data.table("Year" = years, "Herd Size" = c(myOuts[currentYear, herd], 
                                                        herdSize(), herdSizey1()))
     ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity")
+  })
+  
+  
+  ########## Functions to Print out state information
+  
+
+ 
+  observe({
+    toggleClass(condition = input$foo,
+                class = "disabled",
+                selector = "#navBar li a[data-value=Demographics]")
+  })
+  
+  observe({
+    toggleClass(selector = "#navbar li a[data-value=Demographics]")
+  })
+  
+  observeEvent(input$agree, {
+    toggleClass(class = "disabled",
+                selector = "#navBar li a[data-value=Demographics]")
+    session$sendCustomMessage("myCallbackHandler", "1")
   })
   
   currentZones <- reactive({
