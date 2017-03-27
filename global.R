@@ -66,7 +66,12 @@ practiceYear <- 1
 
 startYear <- 2002
 
-z <- 1
+simLength <- 5
+
+indem <- lapply(startYear:(startYear + simLength - 1), function(x){
+  with(simRuns, insMat(yy = x, clv = clv, acres = acres,
+                                 pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+})
 
 acres <- 3000
 
