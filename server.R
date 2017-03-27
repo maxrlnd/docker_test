@@ -132,6 +132,54 @@ function(input, output, session) {
       )
     }))
     
+    assign(paste0("currentZones", i), reactive({
+      zones <- station.gauge$zonewt
+      if(i %in% c(1,2)){
+        zones <- zones * (1 - (0)/simRuns$forage.constant)
+      }else{
+        zones <- myOuts[i, zone.change] * zones * 
+          (1 - (myOuts[i, Gt])/simRuns$forage.constant)
+      }
+      return(zones)
+    }))
+    
+    assign(paste0("effectiveForage", i), reactive({
+      myYear <- startYear + i - 1
+      herd <- myOuts[i, herd]
+      zones <- get(paste0("currentZones", i))()
+      
+      ## Calcualte available forage
+      
+      forage <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
+     
+      adaptationInten <- CalculateAdaptationIntensity(forage)
+      adaptationCost <-getAdaptCost(adpt_choice = "feed", pars = simRuns, 
+                                    days.act = 180, current_herd = herd, intens.adj = adaptationInten)
+      adaptationPercent <- ifelse(adaptationCost == 0, 0, input[[paste0("d", i, "AdaptSpent")]]/adaptationCost)
+      # adaptationPercent <- eval(parse(text = paste0("input$d", currentYear, "AdaptSpent")))/adaptationCost
+      ## Adjust Forage based on adaptation
+      forage <- (1 - forage) * adaptationPercent + forage 
+    }))
+    
+    assign(paste0("herdSize", i), reactive({
+      cows <- input[[paste0("cow", i, "Sale")]]
+      if(i == 1){
+        herd <- myOuts[i, herd]
+        shinyHerd(herd1 = herd, cull1 = cows, herd2 = herd, 
+                  calves2 = herd * simRuns$normal.wn.succ * (1 - simRuns$calf.sell),
+                  deathRate = simRuns$death.rate)
+      }else{
+        herd <- myOuts[i, herd]
+        herd2 <- myOuts[i - 1, herd]
+        wean2 <- myOuts[i - 1, wn.succ]
+        calvesSold <- myOuts[i - 1, calves.sold]
+        
+        shinyHerd(herd1 = herd, cull1 = cows, herd2 = herd2, 
+                  calves2 = herd2 * wean2 * (1 - calvesSold),
+                  deathRate = simRuns$death.rate)
+      }
+    }))
+    
     
     output[[paste0("winterInfo", i)]] <- renderUI({
      # if(!is.null(input[[paste0("sell",i)]])){
@@ -144,8 +192,8 @@ function(input, output, session) {
     
     ## Display rain info up to July and allow user to choose adaptation level
     output[[paste0("decision", i)]] <- renderUI({
-      if(input[[paste0("year", currentYear, "Start")]] == 1){
-        getJulyInfo()
+      if(input[[paste0("year", i, "Start")]] == 1){
+        getJulyInfo(i)
       }
     })
     
@@ -153,7 +201,7 @@ function(input, output, session) {
     output[[paste0("insuranceUpdate", i)]] <- renderUI({
       if(!is.null(input[[paste0("year", i, "Summer")]])){
         if(input[[paste0("year", i, "Summer")]]){
-          currentIndem <- round(indem()$indemnity, 0)
+          currentIndem <- round(indem[[i]]$indemnity, 0)
           tagList(
             h4("Insurance Payout"),
             if(currentIndem > 0){
@@ -172,7 +220,7 @@ function(input, output, session) {
       if(!is.null(input[[paste0("year", i, "Summer")]])){
         if(input[[paste0("year", i, "Summer")]] == 1){
           tagList(
-            getCowSell(effectiveForage(), wean()),
+            getCowSell(get(paste0("effectiveForage", i))(), AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1), i),
             plotOutput(paste0("cowPlot", i))
           )
         }
@@ -197,16 +245,21 @@ function(input, output, session) {
     })
     
     output[[paste0("julyRain", i)]] <- renderTable({
-      julyRain <- station.gauge$stgg[Year == (startYear + currentYear - 1),-1]/station.gauge$avg * 100
+      julyRain <- station.gauge$stgg[Year == (startYear + i - 1),-1]/station.gauge$avg * 100
       julyRain[, 7:12 := "?"]
     })
     
     output[[paste0("cowPlot", i)]] <- renderPlot({
       if(!is.null(input[[paste0("year", i, "Summer")]])){
         if(input[[paste0("year", i, "Summer")]] == 1){
+          cows <- input[[paste0("cow", i, "Sale")]]
+          calves <- input[[paste0("calves", i, "Sale")]]
+          herd <- myOuts[i, herd]
+          herdy1 <- shinyHerd(herd1 = get(paste0("herdSize", i))(), cull1 = cows, herd2 = herd,
+                              calves2 = (herd - calves), deathRate = simRuns$death.rate)
           years <- (startYear + i - 1):(startYear + i + 1)
           cows <- data.table("Year" = years, "Herd Size" = c(myOuts[i, herd],
-                                                             herdSize(), herdSizey1()))
+                                                             get(paste0("herdSize", i))(), herdy1))
           ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity")
         }
       }
@@ -220,11 +273,14 @@ function(input, output, session) {
       disable(paste0("sell", i))
       disable(paste0("calves", i, "Sale"))
       disable(paste0("cow", i, "Sale"))
-      myOuts <<- updateOuts(wean = wean(), forage = effectiveForage(), calfSale = input$calves1Sale,
-                            indem = indem(), adaptCost = input$d1AdaptSpent, cowSales = input$cow1Sale, 
-                            newHerd = herdSize(), zones = currentZones(), adaptInten = adaptInten()
-      )
+      myOuts <<- updateOuts(wean = AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1), 
+                            forage = get(paste0("effectiveForage", i))(), calfSale = input$calves1Sale,
+                            indem = indem[[i]], adaptCost = input$d1AdaptSpent, cowSales = input$cow1Sale, 
+                            newHerd = get(paste0("herdSize", i))(), zones = get(paste0("currentZones", i))(), 
+                            adaptInten = CalculateAdaptationIntensity(get(paste0("effectiveForage", i))()),
+                            currentYear = i)
       print(myOuts)
+      values$currentYear <- values$currentYear + 1
     })
     
     observeEvent(input[[paste0("year", i, "Summer")]], {
@@ -264,93 +320,7 @@ function(input, output, session) {
                 selector = "#navBar li a[data-value=Demographics]")
     session$sendCustomMessage("myCallbackHandler", "1")
   })
-  
-  currentZones <- reactive({
-    zones <- station.gauge$zonewt
-    if(currentYear == 1){
-      zones <- zones * (1 - (0)/simRuns$forage.constant)
-    }else{
-      zones <- myOuts[currentYear - 1, zone.change] * zones * 
-        (1 - (myOuts[currentYear - 1, Gt])/simRuns$forage.constant)
-    }
-    return(zones)
-  })
-  
-  
-  adaptInten <- reactive({
-    myYear <- startYear + currentYear - 1
-    herd <- myOuts[currentYear, herd]
-    zones <- currentZones()
-    
-    ## Calcualte available forage
-    
-    forage <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
-    
-    ## Calculate Necessary Adaptation
-    adaptationInten <- CalculateAdaptationIntensity(forage)
-    return(adaptationInten)
-  })
-  
-  effectiveForage <- reactive({
-    myYear <- startYear + currentYear - 1
-    herd <- myOuts[currentYear, herd]
-    zones <- currentZones()
-    
-    ## Calcualte available forage
-    
-    forage <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
-    
-    ## Calculate Necessary Adaptation
-    adaptationInten <- adaptInten()
-    adaptationCost <-getAdaptCost(adpt_choice = "feed", pars = simRuns, 
-                                  days.act = 180, current_herd = herd, intens.adj = adaptationInten)
-    
-    adaptationPercent <- input[[paste0("d", currentYear, "AdaptSpent")]]/adaptationCost
-    # adaptationPercent <- eval(parse(text = paste0("input$d", currentYear, "AdaptSpent")))/adaptationCost
-    
-    ## Adjust Forage based on adaptation
-    forage <- (1 - forage) * adaptationPercent + forage 
-  })
-  
-  herdSize <- reactive({
-    cows <- input[[paste0("cow", currentYear, "Sale")]]
-    if(currentYear == 1){
-      herd <- myOuts[currentYear, herd]
-      shinyHerd(herd1 = herd, cull1 = cows, herd2 = herd, 
-                calves2 = herd * simRuns$normal.wn.succ * (1 - simRuns$calf.sell),
-                deathRate = simRuns$death.rate)
-    }else{
-      herd <- myOuts[currentYear, herd]
-      herd2 <- myOuts[currentYear - 1, herd]
-      wean2 <- myOuts[currentYear - 1, wn.succ]
-      calvesSold <- myOuts[currentYear - 1, calves.sold]
-      
-      shinyHerd(herd1 = herd, cull1 = cows, herd2 = herd2, 
-                calves2 = herd2 * wean2 * (1 - calvesSold),
-                deathRate = simRuns$death.rate)
-    }
-  })
-  
-  herdSizey1 <- reactive({
-    cows <- input[[paste0("cow", currentYear, "Sale")]]
-    calves <- input[[paste0("calves", currentYear, "Sale")]]
-    herd <- myOuts[currentYear, herd]
-    herdy1 <- shinyHerd(herd1 = herdSize(), cull1 = cows, herd2 = herd,
-              calves2 = (herd - calves), deathRate = simRuns$death.rate)
-    return(herdy1)
-  })
-  
-  wean <- reactive({
-    AdjWeanSuccess(effectiveForage(), T, simRuns$normal.wn.succ, 1)
-  })
-  
-  indem <- reactive({
 
-    rma.ins = with(simRuns, insMat(yy = startYear + currentYear - 1, clv = clv, acres = acres,
-                                   pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
-    return(rma.ins)
-  })
-  
   values <- reactiveValues("currentYear" = 1)
   
   # Important! : creationPool should be hidden to avoid elements flashing before they are moved.
