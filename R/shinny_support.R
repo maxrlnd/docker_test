@@ -21,7 +21,7 @@ getWinterInfo <- function(currentYear){
   )
 }
 
-getJulyInfo <- function(){
+getJulyInfo <- function(currentYear){
   ## Establish current state variables 
   myYear <- startYear + currentYear - 1
   herd <- myOuts[currentYear, herd]
@@ -67,7 +67,7 @@ getJulyInfo <- function(){
   )
 }
 
-getCowSell <- function(forage, wean){
+getCowSell <- function(forage, wean, currentYear){
   
   ## Calcualte how many cows to sell
   ## Establish current state variables
@@ -97,10 +97,12 @@ getCowSell <- function(forage, wean){
   )
 }
 
-updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHerd, zones, adaptInten){
+updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHerd, zones, adaptInten, currentYear){
+  
+  print(zones)
   currentHerd <- myOuts[currentYear, herd]
   pastYear <- currentYear
-  advanceCurrentYear()
+  currentYear <- currentYear + 1
   myOuts[currentYear, yr := startYear + currentYear - 1]
   myOuts[currentYear, rev.calf := CalculateExpSales(herd = NA, wn.succ = NA, 
                                                      wn.wt = calfDroughtWeight(simRuns$normal.wn.wt, forage), 
