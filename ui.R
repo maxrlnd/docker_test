@@ -21,17 +21,26 @@ tagList(
   extendShinyjs(text = jscode, functions = "init"),
   tags$style(css),
   tags$head(
+    # tags$script(paste0('Shiny.addCustomMessageHandler("myCallbackHandler",
+    #               function(typeMessage) {console.log(typeMessage)
+    #               if(typeMessage == 6){
+    #               console.log("got here");
+    #               $("a:contains(Demographics)").click();
+    #               }', yearHandler, '});'
+    #               )),
+    
     tags$script('Shiny.addCustomMessageHandler("myCallbackHandler",
                   function(typeMessage) {console.log(typeMessage)
-                  if(typeMessage == 1){
+                  if(typeMessage == 6){
                   console.log("got here");
                   $("a:contains(Demographics)").click();
                   }
-                  if(typeMessage == 2){
-                  $("a:contains(Select Data range)").click();
+                  if(typeMessage == 1){
+                  console.log("got here");
+                  $("a:contains(Year 1)").click();
                   }
-                  });
-                  '),
+                  });'
+    ),
     tags$script(HTML("
     /* In coherence with the original Shiny way, tab names are created with random numbers. 
                      To avoid duplicate IDs, we collect all generated IDs.  */
@@ -116,57 +125,19 @@ tabsetPanel(id = "mainPanels",
         
         ## This is silly just here as an example
         sliderInput("like", "On a scale of 1 to 10 rate how you feel about ranchers with 1 being hate
-                    and 10 being love", min = 1, max = 10, value = 5)
+                    and 10 being love", min = 1, max = 10, value = 5),
+        actionButton("begin", "Begin Ranch Game")
         )
+      
         
-    )),
+    ))
  
   
-  tabPanel("Results",
-    fluidPage(
-      titlePanel("Simulation Results"),
-      sidebarLayout(
-        sidebarPanel(width = 3,
-          checkboxGroupInput("show_outs", "Columns to Display",
-                             filter.titles$cols, selected = filter.titles$cols
-          ),
-          actionButton("gen.res", "Generate Results")
-        ),
-        mainPanel(
-          fluidRow(
-            column(4,
-                   selectInput("filter.strat", "Adaptation Strategy",
-                               c("All", filter.titles$opt))
-           ),
-           column(4,
-                  selectInput("filter.year", "Year", 
-                              c("All", filter.titles$yr))),
-           column(4,
-                  selectInput("filter.ins", "Insurance",
-                              c("All", filter.titles$ins)))
-          ),
-          fluidRow(
-            DT::dataTableOutput("table")
-          )
-        )
-      )
-    )
-  ),
-  tabPanel("Graphs",
-    sidebarLayout(
-      sidebarPanel(
-        radioButtons("graph.type", "Select Graph", choices = c("Income", "Net Worth"))
-      ),
-      mainPanel(
-        plotOutput("plot1")
-      )
-    )
-  )
-
-
-),
+), 
 # Important! : 'Freshly baked' tabs first enter here.
 uiOutput("creationPool", style = "display: none;")
 # End Important
 )
 )
+
+

@@ -81,3 +81,8 @@ carryingCapacity <- constvars$carrying.cap * acres
 purchaseInsurance <- T
 
 showSummer <- T
+
+yearHandler <- paste0('if(typeMessage == ', 1:simLength, '){
+  console.log("got here");
+  $("a:contains(Year ', 1:simLength, ')").click();
+}', collapse = "")

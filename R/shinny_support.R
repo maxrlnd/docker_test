@@ -103,10 +103,11 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
   currentHerd <- myOuts[currentYear, herd]
   pastYear <- currentYear
   currentYear <- currentYear + 1
-  myOuts[currentYear, yr := startYear + currentYear - 1]
+  myOuts[currentYear, yr := startYear + pastYear - 1]
   myOuts[currentYear, rev.calf := CalculateExpSales(herd = NA, wn.succ = NA, 
                                                      wn.wt = calfDroughtWeight(simRuns$normal.wn.wt, forage), 
                                                      calf.sell = calfSale, p.wn = simRuns$p.wn[pastYear])]
+  print(paste("wean", calfDroughtWeight(simRuns$normal.wn.wt, forage)))
   myOuts[currentYear, rev.ins := indem$indemnity]
   myOuts[currentYear, rev.int := myOuts[pastYear, assets.cash] * simRuns$invst.int]
   myOuts[currentYear, rev.tot := myOuts[currentYear, rev.ins] + myOuts[currentYear, rev.int] + myOuts[currentYear, rev.calf]]
@@ -142,4 +143,26 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
                                                                                  current_herd = currentHerd, 
                                                                                  intens.adj = adaptInten),  
                                     1 - forage)]
+}
+
+createNewYr <- function(year){
+  list(tabPanel(paste("Year", year),
+           fluidRow(
+             column(8,
+                    uiOutput(paste0("winterInfo", year)),
+                    fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
+                    uiOutput(paste0("decision", year)),
+                    uiOutput(paste0("insuranceUpdate", year)),
+                    uiOutput(paste0("cowSell", year))
+             ),
+             column(2,
+                    fluidRow(column(12, style = "background-color:white;", div(style = "height:170px;"))),
+                    actionButton(paste0("year", year, "Start"), "Begin Simulation"),
+                    fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
+                    uiOutput(paste0("continue", year)),
+                    fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
+                    uiOutput(paste0("sellButton", year))
+             )
+           )
+  ))
 }
