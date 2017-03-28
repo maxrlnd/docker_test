@@ -1,14 +1,3 @@
-getInitialValues <- function(simvars){
-  sim_results <- data.table(matrix(0, 1, 17))
-  setnames(sim_results, c("yr","rev.calf", "rev.ins", "rev.tot", "cost.op", "cost.ins", "cost.adpt",
-                          "cost.int", "cost.tot", "profit", "taxes", "aftax.inc", "cap.sales",
-                          "cap.purch", "cap.taxes", "assets.cow", "assets.cash", "net.wrth", "wn.succ", "forage.potential",
-                          "herd", "calf.sold") )
-  sim_results[, assets.cow := CalcCowAssets(t = 1, herd = herd, p.cow = p.cow)]
-  sim_results[, herd := simvars$herd]
-  
-}
-
 # Variable Assignment Functions -------------------------------------------
 
 getConstantVars<-function(){
@@ -19,19 +8,8 @@ getConstantVars<-function(){
   file `data/constant_vars.csv`.
   "
   
-  # Remove the constvars environment if it exists
-  ## Once again this doesn't need to be here since were simply reassigning and not
-  ## messing with side effects and environments
-  # if(exists("constvars")){
-  #   rm("constvars",envir=globalenv())
-  # }
-  
   
   cvars=read.csv("data/constant_vars.csv",stringsAsFactors = F)
-  #Loops are slow vectorization isn't
-  # for(i in 1:nrow(cvars)){
-  #   assign(cvars[i,]$Variable,cvars[i,]$Value,envir=constvars)
-  # }
   cvars.list <- split(cvars$Value, seq(nrow(cvars)))
   names(cvars.list) <- cvars$Variable
   return(cvars.list)
@@ -283,10 +261,17 @@ getStationGauge<-function(target.loc="CPER"){
 
 createResultsFrame <- function(pars = NULL){
   "
-    This function creates a theoretical previous result from the year before the simultaion begins
+  Function: createResultsFrame
+  Description: This function creates a theoretical previous result from the year before the simultaion begins
     right now this assumes that there was no drought the year before the simulation and 
     revenues were 0. These assumptions are likely unrealistic and can be adjusted to accomidated different
     scenarios.
+  
+  Inputs:
+  pars = state variables, simRuns in Master
+
+  Outputs:
+  sim_results = data table to for filling in future results
   "
   resultNames <- c("yr","adapt_choice","rev.calf", "rev.ins","rev.int", 
                    "rev.tot", "cost.op", "cost.ins", "cost.adpt",
@@ -294,7 +279,7 @@ createResultsFrame <- function(pars = NULL){
                    "cap.sales", "cap.purch", "cap.taxes", "assets.cow", 
                    "assets.cash", "net.wrth", "wn.succ", "forage.potential", 
                    "herd", "calves.sold", "cows.culled", "zone.change", "Gt")
-  
+  ## fills in rows using initial variables from pars
   if(!is.null(pars)){
     sim_results <- data.table(matrix(0, pars$sim_length + 1, length(resultNames)))
     setnames(sim_results, resultNames )
@@ -309,6 +294,8 @@ createResultsFrame <- function(pars = NULL){
     sim_results[1, cows.culled := pars$cull.num]
     sim_results[1, zone.change := 1]
     sim_results[1, Gt := 0]
+    
+  ## if pars isn't prsent fills in everything with 0's 
   }else{
     sim_results <- data.table(matrix(0, 1, length(resultNames)))
     setnames(sim_results, resultNames ) 

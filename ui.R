@@ -4,18 +4,7 @@
   #   statement in the server to change them to numerics (http://stackoverflow.com/questions/24960407/r-shiny-numeric-input-without-selectors)
 
 
-navbarPageWithJS <- function(..., text) {
-  navbar <- navbarPage(...)
-  textEl <- tags$p(class = "navbar-text", text)
-  navbar[[3]][[1]]$children[[1]] <- htmltools::tagAppendChild(
-    navbar[[3]][[1]]$children[[1]], textEl)
-  navbar
-}
-
-
-
-
-##
+## HTML and JS to dynamically create tabs and move between tabs
 tagList(
   useShinyjs(),
   extendShinyjs(text = jscode, functions = "init"),
@@ -96,7 +85,7 @@ fluidPage("Ranch Drought", id = "navBar",
 
 tabsetPanel(id = "mainPanels",
   
-  
+ ## Instruction panel
  tabPanel("Instructions",
     fluidRow(
       column(12,
@@ -109,7 +98,8 @@ tabsetPanel(id = "mainPanels",
              actionButton("agree", "I Agree")
       )
     )),
-           
+  
+  ## Panel for users to enter demographics         
   tabPanel("Demographics",
     fluidRow(
       column(3,
@@ -134,9 +124,8 @@ tabsetPanel(id = "mainPanels",
  
   
 ), 
-# Important! : 'Freshly baked' tabs first enter here.
+## Code to insert new tabs, these get inserted into the main panel tabset via the JS at top
 uiOutput("creationPool", style = "display: none;")
-# End Important
 )
 )
 

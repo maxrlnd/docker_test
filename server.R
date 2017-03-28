@@ -3,20 +3,20 @@ function(input, output, session) {
   toggleClass(class = "disabled",
               selector = "#navBar li a[data-value=Demographics]")
 
+  ## Dynamic UI for Demo graphics
   output$exp <- renderUI({
     if(input$experience == "Yes"){
       textInput("expExplain", "Please explain your previous ranch experience")
     }
   })
   
-  #####Dynamic UI Functions#####################
+  #####Year Tab Functions#####################
   
-  ## Display Winter info for year x
-  # output[[paste0("winterInfo", 1)]] <- renderUI({
-  #   getWinterInfo(currentYear)
-  # })
-  
-  lapply(1:5, function(i){
+  ## This loop Creates the necessary output functions for each year tab 
+  lapply(1:simLength, function(i){
+    
+    ## Reactive taglist for the first set of winter info at the start of each year, updates when
+    ## myOuts updates
     assign(paste0("reactiveWinter", i), reactive({
       input[[paste0("sell", i-1)]]
       tagList(
@@ -29,10 +29,15 @@ function(input, output, session) {
       )
     }))
     
+    ## Creates a reactive to track the current zone weights for each year
     assign(paste0("currentZones", i), reactive({
       zones <- station.gauge$zonewt
+      
+      ## Code for the first year when the previous zones/GT haven't been determined
       if(i == 1){
         zones <- zones * (1 - (0)/simRuns$forage.constant)
+        
+      ## Code for all subsequent years
       }else{
         zones <- myOuts[i, zone.change] * zones * 
           (1 - (myOuts[i, Gt])/simRuns$forage.constant)
@@ -40,31 +45,45 @@ function(input, output, session) {
       return(zones)
     }))
     
+    ## Reactive to track forage fore ach year
     assign(paste0("effectiveForage", i), reactive({
+      
+      ## Establish current state
       myYear <- startYear + i - 1
       herd <- myOuts[i, herd]
       zones <- get(paste0("currentZones", i))()
       
-      ## Calcualte available forage
-      
+      ## Calcualte available forage using Nov-Nov as a year
       forage <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
      
+      ## Calcualte adaptation intensity based on forage
       adaptationInten <- CalculateAdaptationIntensity(forage)
+      
+      ## Calculate adaptation cost
       adaptationCost <-getAdaptCost(adpt_choice = "feed", pars = simRuns, 
                                     days.act = 180, current_herd = herd, intens.adj = adaptationInten)
+      
+      ## Calculate how much of the needed adaptation is being done
       adaptationPercent <- ifelse(adaptationCost == 0, 0, input[[paste0("d", i, "AdaptSpent")]]/adaptationCost)
-      # adaptationPercent <- eval(parse(text = paste0("input$d", currentYear, "AdaptSpent")))/adaptationCost
-      ## Adjust Forage based on adaptation
+      
+      ## Output new forage
       forage <- (1 - forage) * adaptationPercent + forage 
     }))
     
+    ## Reactive to track herd size for each year
     assign(paste0("herdSize", i), reactive({
+      
+      ## Get cows being sold based on slide position
       cows <- input[[paste0("cow", i, "Sale")]]
+      
+      ## Calculate herd size for the first year
       if(i == 1){
         herd <- myOuts[i, herd]
         shinyHerd(herd1 = herd, cull1 = cows, herd2 = herd, 
                   calves2 = herd * simRuns$normal.wn.succ * (1 - simRuns$calf.sell),
                   deathRate = simRuns$death.rate)
+        
+      ## Herd size for second year
       }else{
         herd <- myOuts[i, herd]
         herd2 <- myOuts[i - 1, herd]
@@ -77,14 +96,11 @@ function(input, output, session) {
       }
     }))
     
+    #################UI Functions of Year Tabs###################
     
+    ## UI for winter Info
     output[[paste0("winterInfo", i)]] <- renderUI({
-     # if(!is.null(input[[paste0("sell",i)]])){
-     #   print("hello")
-     #   if(input[[paste0("sell",i)]] == 1){
          get(paste0("reactiveWinter", i))()
-     #   }
-     # }
     })
     
     ## Display rain info up to July and allow user to choose adaptation level
@@ -124,6 +140,7 @@ function(input, output, session) {
       }
     })
     
+    ## Create a button to continue after selecting adaptation level
     output[[paste0("continue", i)]] <- renderUI({
       if(!is.null(input[[paste0("year", i, "Start")]])){
         if(input[[paste0("year", i, "Start")]] == 1){
@@ -132,7 +149,8 @@ function(input, output, session) {
       }
     })
     
-    
+    ## Create button to sell calves and cows once decisions are made
+    ## Additionally moves simualation to the next year
     output[[paste0("sellButton", i)]] <- renderUI({
       if(!is.null(input[[paste0("year", i, "Summer")]])){
         if(input[[paste0("year", i, "Summer")]] == 1){
@@ -141,11 +159,13 @@ function(input, output, session) {
       }
     })
     
+    ## Table of rain for each July
     output[[paste0("julyRain", i)]] <- renderTable({
       julyRain <- station.gauge$stgg[Year == (startYear + i - 1),-1]/station.gauge$avg * 100
       julyRain[, 7:12 := "?"]
     })
     
+    ## Bar graphs for herd size
     output[[paste0("cowPlot", i)]] <- renderPlot({
       if(!is.null(input[[paste0("year", i, "Summer")]])){
         if(input[[paste0("year", i, "Summer")]] == 1){
@@ -162,10 +182,14 @@ function(input, output, session) {
       }
     })
     
+    ## Reactive to disable start simualation button after they're clicked
     observeEvent(input[[paste0("year", i, "Start")]], {
       shinyjs::disable(paste0("year", i, "Start"))
     })
     
+    ## Disable cow and calf sliders after sell button
+    ## Disable sell button
+    ## update myOuts based on forage and the year's decisions
     observeEvent(input[[paste0("sell", i)]], {
       disable(paste0("sell", i))
       disable(paste0("calves", i, "Sale"))
@@ -182,6 +206,7 @@ function(input, output, session) {
       session$sendCustomMessage("myCallbackHandler", as.character(values$currentYear))
     })
     
+    ## Disable continue button and adaptation slider after clicking
     observeEvent(input[[paste0("year", i, "Summer")]], {
       shinyjs::disable(paste0("year", i, "Summer"))
       shinyjs::disable(paste0("d", i, "AdaptSpent"))
@@ -191,48 +216,35 @@ function(input, output, session) {
     
   }) ##End of lapply
   
+  
+  ## Observer for begin button in demographis panel
   observeEvent(input$begin, {
     # addTabToTabset(createNewYr(1), "mainPanels")
     disable("begin")
     session$sendCustomMessage("myCallbackHandler", "1")
   })
 
-  
-
-  
-  
- 
-  
-
-  
-  
-  
-
-  
   ########## Functions to Print out state information
   
-
- 
-
+  ## Code to disable demographic tab at start
   observe({
     toggleClass(selector = "#navbar li a[data-value=Demographics]")
   })
 
+  ## Disable agree button on instructions after it has been clicked and move to
+  ## Demographics tab
   observeEvent(input$agree, {
     toggleClass(class = "disabled",
                 selector = "#navBar li a[data-value=Demographics]")
     session$sendCustomMessage("myCallbackHandler", "6")
   })
-
+  
+  ## Reactive value for current year
   values <- reactiveValues("currentYear" = 1)
   
-  # Important! : creationPool should be hidden to avoid elements flashing before they are moved.
-  #              But hidden elements are ignored by shiny, unless this option below is set.
+  ## Code to dynamically add new tabs
   output$creationPool <- renderUI({})
   outputOptions(output, "creationPool", suspendWhenHidden = FALSE)
-  # End Important
-  
-  # Important! : This is the make-easy wrapper for adding new tabPanels.
   addTabToTabset <- function(Panels, tabsetName){
     titles <- lapply(Panels, function(Panel){return(Panel$attribs$title)})
     Panels <- lapply(Panels, function(Panel){Panel$attribs$title <- NULL; return(Panel)})
@@ -240,7 +252,8 @@ function(input, output, session) {
     output$creationPool <- renderUI({Panels})
     session$sendCustomMessage(type = "addTabToTabset", message = list(titles = titles, tabsetName = tabsetName))
   }
-  # End Important 
+  
+  ## Commented code to add all tab panels at once currently not used as tab panels are added dynamically
 
   # yearTabs <-  
   #   lapply(1:5, function(z){

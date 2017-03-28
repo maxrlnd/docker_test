@@ -19,7 +19,7 @@ return false;
 });
 }
 '
-
+## Css for disabled tabs
 css <- '
 .disabled {
 background: white !important;
@@ -34,6 +34,13 @@ station.gauge <- getStationGauge()
 # Populate a new environment with constant (user) variables
 constvars <- getConstantVars()
 
+## Acres of range
+acres <- 3000
+
+## Carrying capacity based on acres and carrying.cap constant
+carryingCapacity <- constvars$carrying.cap * acres
+
+## create state variables for practice runs
 practiceVars <- getSimVars(
   station.gauge,
   constvars,
@@ -42,8 +49,9 @@ practiceVars <- getSimVars(
   use.forage = T,
   random.acres=FALSE,
   random.productivity=TRUE,
-  acres = 3000)
+  acres)
 
+## create state variables for full runs
 simvars <- getSimVars(
   station.gauge,
   constvars,
@@ -52,36 +60,33 @@ simvars <- getSimVars(
   use.forage = T,
   random.acres=FALSE,
   random.productivity=TRUE,
-  acres = 3000)
+  acres)
 
+## Create list of constant vars, state vars, and station gauges
 practiceRuns <- (append(append(station.gauge, constvars), (practiceVars)))
 simRuns <- (append(append(station.gauge, constvars), (simvars)))
 
+## Create results frames for practice and simulation
 practiceOuts <- createResultsFrame(practiceRuns)
 myOuts <- createResultsFrame(simRuns)
 
+## Set starting year, and simulation length
 currentYear <- 1
-
 practiceYear <- 1
-
 startYear <- 2002
-
 simLength <- 5
 
+## Calcualte indemnities for all years of the simulation
 indem <- lapply(startYear:(startYear + simLength - 1), function(x){
   with(simRuns, insMat(yy = x, clv = clv, acres = acres,
                                  pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
 })
 
-acres <- 3000
-
-carryingCapacity <- constvars$carrying.cap * acres
-
+## Is insurance purchased?
 # purchaseInsurance <- sample(c(T, F), 1)
 purchaseInsurance <- T
 
-showSummer <- T
-
+## Create JS to switch between year tabs
 yearHandler <- paste0('if(typeMessage == ', 1:simLength, '){
   console.log("got here");
   $("a:contains(Year ', 1:simLength, ')").click();

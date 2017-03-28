@@ -94,6 +94,20 @@ calfWeanWeight <- function(styr, sim_length){
 }
 
 getHerdSize <- function(results_1ya, results_2ya, deathRate){
+  "
+  Function: getHerdSize
+  Description: function to calcualte the size of herd based on results from two previous years
+  
+  Inputs:
+  results_1ya = results from 1 year ago
+  results_2ya = results from 2 years ago
+  deathRate = percent of cows dying each year
+  
+  Outputs:
+  currentHerd = size of the current herd
+  "
+  
+  
   currentHerd <- (results_1ya$herd * (1 - deathRate) * 
                     (1 - results_1ya$cows.culled) + 
                     (results_2ya$herd * results_2ya$wn.succ) *
@@ -101,7 +115,22 @@ getHerdSize <- function(results_1ya, results_2ya, deathRate){
   return(currentHerd)
 }
 
+
 shinyHerd <- function(herd1, cull1, herd2, calves2, deathRate){
+  "
+  Function: shinyHerd
+  Description: function to calculae size of herd for shiny app
+  
+  Inputs:
+  herd1 = herd size 1 year ago
+  cull1 = number (not %) of cows culled in the previous year
+  herd2 = herd size 2 years ago
+  calves2 = number (not %) of claves sold two years ago
+  deathRate = percent of cows dying each year
+  
+  Outputs:
+  currentHerd = size of the current herd
+  "
   currentHerd <- (herd1 * (1 - deathRate) - cull1 + 
                     calves2 * (1 - deathRate))
   return(currentHerd)

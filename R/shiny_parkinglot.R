@@ -305,3 +305,27 @@ tabPanel("Graphs",
 
 
 ),
+
+filter.titles <- list("opt" = c("Buy Feed", "Drought and No Adaptation", "No Drought", "Rent Pasture", "Sell Pairs"), 
+                      "yr" = c(1950:2017), "ins" = c("With Insurance","No Insurance"),
+                      "cols" = c("opt", "yr", "ins", "rev.calf", "rev.ins", "rev.int", "rev.tot", 
+                                 "cost.op", "cost.ins", "cost.int", "cost.tot", "profit", "taxes", 
+                                 "aftax.inc", "cap.sales", "cap.purch", "cap.taxes", "assets.cow", 
+                                 "assets.cash", "net.wrth", "sim.index"))
+shapeDrawn <- F
+
+
+advanceCurrentYear <- function(){
+  currentYear <<- currentYear + 1
+}
+
+getWinterInfo <- function(currentYear){
+  tagList(
+    h4("Winter Finance Assessment"),
+    p(paste0("Your Current Net Worth is: $", myOuts[currentYear, net.wrth])),
+    p(paste0("Your Current Herd is: ", myOuts[currentYear, herd])),
+    p(paste0("Your Bank Balance is: $", myOuts[currentYear, assets.cash])),
+    p(paste0("Your range is currently at: ", myOuts[currentYear, forage.potential] * 100, "%")),
+    p(paste0("You paid: $", myOuts[currentYear, cost.ins], " for insurance"))
+  )
+}
