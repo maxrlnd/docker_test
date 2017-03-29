@@ -18,6 +18,7 @@ getJulyInfo <- function(currentYear){
   myYear <- startYear + currentYear - 1
   herd <- myOuts[currentYear, herd]
   zones <- station.gauge$zonewt
+  print(myYear)
   
   ## Calcualte available forage for normal, high, and low precip over remaining months
   forargeList <- vector("numeric", 3)

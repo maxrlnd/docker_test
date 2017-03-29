@@ -79,9 +79,14 @@ function(input, output, session) {
       ## Calculate herd size for the first year
       if(i == 1){
         herd <- myOuts[i, herd]
+        print(herd)
+        print(cows)
+        print(herd * simRuns$normal.wn.succ * (1 - simRuns$calf.sell))
+        print(simRuns$death.rate)
         shinyHerd(herd1 = herd, cull1 = cows, herd2 = herd, 
                   calves2 = herd * simRuns$normal.wn.succ * (1 - simRuns$calf.sell),
                   deathRate = simRuns$death.rate)
+        
         
       ## Herd size for second year
       }else{
@@ -177,6 +182,7 @@ function(input, output, session) {
           years <- (startYear + i - 1):(startYear + i + 1)
           cows <- data.table("Year" = years, "Herd Size" = c(myOuts[i, herd],
                                                              get(paste0("herdSize", i))(), herdy1))
+          print(cows)
           ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity")
         }
       }
@@ -280,4 +286,20 @@ function(input, output, session) {
   # addTabToTabset(yearTabs, "mainPanels")
   # 
   addTabToTabset(createNewYr(1), "mainPanels")
+  ## So this is supposed to update the constant variables which works
+  ## but it does it through a << side effect...ugly
+  ## So it needs to be fixed
+  observeEvent(input$update, {
+    # print(simRuns)
+    simRunsList <- as.list(simRuns)
+    inputList <- reactiveValuesToList(input)
+    overlap <- intersect(names(simRunsList), names(inputList))
+    simRunsList[overlap] <- inputList[overlap]
+    simRuns <<- simRunsList
+    myOuts <<- createResultsFrame(simRuns)
+    startYear <<- input$act.st.yr
+    # print(simRuns)
+    
+  })
+  
 }
