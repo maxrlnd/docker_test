@@ -103,7 +103,7 @@ tabsetPanel(id = "mainPanels",
   tabPanel("Demographics",
     fluidRow(
       column(3,
-        selectInput("gender", "Select Gender", c("No answer", "Female", "Male")),
+        selectInput("gender", "Select Gender", c("Female", "Male", "Other")),
         textInput("age", "Enter Age")
         ),
       column(4,
