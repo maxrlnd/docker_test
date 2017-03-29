@@ -120,7 +120,31 @@ tabsetPanel(id = "mainPanels",
         )
       
         
-    ))
+    )), 
+ tabPanel("Quiz",
+    fluidRow(
+      column(12,
+          textInput("ranchSizeQ", "How Big is your Ranch?"),
+          textInput("herdSizeQ", "How many cows do you have in your herd?"),
+          radioButtons("cullQ", 'What does it mean to "cull" a cow', 
+                      choices = c("To keep a cow in the herd to breed in the following year" = "keep",
+                                  "To sell a cow" = "sell"), width = "100%"),
+          checkboxGroupInput("weanQ", "What happens if you keep a weaned calf instead of selling it (select all that apply)?",
+                             choices = c("You earn revenue from the sale" = "sale",
+                                         "Your herd will grow" = "grow",
+                                         "Your herd will shrink" = "shrink",
+                                         "You will produce more cows in the year after the calf is weaned" = "wean",
+                                         "You will create more grazing pressure on your land")),
+          textInput("lHerdQ", "What is the largest herd you can keep on your land without causing damage if rainfall is normal?"),
+          checkboxGroupInput("bigHerdQ", "What happens if you increase the size of your herd beyond the recommended maximum (Select all that apply)",
+                             choices = c("You will produce more calves" = "moreCalves",
+                                         "You will damage your land if there is not enough rainfall" = "damage")),
+          radioButtons("priceQ", "In this game, do calf prices change each year or stay the same?", 
+                       choices = c("Change" = "change", "Stay the same" = "same"))
+          
+      )
+    )
+  )
  
   
 ), 
