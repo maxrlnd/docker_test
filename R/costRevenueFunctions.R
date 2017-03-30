@@ -16,11 +16,8 @@ CalculateExpSales <- function(herd, wn.succ, calf.sell, wn.wt, p.wn) {
   Outputs:
   base.sales = Expected revenues from calf sales for a non-drought year
   "
-  if(is.na(herd)){
-    base.sales <- calf.sell * wn.wt * p.wn
-  }else{
-    base.sales <- (herd * wn.succ * calf.sell) * wn.wt * p.wn  
-  }
+  
+  base.sales <- (herd * wn.succ * calf.sell) * wn.wt * p.wn
   return(base.sales)
 }
 
@@ -181,28 +178,9 @@ CalculateSellPrsRev <- function(base.sales, herd, wn.succ, calf.wt, p.calf.t0) {
 }
 
 getAdaptCost <- function(adpt_choice, pars, days.act, current_herd, intens.adj){
-  "
-  Function: getAdaptCost
-  Description: Calculates the cost of adaptaiton based on strat, intensity needed, days, and herd size
-  
-  Inputs:
-  adpt_choice = adpatation strategy either 'feed' or 'rentpast'
-  pars = list of state variables simRuns from Master
-  days.act = number of days adaptation action is needed for
-  current_herd = current number of cows
-  intens.adj = intensity of adaptation needed from 0 - 1
-
-  Outputs:
-  adpt_cost = Cost of engaging in adaptation
-  "
-  
   adpt_cost <- 0
-  
-  ## Adaptation cost when feeding
   if(adpt_choice == "feed"){
     adpt_cost <- with(pars, CalculateFeedCost(kHayLbs, kOthLbs, p.hay, p.oth, 180, current_herd, intens.adj))
-  
-  ## Adaptation cost when renting pasture  
   }else if(adpt_choice == "rentpast"){
     adpt_cost <- with(pars, CalculateRentPastCost(n.miles = n.miles,
                                                          truck.cost = truck.cost,
@@ -213,6 +191,8 @@ getAdaptCost <- function(adpt_choice, pars, days.act, current_herd, intens.adj){
                                                          cow.wt = cow.wt,
                                                          calf.wt = calf.wt,
                                                          herd = current_herd))
+  }else if(adpt_choice == ''){
+    
   }
   return(adpt_cost)
 }
