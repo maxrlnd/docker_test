@@ -103,6 +103,62 @@ foragePWt <- function(station.gauge, styear, herd, carryingCap,
   
 }
 
+whatIfForage <- function(station.gauge, zonewt, styear, herd, carryingCap,
+                         currentMonth, farmYearStart = 11, expectedFuture){
+  "
+  Function: whatIfForage
+  Description: calcualte uncertain forage based given broad scenarios
+  
+  Inputs:
+  station.gauge = list of station gague info from simRuns/pars``
+  zonewt = zone weights adjusted baed on previous decision and use
+  styear = year the simulation started
+  herd = current size of herd
+  carryingCap = carrying capacity of range in number of calf/cow paris
+  currentMonth = month to start the uncertian decision from
+  farmYearStart = when does the farm year start, or the month after calves
+    are sold
+  expectedFuture = scenario selection either, 'normal', 'low', or 'high'
+  
+  Outputs:
+  forage.potential = the predicted amount of forage available based on 
+    scenario selection
+  "
+  
+  yprecip <- station.gauge$stgg[Year %in% (styear-1):styear, ]  # monthly precip amounts for start year
+  yprecip <- cbind((yprecip[Year == styear - 1, c("NOV", "DEC")]), 
+                   (yprecip[Year == styear, -c("NOV", "DEC", "Year")]))
+  ave <- station.gauge$avg
+  yearAvg <- rbindlist(list(yprecip, ave), use.names = T)
+  
+  if(expectedFuture == "normal"){
+    yearAvg[1, (names(ave)[currentMonth:(farmYearStart -1)]) := ave[,currentMonth:(farmYearStart -1)]]
+  }
+  if(expectedFuture == "low"){
+    yearAvg[1, (names(ave)[currentMonth:(farmYearStart -1)]) := ave[,currentMonth:(farmYearStart -1)] * .5]
+  }
+  if(expectedFuture == "high"){
+    yearAvg[1, (names(ave)[currentMonth:(farmYearStart -1)]) := ave[,currentMonth:(farmYearStart -1)] * 1.5]
+  }
+  
+  # Monthly precip "index"
+  pidx  <- yearAvg[1,] / yearAvg[2,] 
+  
+  #Compute Forage Weight Potentials
+  foragewt = zonewt * pidx[, names(ave), with = F]
+  
+  
+  # Compute annual forage potential weight for zone
+  forage.potential <- sum(foragewt)
+  
+  ## Adjust for carying Capacity
+  carryingCap <- herd/carryingCap
+  forage.potential <-forage.potential/carryingCap
+  
+  return(forage.potential)
+  
+  
+}
 
 getMRLAWeights<-function(state.code){
   
