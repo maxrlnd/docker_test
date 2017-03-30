@@ -22,9 +22,9 @@ function(input, output, session) {
       
       tagList(
         h4("Winter Finance Assessment"),
-        p(paste0("Your Current Net Worth is: $", round(myOuts[i, net.wrth], 0))),
-        p(paste0("Your Current Herd is: ", round(myOuts[i, herd], 0))),
+        p(paste0("Your Current Herd has ", round(myOuts[i, herd], 0), " cows, not including calves or yearlings.")),
         p(paste0("Your Bank Balance is: $", round(myOuts[i, assets.cash], 0))),
+        p(paste0("Your current net worth, including cows and your bank balance, is $", round(myOuts[i, net.wrth], 0), ".")),
         p(paste0("Your range is currently at: ", round(myOuts[i, forage.potential] * 100, 0), "%")),
         p(paste0("You paid: $", round(myOuts[i, cost.ins], 0), " for insurance")),
         plotOutput(paste0("worthPlot", i))
