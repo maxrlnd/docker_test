@@ -133,5 +133,5 @@ shinyHerd <- function(herd1, cull1, herd2, calves2, deathRate){
   "
   currentHerd <- (herd1 * (1 - deathRate) - cull1 + 
                     calves2 * (1 - deathRate))
-  return(currentHerd)
+  return(ifelse(currentHerd < 0, 0, currentHerd))
 }

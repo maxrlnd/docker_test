@@ -48,6 +48,7 @@ getJulyInfo <- function(currentYear){
   tagList(
     h4("Summer Adaptation Investment Decision"),
     h5("Rainfall as a percent of normal (100 is average rainfall)"),
+    plotOutput(paste0("rainGraph", currentYear)),
     tableOutput(paste0("julyRain", currentYear)),
     p(paste0("If rainfall for the rest of the year is average your available forage will be ", forageList[1], "% of normal")),
     p(paste0("If rainfall for the rest of the year is above average your available forage will be ", forageList[2], "% of normal")),
@@ -86,8 +87,8 @@ getCowSell <- function(forage, wean, currentYear){
   calvesAvailable <- floor(herd * wean)
   
   ## Calculate Standard Sales
-  standardCowSale <- herd * simRuns$cull.num
-  standardCalfSale <- calvesAvailable * simRuns$calf.sell
+  standardCowSale <- floor(herd * simRuns$cull.num)
+  standardCalfSale <- floor(calvesAvailable * simRuns$calf.sell)
   
   ## Create UI elements
   tagList(
@@ -162,7 +163,7 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
   myOuts[currentYear, net.wrth := myOuts[currentYear, assets.cash] + myOuts[currentYear, assets.cow]]
   myOuts[currentYear, wn.succ := wean]
   myOuts[currentYear, forage.potential := forage]
-  myOuts[currentYear, herd := newHerd]
+  myOuts[currentYear, herd := round(newHerd, 0)]
   myOuts[currentYear, calves.sold := calfSale / floor(currentHerd * wean)]
   myOuts[currentYear, cows.culled := cowSales / currentHerd]
   myOuts[currentYear, zone.change := sum(zones)]
@@ -196,9 +197,9 @@ createNewYr <- function(year){
                     uiOutput(paste0("cowSell", year))
              ),
              column(2,
-                    fluidRow(column(12, style = "background-color:white;", div(style = "height:170px;"))),
+                    fluidRow(column(12, style = "background-color:white;", div(style = "height:600px;"))),
                     actionButton(paste0("year", year, "Start"), "Begin Simulation"),
-                    fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
+                    fluidRow(column(12, style = "background-color:white;", div(style = "height:950px;"))),
                     uiOutput(paste0("continue", year)),
                     fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
                     uiOutput(paste0("sellButton", year))

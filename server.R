@@ -19,13 +19,15 @@ function(input, output, session) {
     ## myOuts updates
     assign(paste0("reactiveWinter", i), reactive({
       input[[paste0("sell", i-1)]]
+      
       tagList(
         h4("Winter Finance Assessment"),
         p(paste0("Your Current Net Worth is: $", round(myOuts[i, net.wrth], 0))),
         p(paste0("Your Current Herd is: ", round(myOuts[i, herd], 0))),
         p(paste0("Your Bank Balance is: $", round(myOuts[i, assets.cash], 0))),
         p(paste0("Your range is currently at: ", round(myOuts[i, forage.potential] * 100, 0), "%")),
-        p(paste0("You paid: $", round(myOuts[i, cost.ins], 0), " for insurance"))
+        p(paste0("You paid: $", round(myOuts[i, cost.ins], 0), " for insurance")),
+        plotOutput(paste0("worthPlot", i))
       )
     }))
     
@@ -111,7 +113,9 @@ function(input, output, session) {
     ## Display rain info up to July and allow user to choose adaptation level
     output[[paste0("decision", i)]] <- renderUI({
       if(input[[paste0("year", i, "Start")]] == 1){
-        getJulyInfo(i)
+        tagList(
+          getJulyInfo(i)
+        )
       }
     })
     
@@ -166,8 +170,16 @@ function(input, output, session) {
     
     ## Table of rain for each July
     output[[paste0("julyRain", i)]] <- renderTable({
-      julyRain <- station.gauge$stgg[Year == (startYear + i - 1),-1]/station.gauge$avg * 100
-      julyRain[, 7:12 := "?"]
+      currentYear <- (startYear + i - 1)
+      yprecip <- station.gauge$stgg[Year %in% (currentYear - 1):currentYear, ]  # monthly precip amounts for start year
+      yprecip <- cbind((yprecip[Year == currentYear - 1, c("NOV", "DEC")]), 
+                       (yprecip[Year == currentYear, -c("NOV", "DEC", "Year")]))
+      yprecip[, 9:12 := 0]
+      ave <- station.gauge$avg
+      yearAvg <- rbindlist(list(yprecip, ave), use.names = T)
+      julyRain <- round((yearAvg[1,]/yearAvg[2,]) * 100, 2)      
+      # julyRain <- station.gauge$stgg[Year == (startYear + i - 1),-1]/station.gauge$avg * 100
+      # julyRain[, 7:12 := "?"]
     })
     
     ## Bar graphs for herd size
@@ -186,6 +198,36 @@ function(input, output, session) {
           ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity")
         }
       }
+    })
+    
+    ## Bar graph to display net worth
+    output[[paste0("worthPlot", i)]] <- renderPlot({
+      plotOuts <- myOuts[, c("yr", "assets.cow", "assets.cash"), with = F]
+      setnames(plotOuts, c("Year", "Value of Cows", "Cash"))
+      plotOuts[, Year := startYear:(startYear + nrow(plotOuts) - 1)]
+      plotOuts <- melt(plotOuts, id.vars = "Year")
+      setnames(plotOuts, c("Year", "Area", "Value in $"))
+      plotOuts$Area <- factor(plotOuts$Area)
+      ggplot(plotOuts, aes(x = Year, y = `Value in $`, fill = Area)) + geom_bar(stat = "identity") + 
+        ggtitle("Net Worth") + theme(legend.title = element_blank())
+    })
+    
+    ## Bar graph to display rainfall
+    output[[paste0("rainGraph", i)]] <- renderPlot({
+      currentYear <- (startYear + i - 1)
+      yprecip <- station.gauge$stgg[Year %in% (currentYear - 1):currentYear, ]  # monthly precip amounts for start year
+      yprecip <- cbind((yprecip[Year == currentYear - 1, c("NOV", "DEC")]), 
+                       (yprecip[Year == currentYear, -c("NOV", "DEC", "Year")]))
+      yprecip[, 9:12 := 0]
+      ave <- station.gauge$avg
+      yearAvg <- rbindlist(list(yprecip, ave), use.names = T)
+      yearAvg[, "id" := c("Actual Rain", "Average Rain")]
+      yearAvg <- melt(yearAvg, id.vars = "id")
+      setnames(yearAvg, c("id", "Month", "Rainfall"))
+      ggplot(yearAvg, aes(x = Month, y = Rainfall, fill = id)) + 
+        geom_bar(width = .6, stat = "identity", position = position_dodge(width=1.3)) + 
+        theme(legend.title = element_blank()) + ggtitle("Rainfall")
+      
     })
     
     ## Reactive to disable start simualation button after they're clicked
