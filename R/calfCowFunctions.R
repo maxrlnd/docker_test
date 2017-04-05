@@ -41,11 +41,11 @@ calfWeanWeight <- function(styr, sim_length){
   
   "
   Compute calf weights based on station/grid cell
-  forage potential for a five-year period.
+  forage potential for a n-year period.
   
   Inputs:
   
-  styr: starting year of the five-year period.
+  styr: starting year of the n-year period.
   
   Wean weights are computed for each of the five years as a summed product of
   the target location's forage potential weights and precipitation index by
@@ -94,9 +94,44 @@ calfWeanWeight <- function(styr, sim_length){
 }
 
 getHerdSize <- function(results_1ya, results_2ya, deathRate){
+  "
+  Function: getHerdSize
+  Description: function to calcualte the size of herd based on results from two previous years
+  
+  Inputs:
+  results_1ya = results from 1 year ago
+  results_2ya = results from 2 years ago
+  deathRate = percent of cows dying each year
+  
+  Outputs:
+  currentHerd = size of the current herd
+  "
+  
+  
   currentHerd <- (results_1ya$herd * (1 - deathRate) * 
                     (1 - results_1ya$cows.culled) + 
                     (results_2ya$herd * results_2ya$wn.succ) *
-                    (1 - results_2ya$calves.sold))
+                    (1 - results_2ya$calves.sold) * (1 - deathRate))
   return(currentHerd)
+}
+
+
+shinyHerd <- function(herd1, cull1, herd2, calves2, deathRate){
+  "
+  Function: shinyHerd
+  Description: function to calculae size of herd for shiny app
+  
+  Inputs:
+  herd1 = herd size 1 year ago
+  cull1 = number (not %) of cows culled in the previous year
+  herd2 = herd size 2 years ago
+  calves2 = number (not %) of claves sold two years ago
+  deathRate = percent of cows dying each year
+  
+  Outputs:
+  currentHerd = size of the current herd
+  "
+  currentHerd <- (herd1 * (1 - deathRate) - cull1 + 
+                    calves2 * (1 - deathRate))
+  return(ifelse(currentHerd < 0, 0, currentHerd))
 }
