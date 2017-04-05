@@ -50,8 +50,6 @@ generateRunParams <- function(acres.param = 3000){
   return(append(append(station.gauge, constvars), (simvars)))
 }
 
-
-
 #### Non-parallel model run ####
 runs <- 1
 simruns <- rlply(runs, generateRunParams(acres.param = 3000))  # list of simulation variables for runs
