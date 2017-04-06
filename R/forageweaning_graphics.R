@@ -13,18 +13,18 @@ forage <- sapply(1949:2015, foragePWt, station.gauge = station.gauge, herd = her
 forage_df <- data.frame(years, forage)
 
 #Evan Test Changes
-ggplot(forage_df, aes(x=forage, y = years)) + geom_point() +
+foragepotentialplot = ggplot(forage_df, aes(x=forage, y = years)) + geom_point() +
   labs(title = 'Forage Potential Over 1949-2015', subtitle = 'Historical data Used for Precipitation',x = "Forage Potential", y = "Years") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
+ggsave('foragepotentialplot.jpg', plot = foragepotentialplot, device = 'jpg', path = 'C:/Users/EvanLih/drought_decision_model/figs/')
 
 
 
-
-ggplot(forage_df, aes(x=forage)) + geom_density()
-
-ggplot(forage_df, aes(x=forage, y = years)) + geom_smooth(se = FALSE) + geom_jitter()
-
+ggplot(forage_df, aes(x=forage)) + geom_density() + 
+  labs(title = 'Forage Potential Over 1949-2015',x = "Forage Potential", y = "Years", caption = 'Standard Normal Distribution Observed') +
+  theme(plot.title = element_text(hjust = 0.5))
+  
 
 
 
