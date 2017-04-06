@@ -14,8 +14,9 @@ forage_df <- data.frame(years, forage)
 
 #Evan Test Changes
 ggplot(forage_df, aes(x=forage, y = years)) + geom_point() +
-  stat_density_2d() +
-  labs(title = 'Forage Potential over 1949-2015', x = "Forage Potential", y = "Years")
+  labs(title = 'Forage Potential Over 1949-2015', subtitle = 'Historical data Used for Precipitation',x = "Forage Potential", y = "Years") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
 
 
 
@@ -193,9 +194,9 @@ ggsave('herd2000splot.jpg', plot = herd2000splot, device = 'jpg', path = 'C:/Use
 
 combinedyearstestplot = ggplot(herdstest, aes(x = years, y = herd)) + geom_point() +
   geom_line(aes(group = years)) +
-  ylim(560,600) +
   theme_bw() +
   scale_x_continuous("Years", limits = c(1980,2010)) +
+  scale_y_continuous("Herd Size (AU)", limits = c(560, 600)) +
   labs(title = 'Herd Size from 2000s', x = "Years", y = "Herd Size (AU)") +
   theme(plot.title = element_text(hjust = 0.5)) 
   
