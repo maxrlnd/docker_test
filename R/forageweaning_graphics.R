@@ -4,6 +4,8 @@
 
 library(ggplot2)
 
+
+#lookup to see how to save a graphic to a certain directory, for overwriting. 
 # Forage potential over years
 years <- 1949:2015
 foragePWt(station.gauge = station.gauge, styear = 2015, herd = herd, carryingCap = 1)
@@ -61,6 +63,7 @@ wean_percentage_df <- data.frame(years, forage, wean_percentage_yr1, wean_percen
 library(tidyr)
 wean_percentage_df %>%
   gather(which_year, wean_pct, -years, -forage) %>%
+  
   ggplot(aes(forage, wean_pct, color = which_year)) + 
   geom_point() +
   labs(title = 'Forage and Weaning percent', x = 'forage', y = 'weaning percentage')
@@ -151,39 +154,52 @@ head(herd1980s)
 
 #Combine all of these together!
 #year 1-10. 
-ggplot(herd1980s, aes(years,herd), col =) + 
+herd1980splot = ggplot(herd1980s, aes(years,herd), col =) + 
   geom_path(linetype = 4) + 
-  geom_point() +
-  ylim(560,600) +
+  geom_point(col = 'blue', size = 3) +
   theme_bw() +
   scale_x_continuous("Years", limits = c(1981, 1990), breaks = seq(1981,1990)) +
+  scale_y_continuous("Herd Size (AU)", limits = c(560, 600)) +
   labs(title = 'Herd Size from 1980-1990', x = "Years", y = "Herd Size") +
   theme(plot.title = element_text(hjust = 0.5))
 
+ggsave('herd1980splot.jpg', plot = herd1980splot, device = 'jpg', path = 'C:/Users/EvanLih/drought_decision_model/figs/')
 
-ggplot(herd1990s, aes(x = years, y = herd)) + geom_point() + 
+
+herd1990splot = ggplot(herd1990s, aes(x = years, y = herd)) + geom_point() + 
   geom_path(linetype = 4) +
+  geom_point(col = 'blue', size = 3) +
   theme_bw() +
+  scale_x_continuous("Years", limits = c(1991, 2000), breaks = seq(1990,2000)) +
   labs(title = 'Herd Size from 1990-2000', x = "Years", y = "Herd Size") +
   theme(plot.title = element_text(hjust = 0.5))
 
-ggplot(herd2000s, aes(x = years, y = herd)) + geom_point() +
+ggsave('herd1990splot.jpg', plot = herd1990splot, device = 'jpg', path = 'C:/Users/EvanLih/drought_decision_model/figs/')
+
+
+herd2000splot = ggplot(herd2000s, aes(x = years, y = herd)) + geom_point() +
   geom_line(linetype = 4) + 
   geom_point(col = 'blue', size = 3) +
   ylim(560,600) +
   theme_bw() +
-  scale_x_continuous("Years", limits = c(2000,2007), breaks = seq(2000,2007)) +
-  scale_y_continuous("wean_perc_2000's", limits = c(550, 600)) +
+  scale_x_continuous("Years", limits = c(2001,2007), breaks = seq(2000,2007)) +
+  scale_y_continuous("Herd Size (AU)", limits = c(550, 600)) +
   labs(title = 'Herd Size from 2000s', x = "Years", y = "Herd Size (AU)") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
-ggplot(herdstest, aes(x = years, y = herd)) + geom_point() +
+ggsave('herd2000splot.jpg', plot = herd2000splot, device = 'jpg', path = 'C:/Users/EvanLih/drought_decision_model/figs/')
+
+
+
+combinedyearstestplot = ggplot(herdstest, aes(x = years, y = herd)) + geom_point() +
   geom_line(aes(group = years)) +
   ylim(560,600) +
   theme_bw() +
   scale_x_continuous("Years", limits = c(1980,2010)) +
   labs(title = 'Herd Size from 2000s', x = "Years", y = "Herd Size (AU)") +
   theme(plot.title = element_text(hjust = 0.5)) 
+  
+ggsave('combinedyearstestplost.jpg', plot = combinedyearstestplot, device = 'jpg', path = 'C:/Users/EvanLih/drought_decision_model/figs/')
 
 herdstest = rbind(herd2000s, herd1980s, herd1990s)
 
