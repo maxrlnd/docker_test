@@ -294,7 +294,7 @@ tabsetPanel(id = "mainPanels",
   ## Panel for comprehension quiz
  tabPanel("Quiz",
   fluidRow(
-    column(12,
+    column(5,
            h4("Comprehension Quiz"),
            h5("You may look back at the background info tab to find the 
               information you need to answer these questions."),
@@ -316,7 +316,10 @@ tabsetPanel(id = "mainPanels",
                               choices = c("You will produce more calves" = "moreCalves",
                                           "You will damage your land if there is not enough rainfall" = "damage")),
            radioButtons("priceQ", "In this game, do calf prices change each year or stay the same?", 
-                        choices = c("Change" = "change", "Stay the same" = "same")),
+                        choices = c("Change" = "change", "Stay the same" = "same"))
+    ),
+        column(5,
+           br(),
            checkboxGroupInput("adaptQ", "What will likely happen if there is not enough rain and 
                         you do not buy sufficient hay?", 
                         choices = c("Your calves will be underweight and will generate less revenue at market.", 
@@ -326,41 +329,92 @@ tabsetPanel(id = "mainPanels",
            selectInput("earningsQ", "Your net worth at the end of the game will be translated into real-life bonus money 
                       at a rate of $100,000 game money to $1 real money. So if you have $300,000 in the net worth (bank 
                       account plus the value of your herd), how much bonus money will you get after the game ends?",
-                       choices = c("$0", "$3", "$6", "$10")),
+                       choices = c(""," $0", "$3", "$6", "$10")),
            selectInput("practiceQ", "True or False, before starting the game, I will play five “practice rounds” that 
-                      will not count towards my final net worth.", choices = c("True", "False")),
+                      will not count towards my final net worth.", choices = c("", "True", "False")),
            selectInput("bonusQ", "If I do not complete the survey after the simulation, will I receive my bonus?",
-                       choices = c("Yes", "No")),
+                       choices = c("", "Yes", "No")),
            
-           #INSURANCE TREATMENT ONLY
+           #INSURANCE TREATMENT ONLY #Randomize
            selectInput("premiumQ", "How much does your rain-index insurance cost each year?",
-                       choices = c("$0", "$100", "something reasonable")),
+                       choices = c("", "$0", "$100", "something reasonable")),
            radioButtons("rainmonthsQ", "Your insurance payouts depend on rain in which months?",
                         choices = c("May-June, July-August", "May-June, June-July", 
                                     "February-March, May-June", "July-August, October-November")),
            selectInput("payoutQ", "Would you get a larger insurance payout if you get 5 inches of rain or 2 inches of rain during 
-                        a month that is insured?", choices = c("5 inches", "2 inches"))
+                        a month that is insured?", choices = c("", "5 inches", "2 inches")),
+           
+           submitButton("Submit")
            )
   )),
                    
   ## Panel for users to enter demographics         
   tabPanel("Demographics",
     fluidRow(
-      column(3,
-        selectInput("gender", "Select Gender", c("Female", "Male", "Other")),
-        textInput("age", "Enter Age")
+      br(),
+      column(5,
+        
+        selectInput("gender", "Select Gender", c("", "Female", "Male", "Other")),
+        textInput("age", "Enter Age"),
+        checkboxGroupInput("race", "Please specify your race (select all that apply)", 
+                           choices = c("American Indian or Alaskan Native", "Asian",
+                                       "Black or African American", "Native Hawaiian or Other Pacific Islander",
+                                       "White", "Other")),
+        checkboxGroupInput("ethnicity", "Please specify your ethnicity (select all that apply)",
+                           choices = c("Hispanic or Latino", "Not Hispanic or Latino")),
+        radioButtons("attn", "Please select five if you are still reading this question",
+                     choices = c("1", "2", "3", "4", "5")),
+        textInput("country", "In which country do you reside?"),
+        selectInput("state", "In which state do you reside?",
+                  choices = c("", "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", 
+                              "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", 
+                              "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", 
+                              "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", 
+                              "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", 
+                              "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", 
+                              "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", 
+                              "Wyoming", "None of the above")),
+        conditionalPanel(condition = "input.state == None of the above", 
+                        textInput("state_specify", "If you chose none of the above, please specify the state in which you live:")),
+        textInput("zip", "What is your five digit zip code?")
         ),
-      column(4,
-        selectInput("experience", "Have you ever worked on a ranch", c("No", "Yes")),
+      column(5,
+        #selectInput("experience", "Have you ever worked on a ranch", c("", "No", "Yes")),
         
         ## You can create dynamic inputs using the uiOutput function see the corresponding section in the
         ## server file under output$exp
-        uiOutput("exp"),
+        #uiOutput("exp"),
         
-        ## This is silly just here as an example
-        sliderInput("like", "On a scale of 1 to 10 rate how you feel about ranchers with 1 being hate
-                    and 10 being love", min = 1, max = 10, value = 5),
-        actionButton("begin", "Begin Ranch Game")
+        
+        selectInput("ranchKnowledge", "Before this experiment, how much did you know about cattle ranching?",
+                    choices = c("", "Nothing", "I’ve read or talked about cattle ranching at least once before",
+                                "I am familiar with cattle ranching", "I am very knowledgeable about cattle ranching")),
+        selectInput("droughtKnowledge", "Before this experiment, how much did you know about drought?",
+                    choices = c("", "Nothing", "I’ve read or talked about drought at least once before",
+                                "I am familiar with the concept of drought", "I am very knowledgeable about the concept of drought")),
+        selectInput("droughtImpact", "Does drought impact your life, and, if so, to what degree?",
+                    choices = c("", "No, drought has no impact on my life", "No, drought has little impact on my life",
+                                "Yes, drought has impacted my life a little bit", "Yes, to a high degree")),
+        selectInput("veg", "Are you a vegetarian or vegan?", choices = c("", "Yes", "No")),
+        selectInput("income", "What was your total household income before taxes from all sources in 2016?",
+                    choices = c("", "Less than $15,000", "$15,000 to $29,999", "$30,000 to $44,999", "$45,000 to $59,999",
+                                "$60,000 to $74,999", "$75,000 to $89,999", "$90,000 to $104,999", "$105,000 to $150,000",
+                                "$150,000 and up")),
+        selectInput("education", "What is the highest level of education you have completed?", 
+                    choices = c("", "Less than high school", "High school diploma or equivalent", "Associate degree",
+                                "Trade school degree or certificate", "Bachelors degree", 
+                                "Graduate degree (Masters, PhD, MD, JD, etc.)")),
+        selectInput("attn2", "Do you agree or disagree: please leave this question blank if you are still reading.",
+                    choices = c("", "Strongly Agree", "Agree", "Disagree", "Strongly Disagree")),
+        selectInput("vote", "When you vote, if there are only Democrats or Republicans on the ballot, which party do you tend to vote for?", 
+                    choices = c("", "I nearly always vote for Democrats", "I vote for Democrats more often than I vote for Republicans",
+                                "Half the time I vote for Democrats and half the time I vote for Republicans", 
+                                "I vote for Republicans more often than I vote for Democrats", "I nearly always vote for Republicans",
+                                "I am not eligible to vote.", "I am eligible, but I do not vote.")),
+        selectInput("enviro", "Do you identify as an environmentalist?", 
+                    choices = c("", "Yes", "No", "It depends on the issue")),
+        
+        actionButton("submit", "Submit")
         )
       
         
@@ -372,5 +426,4 @@ tabsetPanel(id = "mainPanels",
 uiOutput("creationPool", style = "display: none;")
 )
 )
-
 
