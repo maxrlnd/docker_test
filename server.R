@@ -112,10 +112,13 @@ function(input, output, session) {
     
     ## Display rain info up to July and allow user to choose adaptation level
     output[[paste0("decision", i)]] <- renderUI({
-      if(input[[paste0("year", i, "Start")]] == 1){
-        tagList(
-          getJulyInfo(i)
-        )
+      if(!is.null(input[[paste0("year", i, "Start")]])){  
+        print("hello")
+        if(input[[paste0("year", i, "Start")]] == 1){
+          tagList(
+            getJulyInfo(i)
+          )
+        }
       }
     })
     
@@ -230,7 +233,7 @@ function(input, output, session) {
       
     })
     
-    ## Reactive to disable start simualation button after they're clicked
+    # Reactive to disable start simualation button after they're clicked
     observeEvent(input[[paste0("year", i, "Start")]], {
       shinyjs::disable(paste0("year", i, "Start"))
     })
@@ -254,11 +257,11 @@ function(input, output, session) {
       session$sendCustomMessage("myCallbackHandler", as.character(values$currentYear))
     })
     
-    ## Disable continue button and adaptation slider after clicking
+    # Disable continue button and adaptation slider after clicking
     observeEvent(input[[paste0("year", i, "Summer")]], {
       shinyjs::disable(paste0("year", i, "Summer"))
       shinyjs::disable(paste0("d", i, "AdaptSpent"))
-      
+
     })
     
     
@@ -293,6 +296,7 @@ function(input, output, session) {
   ## Code to dynamically add new tabs
   output$creationPool <- renderUI({})
   outputOptions(output, "creationPool", suspendWhenHidden = FALSE)
+  
   addTabToTabset <- function(Panels, tabsetName){
     titles <- lapply(Panels, function(Panel){return(Panel$attribs$title)})
     Panels <- lapply(Panels, function(Panel){Panel$attribs$title <- NULL; return(Panel)})
@@ -328,6 +332,7 @@ function(input, output, session) {
   # addTabToTabset(yearTabs, "mainPanels")
   # 
   addTabToTabset(createNewYr(1), "mainPanels")
+  observe(print(names(reactiveValuesToList(input))))
   ## So this is supposed to update the constant variables which works
   ## but it does it through a << side effect...ugly
   ## So it needs to be fixed

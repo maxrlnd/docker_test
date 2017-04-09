@@ -78,9 +78,10 @@ simLength <- 5
 
 ## Calcualte indemnities for all years of the simulation
 indem <- lapply(startYear:(startYear + simLength - 1), function(x){
-  with(simRuns, insMat(yy = x, clv = clv, acres = acres,
-                                 pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+  with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
+                       pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
 })
+
 
 ## Is insurance purchased?
 # purchaseInsurance <- sample(c(T, F), 1)

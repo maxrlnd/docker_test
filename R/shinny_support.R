@@ -207,3 +207,78 @@ createNewYr <- function(year){
            )
   ))
 }
+
+
+shinyInsMat <- function(yy, clv, acres, pfactor, insPurchase, tgrd){
+  "
+  Author: Adam (based loosely on Joe's work)
+  
+  Calculates premium and indemification for a specific year and
+  grid cell. Currently returns are summed bu this could be done
+  on a index interval basis instead.
+  
+  yy: Year of interest.
+  
+  clv: RMA coverage level. Accepted values
+  are 0.7, 0.75, 0.8, 0.85, 0.9
+  
+  acres: Insured acres of grazing land.
+  
+  pfactor: Productivity factor of grazing land.
+  
+  insPurchase: a matrix of intervals from 1-11
+  for which insurance is purchased. For example,
+  purchases for the April-May and May-June intervals
+  at 50% protection each would be entered as
+  
+  `rbind(c(3,0.5),c(5,0.5))`
+  
+  Consecutive intervals are not allowed.
+  Returns a data.table of outputs:
+  
+  year: year of calculations
+  prod_prem: producer premium
+  indemnity: total indemnity
+  full_prem: premium without subsidy
+  
+  "
+
+  ##Get subsidy rate based on coverage level
+  sbdy <- .51 #.51 is the subsidy for the .9 coverage level
+  
+  ##Set up insurance purchase vector
+  ip = rep(0, 11)
+  ip[insPurchase[, 1]] = insPurchase[, 2]  # replaces 0's with interval allocations
+  insPurchase = ip
+  
+  ##Calculate policy rate
+  plrt = prod(clv, acres, pfactor) * 33  # is the baseprice for the cper station
+  
+  ## Calculate the protection for each index interval
+  monthProtec <- plrt * insPurchase
+  
+  ## Calculate Premium for each Month Below are premiums per 100 for CPER gridcell
+  monthPrem <- (monthProtec * .01) * c(25.06, 23.44, 18.01, 15.38, 13.29, 14.83, 14.65, 16.63, 22.26, 23.02, 26.46)
+  names(monthPrem) <- paste0("i", 1:11)
+  ## Calculate Premium subsidy for each month
+  subSidy <- round(monthPrem * sbdy, 2)
+  
+  ## Calculate subsidised premium for each month
+  subPrem <- round(monthPrem * (1-sbdy), 2)
+  
+  ## Fetch index intervals
+  intervalIndicies <- data.table(t(intervalNOAA[Year == yy, value]))
+  setnames(intervalIndicies, names(subPrem))
+  
+  ## Calcualte the percent coverage for each month
+  ## Rounding can make a significant difference here RMA uses 3 decimals
+  coverageAmount <- round(clv - (intervalIndicies * .01), 3)
+  
+  ## Calculate Indemnities
+  indem <- unlist(ifelse(coverageAmount > 0, coverageAmount/clv * monthProtec, 0))
+  
+  returnTable = data.table(matrix(nrow = 1, ncol = 4, data = c(yy, sum(subPrem), sum(indem), sum(monthPrem))))  # empty matrix - year, indemnity, producer premium x number years
+  setnames(returnTable, c("year", "producer_prem", "indemnity", "full_prem"))
+  
+  return(returnTable)
+}

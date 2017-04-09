@@ -6,3 +6,4 @@ data/noaaIndex.RData
 R/scratchpad.R
 misc/demo_sim_100.RData
 .DS_Store
+drought_decision_model_NEW.Rproj
