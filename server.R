@@ -269,9 +269,9 @@ function(input, output, session) {
   
   
   ## Observer for begin button in demographis panel
-  observeEvent(input$begin, {
+  observeEvent(input$demoSub, {
     # addTabToTabset(createNewYr(1), "mainPanels")
-    disable("begin")
+    disable("demoSub")
     session$sendCustomMessage("myCallbackHandler", "1")
   })
 
@@ -332,7 +332,6 @@ function(input, output, session) {
   # addTabToTabset(yearTabs, "mainPanels")
   # 
   addTabToTabset(createNewYr(1), "mainPanels")
-  observe(print(names(reactiveValuesToList(input))))
   ## So this is supposed to update the constant variables which works
   ## but it does it through a << side effect...ugly
   ## So it needs to be fixed
