@@ -26,8 +26,12 @@ tagList(
                   }
                   if(typeMessage == 1){
                   console.log("got here");
-                  $("a:contains(Year 1)").click();
+                  $("a:contains(Year-1)").click();
                   }
+                  if(typeMessage == 2){
+                  console.log("got here");
+                  $("a:contains(Temp-2)").click();
+                  }    
                   });'
     ),
     tags$script(HTML("
@@ -344,7 +348,7 @@ tabsetPanel(id = "mainPanels",
            selectInput("payoutQ", "Would you get a larger insurance payout if you get 5 inches of rain or 2 inches of rain during 
                         a month that is insured?", choices = c("", "5 inches", "2 inches")),
            
-           submitButton("Submit")
+           actionButton("quizSub", "Submit")
            )
   )),
                    
@@ -414,7 +418,7 @@ tabsetPanel(id = "mainPanels",
         selectInput("enviro", "Do you identify as an environmentalist?", 
                     choices = c("", "Yes", "No", "It depends on the issue")),
         
-        actionButton("submit", "Submit")
+        actionButton("demoSub", "Submit")
         )
       
         
