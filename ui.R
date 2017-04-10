@@ -418,7 +418,68 @@ tabsetPanel(id = "mainPanels",
         )
       
         
-    ))
+    )),
+ 
+ ## Panel for risk aversion measures
+ tabPanel("Lotteries",
+          fluidRow(
+            br(),
+            column(12,
+                   h4("Choose Your Lottery"),
+                   p("In this section, you will have another chance to earn additional money."),
+                   p("You will be presented with two different lotteries. Lottery A and Lottery B 
+                    will have different payoffs with different odds. To have a chance to earn additional 
+                    money, you will choose between lottery A and lottery B."),
+                   p("You will make 10 different choices between lotteries."),
+                   p("We will select ten participants in this study to win one of their lottery choices
+                    in the form of an MTurk bonus."),
+                   p("For the winners, one of these choices will be randomly drawn. For that lottery choice, one of the 
+                    payoffs will be randomly drawn according to the probabilities given in the lottery. 
+                    The winners will be paid the amount drawn in addition to their previous earnings in this survey.")
+            ),
+            column(5,
+                   br(),
+                   radioButtons("lottery10_90",
+                                "Which lottery would you rather play?",
+                                choices = c("Lottery A: 10% chance of winning $2.00, 90% chance of winning $1.60",
+                                            "Lottery B: 10% chance of winning $3.85, 90% chance of winning $0.10")),
+                   radioButtons("lottery20_80",
+                                "Which lottery would you rather play?",
+                                choices = c("Lottery A: 20% chance of winning $2.00, 80% chance of winning $1.60",
+                                            "Lottery B: 20% chance of winning $3.85, 80% chance of winning $0.10")),
+                   radioButtons("lottery30_70",
+                                "Which lottery would you rather play?",
+                                choices = c("Lottery A: 30% chance of winning $2.00, 70% chance of winning $1.60",
+                                            "Lottery B: 30% chance of winning $3.85, 70% chance of winning $0.10")),
+                   radioButtons("lottery40_60",
+                                "Which lottery would you rather play?",
+                                choices = c("Lottery A: 40% chance of winning $2.00, 60% chance of winning $1.60",
+                                            "Lottery B: 40% chance of winning $3.85, 60% chance of winning $0.10")),
+                   radioButtons("lottery50_50",
+                                "Which lottery would you rather play?",
+                                choices = c("Lottery A: 50% chance of winning $2.00, 50% chance of winning $1.60",
+                                            "Lottery B: 50% chance of winning $3.85, 50% chance of winning $0.10"))
+            ),
+            column(5,
+                   br(),
+                   radioButtons("lottery60_40",
+                                "Which lottery would you rather play?",
+                                choices = c("Lottery A: 60% chance of winning $2.00, 40% chance of winning $1.60",
+                                            "Lottery B: 60% chance of winning $3.85, 40% chance of winning $0.10")),
+                   radioButtons("lottery70_30",
+                                "Which lottery would you rather play?",
+                                choices = c("Lottery A: 70% chance of winning $2.00, 30% chance of winning $1.60",
+                                            "Lottery B: 70% chance of winning $3.85, 30% chance of winning $0.10")),
+                   radioButtons("lottery80_20",
+                                "Which lottery would you rather play?",
+                                choices = c("Lottery A: 80% chance of winning $2.00, 20% chance of winning $1.60",
+                                            "Lottery B: 80% chance of winning $3.85, 20% chance of winning $0.10")),
+                   radioButtons("lottery90_10",
+                                "Which lottery would you rather play?",
+                                choices = c("Lottery A: 90% chance of winning $2.00, 10% chance of winning $1.60",
+                                            "Lottery B: 90% chance of winning $3.85, 10% chance of winning $0.10"))
+                   )
+          ))
  
   
 ), 
