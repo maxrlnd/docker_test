@@ -18,7 +18,7 @@ tagList(
     #               }', yearHandler, '});'
     #               )),
     
-    tags$script('Shiny.addCustomMessageHandler("myCallbackHandler",
+    tags$script(paste0('Shiny.addCustomMessageHandler("myCallbackHandler",
                   function(typeMessage) {console.log(typeMessage)
                   if(typeMessage == 6){
                   console.log("got here");
@@ -27,12 +27,8 @@ tagList(
                   if(typeMessage == 1){
                   console.log("got here");
                   $("a:contains(Year-1)").click();
-                  }
-                  if(typeMessage == 2){
-                  console.log("got here");
-                  $("a:contains(Temp-2)").click();
-                  }    
-                  });'
+                  }', yearHandler, '
+                  });')
     ),
     tags$script(HTML("
     /* In coherence with the original Shiny way, tab names are created with random numbers. 

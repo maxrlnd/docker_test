@@ -2,6 +2,9 @@
 function(input, output, session) {
   toggleClass(class = "disabled",
               selector = "#navBar li a[data-value=Demographics]")
+  toggleClass(class = "disabled",
+              selector = "#navBar li a[data-value=Quiz]")
+  # lapply(1:simLength, function(x)toggleClass(class = "disabled", selector = paste0("#navBar li a[data-value=Year ", x, "]")))
 
   ## Dynamic UI for Demo graphics
   output$exp <- renderUI({
@@ -251,11 +254,13 @@ function(input, output, session) {
                             newHerd = get(paste0("herdSize", i))(), zones = get(paste0("currentZones", i))(), 
                             adaptInten = CalculateAdaptationIntensity(get(paste0("effectiveForage", i))()),
                             currentYear = i)
-      print(myOuts)
+      # print(myOuts)
       values$currentYear <- values$currentYear + 1
-      addTabToTabset(createNewYr(values$currentYear), "mainPanels")
+      toggleClass(class = "disabled",
+                  selector = paste0("#navBar li a[data-value=Year ", i, "]"))
       session$sendCustomMessage("myCallbackHandler", as.character(values$currentYear))
     })
+    
     
     # Disable continue button and adaptation slider after clicking
     observeEvent(input[[paste0("year", i, "Summer")]], {
@@ -263,8 +268,6 @@ function(input, output, session) {
       shinyjs::disable(paste0("d", i, "AdaptSpent"))
 
     })
-    
-    
   }) ##End of lapply
   
   
@@ -277,10 +280,7 @@ function(input, output, session) {
 
   ########## Functions to Print out state information
   
-  ## Code to disable demographic tab at start
-  observe({
-    toggleClass(selector = "#navbar li a[data-value=Demographics]")
-  })
+
 
   ## Disable agree button on instructions after it has been clicked and move to
   ## Demographics tab
@@ -307,31 +307,33 @@ function(input, output, session) {
   
   ## Commented code to add all tab panels at once currently not used as tab panels are added dynamically
 
-  # yearTabs <-  
-  #   lapply(1:5, function(z){
-  #     tabPanel(paste("Year", z),
-  #              fluidRow(
-  #                column(8,
-  #                       uiOutput(paste0("winterInfo", z)),
-  #                       fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
-  #                       uiOutput(paste0("decision", z)),
-  #                       uiOutput(paste0("insuranceUpdate", z)),
-  #                       uiOutput(paste0("cowSell", z))
-  #                ),
-  #                column(2,
-  #                       fluidRow(column(12, style = "background-color:white;", div(style = "height:170px;"))),
-  #                       actionButton(paste0("year", z, "Start"), "Begin Simulation"),
-  #                       fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
-  #                       uiOutput(paste0("continue", z)),
-  #                       fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
-  #                       uiOutput(paste0("sellButton", z))
-  #                )
-  #              )
-  #     )
-  #   })
-  # addTabToTabset(yearTabs, "mainPanels")
-  # 
-  addTabToTabset(createNewYr(1), "mainPanels")
+  yearTabs <-
+    lapply(1:5, function(z){
+      tabPanel(paste("Year", z),
+               fluidRow(
+                 column(8,
+                        uiOutput(paste0("winterInfo", z)),
+                        fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
+                        uiOutput(paste0("decision", z)),
+                        uiOutput(paste0("insuranceUpdate", z)),
+                        uiOutput(paste0("cowSell", z))
+                 ),
+                 column(2,
+                        fluidRow(column(12, style = "background-color:white;", div(style = "height:170px;"))),
+                        actionButton(paste0("year", z, "Start"), "Begin Simulation"),
+                        fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
+                        uiOutput(paste0("continue", z)),
+                        fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
+                        uiOutput(paste0("sellButton", z))
+                 )
+               )
+      )
+    })
+  addTabToTabset(yearTabs, "mainPanels")
+
+  # addTabToTabset(createNewYr(1), "mainPanels")
+  # addTabToTabset(createNewYr(2), "mainPanels")
+  # toggleClass(selector = "#navbar li a[data-value=Temp-2]")
   ## So this is supposed to update the constant variables which works
   ## but it does it through a << side effect...ugly
   ## So it needs to be fixed

@@ -187,7 +187,8 @@ createNewYr <- function(year){
   Outputs:
   list of 1 tabset panel with year UI
   "
-  list(tabPanel(paste("Year", year),
+  if(year==1){word = "Year-"}else{word = "Temp-"}
+  list(tabPanel(paste0(word, year),
            fluidRow(
              column(8,
                     uiOutput(paste0("winterInfo", year)),
