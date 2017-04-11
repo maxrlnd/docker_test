@@ -17,7 +17,11 @@ tagList(
     #               $("a:contains(Demographics)").click();
     #               }', yearHandler, '});'
     #               )),
-    
+    tags$style(HTML("
+    .shiny-output-error-validation {
+    color: red;
+    }
+    ")),
     tags$script(paste0('Shiny.addCustomMessageHandler("myCallbackHandler",
                   function(typeMessage) {console.log(typeMessage)
                   if(typeMessage == 6){
@@ -30,6 +34,7 @@ tagList(
                   }', yearHandler, '
                   });')
     ),
+
     tags$script(HTML("
     /* In coherence with the original Shiny way, tab names are created with random numbers. 
                      To avoid duplicate IDs, we collect all generated IDs.  */
@@ -300,6 +305,7 @@ tabsetPanel(id = "mainPanels",
               information you need to answer these questions."),
            numericInput("ranchSizeQ", "What is the size of your ranch (in acres)?", 
                         0, min = 0, step = 100),
+           uiOutput("ranchVal"),
            numericInput("herdSizeQ", "How many cows do you have in your herd (not 
                         including calves or yearlings)?", 0, min = 0, step = 100),
            radioButtons("cullQ", "What does it mean to 'cull' a cow?", 
@@ -310,7 +316,8 @@ tabsetPanel(id = "mainPanels",
                                           "Your herd will grow" = "grow",
                                           "Your herd will shrink" = "shrink",
                                           "You will produce more cows in the year after the calf is weaned" = "wean",
-                                          "You will create more grazing pressure on your land")),
+                                          "You will create more grazing pressure on your land" = "land")),
+           uiOutput("weanVal"),
            textInput("lHerdQ", "What is the largest herd you can keep on your land without causing damage if rainfall is normal?"),
            checkboxGroupInput("bigHerdQ", "What happens if you increase the size of your herd beyond the recommended maximum (Select all that apply)",
                               choices = c("You will produce more calves" = "moreCalves",
@@ -379,13 +386,6 @@ tabsetPanel(id = "mainPanels",
         textInput("zip", "What is your five digit zip code?")
         ),
       column(5,
-        #selectInput("experience", "Have you ever worked on a ranch", c("", "No", "Yes")),
-        
-        ## You can create dynamic inputs using the uiOutput function see the corresponding section in the
-        ## server file under output$exp
-        #uiOutput("exp"),
-        
-        
         selectInput("ranchKnowledge", "Before this experiment, how much did you know about cattle ranching?",
                     choices = c("", "Nothing", "I’ve read or talked about cattle ranching at least once before",
                                 "I am familiar with cattle ranching", "I am very knowledgeable about cattle ranching")),
@@ -419,11 +419,13 @@ tabsetPanel(id = "mainPanels",
       
         
     ))
- 
-  
+
 ), 
 ## Code to insert new tabs, these get inserted into the main panel tabset via the JS at top
+
+
 uiOutput("creationPool", style = "display: none;")
+
 )
 )
 

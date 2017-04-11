@@ -1,17 +1,28 @@
+`%then%` <- shiny:::`%OR%`
 
 function(input, output, session) {
   toggleClass(class = "disabled",
               selector = "#navBar li a[data-value=Demographics]")
   toggleClass(class = "disabled",
-              selector = "#navBar li a[data-value=Quiz]")
+              selector = "#navBar li a[data-value=Year 3]")
   # lapply(1:simLength, function(x)toggleClass(class = "disabled", selector = paste0("#navBar li a[data-value=Year ", x, "]")))
-
-  ## Dynamic UI for Demo graphics
-  output$exp <- renderUI({
-    if(input$experience == "Yes"){
-      textInput("expExplain", "Please explain your previous ranch experience")
-    }
+observeEvent(input$quizSub,
+  output$weanVal <- renderUI({
+    print(input$weanQ)
+    validate(
+        need(input$weanQ, "This is incorrect please try again") %then%
+        need(all(input$weanQ == c("grow", "land")), "This is incorrect please try again")
+      )
+  }))
+  
+  output$ranchVal <- renderUI({
+    req(input$quizSub)
+    validate(
+      need(input$ranchSizeQ == 3000, "This is the incorrect size try again")
+    )
   })
+  
+  
   
   #####Year Tab Functions#####################
   
@@ -84,10 +95,6 @@ function(input, output, session) {
       ## Calculate herd size for the first year
       if(i == 1){
         herd <- myOuts[i, herd]
-        print(herd)
-        print(cows)
-        print(herd * simRuns$normal.wn.succ * (1 - simRuns$calf.sell))
-        print(simRuns$death.rate)
         shinyHerd(herd1 = herd, cull1 = cows, herd2 = herd, 
                   calves2 = herd * simRuns$normal.wn.succ * (1 - simRuns$calf.sell),
                   deathRate = simRuns$death.rate)
@@ -116,7 +123,6 @@ function(input, output, session) {
     ## Display rain info up to July and allow user to choose adaptation level
     output[[paste0("decision", i)]] <- renderUI({
       if(!is.null(input[[paste0("year", i, "Start")]])){  
-        print("hello")
         if(input[[paste0("year", i, "Start")]] == 1){
           tagList(
             getJulyInfo(i)
@@ -200,7 +206,6 @@ function(input, output, session) {
           years <- (startYear + i - 1):(startYear + i + 1)
           cows <- data.table("Year" = years, "Herd Size" = c(myOuts[i, herd],
                                                              get(paste0("herdSize", i))(), herdy1))
-          print(cows)
           ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity")
         }
       }
@@ -256,9 +261,12 @@ function(input, output, session) {
                             currentYear = i)
       # print(myOuts)
       values$currentYear <- values$currentYear + 1
-      toggleClass(class = "disabled",
-                  selector = paste0("#navBar li a[data-value=Year ", i, "]"))
-      session$sendCustomMessage("myCallbackHandler", as.character(values$currentYear))
+      # toggleClass(class = "disabled",
+      #             selector = paste0("#navBar li a[data-value=Year ", i, "]"))
+      # addTabToTabset(createNewYr(values$currentYear), "mainPanels")
+      print(input$List_of_tab)
+      updateTabsetPanel(session, "mainPanels",
+                        selected = paste0("Year ", values$currentYear))
     })
     
     
@@ -332,7 +340,6 @@ function(input, output, session) {
   addTabToTabset(yearTabs, "mainPanels")
 
   # addTabToTabset(createNewYr(1), "mainPanels")
-  # addTabToTabset(createNewYr(2), "mainPanels")
   # toggleClass(selector = "#navbar li a[data-value=Temp-2]")
   ## So this is supposed to update the constant variables which works
   ## but it does it through a << side effect...ugly
