@@ -279,8 +279,8 @@ tabsetPanel(id = "mainPanels",
               
               h4("Facts About Your Ranch"),
               tags$li("Your ranch is located about an hour northeast of Denver, 
-                Colorado."),
-              tags$li("Your herd has 500 calves and 500 mother cows."),
+                Colorado and includes 3000 acres of private land."),
+              tags$li("Your herd has 600 cows and 528 calves."),
               tags$li("On your ranch, calves are born between February and 
                 March, and are sold in October."),
               tags$li("Under normal conditions, your ranch has a calf birth and 
@@ -291,7 +291,7 @@ tabsetPanel(id = "mainPanels",
                 is 600lb, while a mother cow will be about 1,400lb when sold."),
               tags$li("The market price for calves is $1.45/lb. Mother cows are 
                 sold for $850 per cow."),
-              tags$li("Your ranch can support 500 cow-calf pairs on a total of 
+              tags$li("Your ranch can support 600 cow-calf pairs on a total of 
                 5000 acres without damaging the grass in a normal year."),
               tags$li("Each mother cow/calf have a normal yearly operating cost 
                 of $500, and your ranch has an extra yearly base operating cost 
@@ -316,6 +316,7 @@ tabsetPanel(id = "mainPanels",
               information you need to answer these questions."),
            numericInput("ranchSizeQ", "What is the size of your ranch (in acres)?", 
                         0, min = 0, step = 100),
+           br(),
            textOutput("ranchVal"),
            numericInput("herdSizeQ", "How many cows do you have in your herd (not 
                         including calves or yearlings)?", 0, min = 0, step = 100),
@@ -328,14 +329,14 @@ tabsetPanel(id = "mainPanels",
                               choices = c("You earn revenue from the sale" = "sale",
                                           "Your herd will grow" = "grow",
                                           "Your herd will shrink" = "shrink",
-                                          "You will produce more cows in the year after the calf is weaned" = "wean",
-                                          "You will create more grazing pressure on your land" = "land")),
+                                          "You will produce more calves in the year after next" = "wean",
+                                          "You will create more grazing pressure on your land, eventually leading to possible damages to your forage production" = "land")),
            textOutput("weanVal"),
            textInput("lHerdQ", "What is the largest herd you can keep on your land without causing damage if rainfall is normal?"),
            textOutput("lHerdVal"),
            checkboxGroupInput("bigHerdQ", "What happens if you increase the size of your herd beyond the recommended maximum (Select all that apply)",
                               choices = c("You will produce more calves" = "moreCalves",
-                                          "You will damage your land if there is not enough rainfall" = "damage")),
+                                          "You will damage your land, especially if there is not enough rainfall" = "damage")),
            textOutput("bigHerdVal"),
            radioButtons("priceQ", "In this game, do calf prices change each year or stay the same?", 
                         choices = c("Change" = "change", "Stay the same" = "same")),
@@ -346,19 +347,19 @@ tabsetPanel(id = "mainPanels",
            checkboxGroupInput("adaptQ", "What will likely happen if there is not enough rain and 
                         you do not buy sufficient hay?", 
                         choices = c("Your calves will be underweight and will generate less revenue at market." = "underweight", 
-                                    "Your cows will be produce fewer cows next year." = "fewerCows",
-                                    "Your calving success rate will decline meaning fewer calves to sell at market." = "fewerCalves",
+                                    "Your cows will produce fewer calves next year." = "fewerBirths",
+                                    "Your calves will have higher rates of mortality which leaves you with fewer calves to sell at market." = "fewerCalves",
                                     "You will have to cull more cows." = "cullMore")),
            textOutput("adaptVal"),
            selectInput("earningsQ", "Your net worth at the end of the game will be translated into real-life bonus money 
                       at a rate of $100,000 game money to $1 real money. So if you have $300,000 in the net worth (bank 
                       account plus the value of your herd), how much bonus money will you get after the game ends?",
-                       choices = c(""," $0", "$3", "$6", "$10")),
+                       choices = c("","$0", "$3", "$6", "$10")),
            textOutput("earningsVal"),
-           selectInput("practiceQ", "True or False, before starting the game, I will play five “practice rounds” that 
-                      will not count towards my final net worth.", choices = c("", "True", "False")),
+           selectInput("practiceQ", "True or False, before starting the game, you will play five “practice rounds” that 
+                      will not count towards your final net worth.", choices = c("", "True", "False")),
            textOutput("practiceVal"),
-           selectInput("bonusQ", "If I do not complete the survey after the simulation, will I receive my bonus?",
+           selectInput("bonusQ", "If you do not complete the survey after the simulation, will you receive your bonus?",
                        choices = c("", "Yes", "No")),
            textOutput("bonusVal"),
            
