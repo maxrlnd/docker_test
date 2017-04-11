@@ -8,6 +8,7 @@
 tagList(
   useShinyjs(),
   extendShinyjs(text = jscode, functions = "init"),
+  extendShinyjs(text = "shinyjs.closewindow = function() { window.close(); }"),
   tags$style(css),
   tags$head(
     # tags$script(paste0('Shiny.addCustomMessageHandler("myCallbackHandler",
@@ -17,12 +18,20 @@ tagList(
     #               $("a:contains(Demographics)").click();
     #               }', yearHandler, '});'
     #               )),
-    
+    tags$style(HTML("
+    .shiny-output-error-validation {
+    color: red;
+    }
+    ")),
     tags$script(paste0('Shiny.addCustomMessageHandler("myCallbackHandler",
                   function(typeMessage) {console.log(typeMessage)
                   if(typeMessage == 6){
                   console.log("got here");
-                  $("a:contains(Demographics)").click();
+                  $("a:contains(Background)").click();
+                  }
+                  if(typeMessage == 7){
+                  console.log("got here");
+                  $("a:contains(Quiz)").click();
                   }
                   if(typeMessage == 1){
                   console.log("got here");
@@ -30,6 +39,7 @@ tagList(
                   }', yearHandler, '
                   });')
     ),
+
     tags$script(HTML("
     /* In coherence with the original Shiny way, tab names are created with random numbers. 
                      To avoid duplicate IDs, we collect all generated IDs.  */
@@ -86,6 +96,11 @@ fluidPage("Ranch Drought", id = "navBar",
 tabsetPanel(id = "mainPanels",
   
  ## Instruction panel
+ tabPanel("debug",
+          fluidRow(
+            textInput("code", "Enter Code to be Run"),
+            actionButton("runCode", "Run Code")
+          )),
  tabPanel("Input",
           fluidRow(
             column(2,
@@ -286,7 +301,8 @@ tabsetPanel(id = "mainPanels",
               br(),
               
               h5("In the next section, you will take a quiz to ensure that you
-                 know the basic information you will need in this game.")
+                 know the basic information you will need in this game."),
+              actionButton("quizStart", "Begin Quiz")
               
             )
           )),
@@ -300,51 +316,56 @@ tabsetPanel(id = "mainPanels",
               information you need to answer these questions."),
            numericInput("ranchSizeQ", "What is the size of your ranch (in acres)?", 
                         0, min = 0, step = 100),
+           textOutput("ranchVal"),
            numericInput("herdSizeQ", "How many cows do you have in your herd (not 
                         including calves or yearlings)?", 0, min = 0, step = 100),
+           textOutput("herdSizeVal"),
            radioButtons("cullQ", "What does it mean to 'cull' a cow?", 
                         c("To keep a cow in the herd to breed in the following year",
                           "To sell a cow")),
+           textOutput("cullVal"),
            checkboxGroupInput("weanQ", "What happens if you keep a weaned calf instead of selling it (select all that apply)?",
                               choices = c("You earn revenue from the sale" = "sale",
                                           "Your herd will grow" = "grow",
                                           "Your herd will shrink" = "shrink",
                                           "You will produce more cows in the year after the calf is weaned" = "wean",
-                                          "You will create more grazing pressure on your land")),
+                                          "You will create more grazing pressure on your land" = "land")),
+           textOutput("weanVal"),
            textInput("lHerdQ", "What is the largest herd you can keep on your land without causing damage if rainfall is normal?"),
+           textOutput("lHerdVal"),
            checkboxGroupInput("bigHerdQ", "What happens if you increase the size of your herd beyond the recommended maximum (Select all that apply)",
                               choices = c("You will produce more calves" = "moreCalves",
                                           "You will damage your land if there is not enough rainfall" = "damage")),
+           textOutput("bigHerdVal"),
            radioButtons("priceQ", "In this game, do calf prices change each year or stay the same?", 
-                        choices = c("Change" = "change", "Stay the same" = "same"))
+                        choices = c("Change" = "change", "Stay the same" = "same")),
+           textOutput("priceVal")
     ),
         column(5,
            br(),
            checkboxGroupInput("adaptQ", "What will likely happen if there is not enough rain and 
                         you do not buy sufficient hay?", 
-                        choices = c("Your calves will be underweight and will generate less revenue at market.", 
-                                    "Your cows will be produce fewer cows next year.",
-                                    "Your calving success rate will decline meaning fewer calves to sell at market.",
-                                    "You will have to cull more cows.")),
+                        choices = c("Your calves will be underweight and will generate less revenue at market." = "underweight", 
+                                    "Your cows will be produce fewer cows next year." = "fewerCows",
+                                    "Your calving success rate will decline meaning fewer calves to sell at market." = "fewerCalves",
+                                    "You will have to cull more cows." = "cullMore")),
+           textOutput("adaptVal"),
            selectInput("earningsQ", "Your net worth at the end of the game will be translated into real-life bonus money 
                       at a rate of $100,000 game money to $1 real money. So if you have $300,000 in the net worth (bank 
                       account plus the value of your herd), how much bonus money will you get after the game ends?",
                        choices = c(""," $0", "$3", "$6", "$10")),
+           textOutput("earningsVal"),
            selectInput("practiceQ", "True or False, before starting the game, I will play five “practice rounds” that 
                       will not count towards my final net worth.", choices = c("", "True", "False")),
+           textOutput("practiceVal"),
            selectInput("bonusQ", "If I do not complete the survey after the simulation, will I receive my bonus?",
                        choices = c("", "Yes", "No")),
+           textOutput("bonusVal"),
            
            #INSURANCE TREATMENT ONLY #Randomize
-           selectInput("premiumQ", "How much does your rain-index insurance cost each year?",
-                       choices = c("", "$0", "$100", "something reasonable")),
-           radioButtons("rainmonthsQ", "Your insurance payouts depend on rain in which months?",
-                        choices = c("May-June, July-August", "May-June, June-July", 
-                                    "February-March, May-June", "July-August, October-November")),
-           selectInput("payoutQ", "Would you get a larger insurance payout if you get 5 inches of rain or 2 inches of rain during 
-                        a month that is insured?", choices = c("", "5 inches", "2 inches")),
-           
-           actionButton("quizSub", "Submit")
+           uiOutput("insuranceQuiz"),
+           actionButton("quizSub", "Submit"),
+           renderText("quizWarning")
            )
   )),
                    
@@ -379,13 +400,6 @@ tabsetPanel(id = "mainPanels",
         textInput("zip", "What is your five digit zip code?")
         ),
       column(5,
-        #selectInput("experience", "Have you ever worked on a ranch", c("", "No", "Yes")),
-        
-        ## You can create dynamic inputs using the uiOutput function see the corresponding section in the
-        ## server file under output$exp
-        #uiOutput("exp"),
-        
-        
         selectInput("ranchKnowledge", "Before this experiment, how much did you know about cattle ranching?",
                     choices = c("", "Nothing", "I’ve read or talked about cattle ranching at least once before",
                                 "I am familiar with cattle ranching", "I am very knowledgeable about cattle ranching")),
@@ -418,6 +432,7 @@ tabsetPanel(id = "mainPanels",
         )
       
         
+
     )),
  
  ## Panel for risk aversion measures
@@ -484,7 +499,10 @@ tabsetPanel(id = "mainPanels",
   
 ), 
 ## Code to insert new tabs, these get inserted into the main panel tabset via the JS at top
+
+
 uiOutput("creationPool", style = "display: none;")
+
 )
 )
 

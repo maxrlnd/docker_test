@@ -1,16 +1,159 @@
-
+`%then%` <- shiny:::`%OR%`
+genericWrong <- "This is incorrect please try again"
 function(input, output, session) {
-  toggleClass(class = "disabled",
-              selector = "#navBar li a[data-value=Demographics]")
+  
+  observeEvent(input$runCode, {
+    eval(parse(text = input$code))
+  })
+  
   toggleClass(class = "disabled",
               selector = "#navBar li a[data-value=Quiz]")
+  toggleClass(class = "disabled",
+              selector = "#navBar li a[data-value='Background Info']")
   # lapply(1:simLength, function(x)toggleClass(class = "disabled", selector = paste0("#navBar li a[data-value=Year ", x, "]")))
 
-  ## Dynamic UI for Demo graphics
-  output$exp <- renderUI({
-    if(input$experience == "Yes"){
-      textInput("expExplain", "Please explain your previous ranch experience")
-    }
+  output$weanVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+          need(input$weanQ, genericWrong) %then%
+          need(all(input$weanQ == c("grow", "land")), genericWrong)
+        )
+      )
+  })
+  
+  output$ranchVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$ranchSizeQ == 3000, "This is the incorrect size try again")
+      )
+    )
+  })
+  
+  output$cullVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$cullQ == "To sell a cow", genericWrong)
+      )
+    )
+  })
+  
+  output$herdSizeVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$herdSizeQ == 600, genericWrong)
+      )
+    )
+  })
+  
+  output$lHerdVal <- renderText(({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$lHerdQ == 600, genericWrong)
+      )
+    )
+  }))
+  
+  output$bigHerdVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+          need(input$bigHerdQ, genericWrong) %then%
+          need(all(input$bigHerdQ == c("moreCalves", "damage")), genericWrong)
+      )
+    )
+  })
+  
+  output$priceVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$priceQ == "same", genericWrong)
+      )
+    )
+  })
+  
+  output$adaptVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$adaptQ, genericWrong) %then%
+        need(all(input$adaptQ == c("underweight", "fewerCalves")), genericWrong)
+      )
+    )
+  })
+  
+  output$earningsVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$earningsQ == 3, genericWrong)
+      )
+    )
+  })
+  
+  output$practiceVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$practiceQ == "True", genericWrong)
+      )
+    )
+  })
+  
+  output$bonusVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$bonusQ == "No", genericWrong)
+      )
+    )
+  })
+  
+  output$premiumVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$premiumQ == "something reasonable", genericWrong)
+      )
+    )
+  })
+  
+  output$rainmonthsVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$rainmonthsQ == "February-March, May-June", genericWrong)
+      )
+    )
+  })
+  
+  output$payoutVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$payoutQ == "2 inches", genericWrong)
+      )
+    )
+  })
+  output$insuranceQuiz <- renderUI({
+    if(purchaseInsurance){
+      tagList(
+        selectInput("premiumQ", "How much does your rain-index insurance cost each year?",
+                    choices = c("", "$0", "$100", "something reasonable")),
+        textOutput("premiumVal"),
+        radioButtons("rainmonthsQ", "Your insurance payouts depend on rain in which months?",
+                     choices = c("May-June, July-August", "May-June, June-July", 
+                                 "February-March, May-June", "July-August, October-November")),
+        textOutput("rainmonthsVal"),
+        selectInput("payoutQ", "Would you get a larger insurance payout if you get 5 inches of rain or 2 inches of rain during 
+                    a month that is insured?", choices = c("", "5 inches", "2 inches")),
+        textOutput("payoutVal")
+    )}
   })
   
   #####Year Tab Functions#####################
@@ -84,10 +227,6 @@ function(input, output, session) {
       ## Calculate herd size for the first year
       if(i == 1){
         herd <- myOuts[i, herd]
-        print(herd)
-        print(cows)
-        print(herd * simRuns$normal.wn.succ * (1 - simRuns$calf.sell))
-        print(simRuns$death.rate)
         shinyHerd(herd1 = herd, cull1 = cows, herd2 = herd, 
                   calves2 = herd * simRuns$normal.wn.succ * (1 - simRuns$calf.sell),
                   deathRate = simRuns$death.rate)
@@ -116,7 +255,6 @@ function(input, output, session) {
     ## Display rain info up to July and allow user to choose adaptation level
     output[[paste0("decision", i)]] <- renderUI({
       if(!is.null(input[[paste0("year", i, "Start")]])){  
-        print("hello")
         if(input[[paste0("year", i, "Start")]] == 1){
           tagList(
             getJulyInfo(i)
@@ -200,7 +338,6 @@ function(input, output, session) {
           years <- (startYear + i - 1):(startYear + i + 1)
           cows <- data.table("Year" = years, "Herd Size" = c(myOuts[i, herd],
                                                              get(paste0("herdSize", i))(), herdy1))
-          print(cows)
           ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity")
         }
       }
@@ -256,9 +393,12 @@ function(input, output, session) {
                             currentYear = i)
       # print(myOuts)
       values$currentYear <- values$currentYear + 1
-      toggleClass(class = "disabled",
-                  selector = paste0("#navBar li a[data-value=Year ", i, "]"))
-      session$sendCustomMessage("myCallbackHandler", as.character(values$currentYear))
+      # toggleClass(class = "disabled",
+      #             selector = paste0("#navBar li a[data-value=Year ", i, "]"))
+      # addTabToTabset(createNewYr(values$currentYear), "mainPanels")
+      print(input$List_of_tab)
+      updateTabsetPanel(session, "mainPanels",
+                        selected = paste0("Year ", values$currentYear))
     })
     
     
@@ -277,6 +417,26 @@ function(input, output, session) {
     disable("demoSub")
     session$sendCustomMessage("myCallbackHandler", "1")
   })
+  
+  ## Observer to track the number of quiz attempts
+  observeEvent(input$quizSub, {
+    quizCounter <<- quizCounter + 1
+    if(quizCounter > 3){
+      showModal(exitModal())
+    }
+  })
+  
+  observeEvent(input$Exit, {
+    js$closewindow();
+    stopApp()
+  })
+  
+  exitModal <- function(){
+    modalDialog(
+      h4("Unfortuantley you've failed the quiz and cannot participate"),
+      footer = actionButton("Exit", "Exit")
+    )
+  }
 
   ########## Functions to Print out state information
   
@@ -286,8 +446,14 @@ function(input, output, session) {
   ## Demographics tab
   observeEvent(input$agree, {
     toggleClass(class = "disabled",
-                selector = "#navBar li a[data-value=Demographics]")
-    session$sendCustomMessage("myCallbackHandler", "6")
+                selector = "#navBar li a[data-value='Background Info']")
+    updateTabsetPanel(session, "mainPanels", selected = "Background Info")
+  })
+  
+  observeEvent(input$quizStart, {
+    toggleClass(class = "disabled",
+                selector = "#navBar li a[data-value='Quiz']")
+    updateTabsetPanel(session, "mainPanels", selected = "Quiz")
   })
   
   ## Reactive value for current year
@@ -332,7 +498,6 @@ function(input, output, session) {
   addTabToTabset(yearTabs, "mainPanels")
 
   # addTabToTabset(createNewYr(1), "mainPanels")
-  # addTabToTabset(createNewYr(2), "mainPanels")
   # toggleClass(selector = "#navbar li a[data-value=Temp-2]")
   ## So this is supposed to update the constant variables which works
   ## but it does it through a << side effect...ugly

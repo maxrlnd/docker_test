@@ -87,6 +87,9 @@ indem <- lapply(startYear:(startYear + simLength - 1), function(x){
 # purchaseInsurance <- sample(c(T, F), 1)
 purchaseInsurance <- T
 
+## Counter to keep track of quiz
+quizCounter <- 0
+
 ## Create JS to switch between year tabs
 yearHandler <- paste0('if(typeMessage == ', 1:simLength, '){
   console.log("got here");
