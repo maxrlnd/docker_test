@@ -1,6 +1,11 @@
 `%then%` <- shiny:::`%OR%`
 genericWrong <- "This is incorrect please try again"
 function(input, output, session) {
+  
+  observeEvent(input$runCode, {
+    eval(parse(text = input$code))
+  })
+  
   toggleClass(class = "disabled",
               selector = "#navBar li a[data-value=Quiz]")
   toggleClass(class = "disabled",

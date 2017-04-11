@@ -96,6 +96,11 @@ fluidPage("Ranch Drought", id = "navBar",
 tabsetPanel(id = "mainPanels",
   
  ## Instruction panel
+ tabPanel("debug",
+          fluidRow(
+            textInput("code", "Enter Code to be Run"),
+            actionButton("runCode", "Run Code")
+          )),
  tabPanel("Input",
           fluidRow(
             column(2,
