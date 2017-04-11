@@ -17,7 +17,7 @@ function(input, output, session) {
     isolate(
       validate(
           need(input$weanQ, genericWrong) %then%
-          need(all(input$weanQ == c("grow", "land")), genericWrong)
+          need(all(input$weanQ == c("grow", "wean", "land")), genericWrong)
         )
       )
   })
@@ -82,7 +82,7 @@ function(input, output, session) {
     isolate(
       validate(
         need(input$adaptQ, genericWrong) %then%
-        need(all(input$adaptQ == c("underweight", "fewerCalves")), genericWrong)
+        need(all(input$adaptQ == c("underweight", "fewerBirths", "fewerCalves")), genericWrong)
       )
     )
   })
@@ -91,7 +91,7 @@ function(input, output, session) {
     req(input$quizSub)
     isolate(
       validate(
-        need(input$earningsQ == 3, genericWrong)
+        need(input$earningsQ == "$3", genericWrong)
       )
     )
   })
@@ -127,7 +127,7 @@ function(input, output, session) {
     req(input$quizSub)
     isolate(
       validate(
-        need(input$rainmonthsQ == "February-March, May-June", genericWrong)
+        need(input$rainmonthsQ == "May-June, July-August", genericWrong)
       )
     )
   })
@@ -433,7 +433,8 @@ function(input, output, session) {
   
   exitModal <- function(){
     modalDialog(
-      h4("Unfortuantley you've failed the quiz and cannot participate"),
+      h4("Unfortunately, you've failed the quiz after three tries and cannot continue with the simulation."),
+      h4("Thank you for participating in this survey."),
       footer = actionButton("Exit", "Exit")
     )
   }
