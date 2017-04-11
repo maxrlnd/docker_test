@@ -1,28 +1,155 @@
 `%then%` <- shiny:::`%OR%`
-
+genericWrong <- "This is incorrect please try again"
 function(input, output, session) {
   toggleClass(class = "disabled",
-              selector = "#navBar li a[data-value=Demographics]")
+              selector = "#navBar li a[data-value=Quiz]")
   toggleClass(class = "disabled",
-              selector = "#navBar li a[data-value=Year 3]")
+              selector = "#navBar li a[data-value='Background Info']")
   # lapply(1:simLength, function(x)toggleClass(class = "disabled", selector = paste0("#navBar li a[data-value=Year ", x, "]")))
-observeEvent(input$quizSub,
-  output$weanVal <- renderUI({
-    print(input$weanQ)
-    validate(
-        need(input$weanQ, "This is incorrect please try again") %then%
-        need(all(input$weanQ == c("grow", "land")), "This is incorrect please try again")
-      )
-  }))
-  
-  output$ranchVal <- renderUI({
+
+  output$weanVal <- renderText({
     req(input$quizSub)
-    validate(
-      need(input$ranchSizeQ == 3000, "This is the incorrect size try again")
+    isolate(
+      validate(
+          need(input$weanQ, genericWrong) %then%
+          need(all(input$weanQ == c("grow", "land")), genericWrong)
+        )
+      )
+  })
+  
+  output$ranchVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$ranchSizeQ == 3000, "This is the incorrect size try again")
+      )
     )
   })
   
+  output$cullVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$cullQ == "To sell a cow", genericWrong)
+      )
+    )
+  })
   
+  output$herdSizeVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$herdSizeQ == 600, genericWrong)
+      )
+    )
+  })
+  
+  output$lHerdVal <- renderText(({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$lHerdQ == 600, genericWrong)
+      )
+    )
+  }))
+  
+  output$bigHerdVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+          need(input$bigHerdQ, genericWrong) %then%
+          need(all(input$bigHerdQ == c("moreCalves", "damage")), genericWrong)
+      )
+    )
+  })
+  
+  output$priceVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$priceQ == "same", genericWrong)
+      )
+    )
+  })
+  
+  output$adaptVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$adaptQ, genericWrong) %then%
+        need(all(input$adaptQ == c("underweight", "fewerCalves")), genericWrong)
+      )
+    )
+  })
+  
+  output$earningsVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$earningsQ == 3, genericWrong)
+      )
+    )
+  })
+  
+  output$practiceVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$practiceQ == "True", genericWrong)
+      )
+    )
+  })
+  
+  output$bonusVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$bonusQ == "No", genericWrong)
+      )
+    )
+  })
+  
+  output$premiumVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$premiumQ == "something reasonable", genericWrong)
+      )
+    )
+  })
+  
+  output$rainmonthsVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$rainmonthsQ == "February-March, May-June", genericWrong)
+      )
+    )
+  })
+  
+  output$payoutVal <- renderText({
+    req(input$quizSub)
+    isolate(
+      validate(
+        need(input$payoutQ == "2 inches", genericWrong)
+      )
+    )
+  })
+  output$insuranceQuiz <- renderUI({
+    if(purchaseInsurance){
+      tagList(
+        selectInput("premiumQ", "How much does your rain-index insurance cost each year?",
+                    choices = c("", "$0", "$100", "something reasonable")),
+        textOutput("premiumVal"),
+        radioButtons("rainmonthsQ", "Your insurance payouts depend on rain in which months?",
+                     choices = c("May-June, July-August", "May-June, June-July", 
+                                 "February-March, May-June", "July-August, October-November")),
+        textOutput("rainmonthsVal"),
+        selectInput("payoutQ", "Would you get a larger insurance payout if you get 5 inches of rain or 2 inches of rain during 
+                    a month that is insured?", choices = c("", "5 inches", "2 inches")),
+        textOutput("payoutVal")
+    )}
+  })
   
   #####Year Tab Functions#####################
   
@@ -285,6 +412,26 @@ observeEvent(input$quizSub,
     disable("demoSub")
     session$sendCustomMessage("myCallbackHandler", "1")
   })
+  
+  ## Observer to track the number of quiz attempts
+  observeEvent(input$quizSub, {
+    quizCounter <<- quizCounter + 1
+    if(quizCounter > 3){
+      showModal(exitModal())
+    }
+  })
+  
+  observeEvent(input$Exit, {
+    js$closewindow();
+    stopApp()
+  })
+  
+  exitModal <- function(){
+    modalDialog(
+      h4("Unfortuantley you've failed the quiz and cannot participate"),
+      footer = actionButton("Exit", "Exit")
+    )
+  }
 
   ########## Functions to Print out state information
   
@@ -294,8 +441,14 @@ observeEvent(input$quizSub,
   ## Demographics tab
   observeEvent(input$agree, {
     toggleClass(class = "disabled",
-                selector = "#navBar li a[data-value=Demographics]")
-    session$sendCustomMessage("myCallbackHandler", "6")
+                selector = "#navBar li a[data-value='Background Info']")
+    updateTabsetPanel(session, "mainPanels", selected = "Background Info")
+  })
+  
+  observeEvent(input$quizStart, {
+    toggleClass(class = "disabled",
+                selector = "#navBar li a[data-value='Quiz']")
+    updateTabsetPanel(session, "mainPanels", selected = "Quiz")
   })
   
   ## Reactive value for current year
