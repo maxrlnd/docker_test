@@ -279,7 +279,7 @@ tabsetPanel(id = "mainPanels",
               
               h4("Facts About Your Ranch"),
               tags$li("Your ranch is located about an hour northeast of Denver, 
-                Colorado."),
+                Colorado and includes 5000 acres of private land."),
               tags$li("Your herd has 500 calves and 500 mother cows."),
               tags$li("On your ranch, calves are born between February and 
                 March, and are sold in October."),
