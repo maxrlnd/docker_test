@@ -97,3 +97,4 @@ yearHandler <- paste0('if(typeMessage == ', 1:simLength, '){
 }', collapse = "")
 
 NUM_PAGES <- 5
+currentPage <- 1

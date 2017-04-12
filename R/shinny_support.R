@@ -280,3 +280,17 @@ shinyInsMat <- function(yy, clv, acres, pfactor, insPurchase, tgrd){
   
   return(returnTable)
 }
+
+inputToDF <- function(inputList){
+  inputList <- inputList[names(inputList) != "enviro"]
+  maxLength <- max(sapply(inputList, length))
+  returnTable <- data.table("names" = names(inputList))
+  returnTable[, paste0("value",1:maxLength) := list(rep("", nrow(returnTable)))]
+  returnTable <- returnTable[names != "enviro"]
+  for(i in 1:maxLength){
+    returnTable[, paste0("value", i) := data.table(sapply(inputList, function(x)as.character(x[i])))]
+    returnTable[, paste0("value", i) := as.character(get(paste0("value", i)))]
+  }
+  
+  return(returnTable)
+}

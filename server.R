@@ -474,29 +474,30 @@ function(input, output, session) {
   
   ## Commented code to add all tab panels at once currently not used as tab panels are added dynamically
 
-  yearTabs <-
-    lapply(1:5, function(z){
-      tabPanel(paste("Year", z),
-               fluidRow(
-                 column(8,
-                        uiOutput(paste0("winterInfo", z)),
-                        fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
-                        uiOutput(paste0("decision", z)),
-                        uiOutput(paste0("insuranceUpdate", z)),
-                        uiOutput(paste0("cowSell", z))
-                 ),
-                 column(2,
-                        fluidRow(column(12, style = "background-color:white;", div(style = "height:170px;"))),
-                        actionButton(paste0("year", z, "Start"), "Begin Simulation"),
-                        fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
-                        uiOutput(paste0("continue", z)),
-                        fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
-                        uiOutput(paste0("sellButton", z))
-                 )
-               )
-      )
-    })
-  addTabToTabset(yearTabs, "mainPanels")
+  # yearTabs <-
+  #   lapply(1:5, function(z){
+  #     hidden(
+  #     tabPanel(paste("Year", z),
+  #              fluidRow(
+  #                column(8,
+  #                       uiOutput(paste0("winterInfo", z)),
+  #                       fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
+  #                       uiOutput(paste0("decision", z)),
+  #                       uiOutput(paste0("insuranceUpdate", z)),
+  #                       uiOutput(paste0("cowSell", z))
+  #                ),
+  #                column(2,
+  #                       fluidRow(column(12, style = "background-color:white;", div(style = "height:170px;"))),
+  #                       actionButton(paste0("year", z, "Start"), "Begin Simulation"),
+  #                       fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
+  #                       uiOutput(paste0("continue", z)),
+  #                       fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
+  #                       uiOutput(paste0("sellButton", z))
+  #                )
+  #              )
+  #     ))
+  #   })
+  # addTabToTabset(yearTabs, "mainPanels")
 
   # addTabToTabset(createNewYr(1), "mainPanels")
   # toggleClass(selector = "#navbar li a[data-value=Temp-2]")
@@ -516,6 +517,7 @@ function(input, output, session) {
     
   })
   rv <- reactiveValues(page = 1)
+  output$page <- renderText(rv$page)
   
   observe({
     toggleState(id = "prevBtn", condition = rv$page > 1)
@@ -528,7 +530,45 @@ function(input, output, session) {
     rv$page <- rv$page + direction
   }
   
+  output$pageOut <- renderUI({
+    fluidRow(
+                     column(8,
+                            uiOutput(paste0("winterInfo", rv$page)),
+                            fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
+                            uiOutput(paste0("decision", rv$page)),
+                            uiOutput(paste0("insuranceUpdate", rv$page)),
+                            uiOutput(paste0("cowSell", rv$page))
+                     ),
+                     column(2,
+                            fluidRow(column(12, style = "background-color:white;", div(style = "height:170px;"))),
+                            actionButton(paste0("year", rv$page, "Start"), "Begin Simulation"),
+                            fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
+                            uiOutput(paste0("continue", rv$page)),
+                            fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
+                            uiOutput(paste0("sellButton", rv$page))
+                     )
+                   )
+  })
+  
   observeEvent(input$prevBtn, navPage(-1))
   observeEvent(input$nextBtn, navPage(1))
-  
+  observeEvent(input$saveInputs, {
+    if(!dir.exists("results")){
+      dir.create("results")
+    }
+    files <- dir("results")
+    files <- files[order(files)]
+    
+    if(length(dir("results")) == 0){
+      lastFile <- 0
+    }else{
+      lastFile <- files[length(files)]
+      lastFile <- as.numeric(substr(lastFile, 1, nchar(lastFile) - 4))
+    }
+    fileName <- paste0("results/", lastFile + 1, ".csv")
+    saveData <- reactiveValuesToList(input)
+    # save(saveData, file = "newSave.RData")
+    saveData <- inputToDF(saveData)
+    write.csv(saveData, file = fileName, row.names = F)
+  })
 }
