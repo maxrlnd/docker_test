@@ -95,3 +95,5 @@ yearHandler <- paste0('if(typeMessage == ', 1:simLength, '){
   console.log("got here");
   $("a:contains(Year ', 1:simLength, ')").click();
 }', collapse = "")
+
+NUM_PAGES <- 5

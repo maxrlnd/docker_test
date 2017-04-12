@@ -3,7 +3,7 @@
   # Change some numeric inputs to text inputs and create a reactive
   #   statement in the server to change them to numerics (http://stackoverflow.com/questions/24960407/r-shiny-numeric-input-without-selectors)
 
-
+ 
 ## HTML and JS to dynamically create tabs and move between tabs
 tagList(
   useShinyjs(),
@@ -234,6 +234,23 @@ tabsetPanel(id = "mainPanels",
              actionButton("agree", "I Agree")
       )
     )),
+ tabPanel("hiddenTest", 
+          hidden(
+            lapply(seq(NUM_PAGES), function(i) {
+              fluidRow(div(
+                class = "page",
+                id = paste0("step", i)
+              ),p(paste("hello", i))
+              )
+              
+            })
+          ),
+          br(),
+          p("hello")
+          actionButton("prevBtn", "< Previous"),
+          actionButton("nextBtn", "Next >")
+          ),
+ 
 
  tabPanel("Background Info",
           fluidRow(

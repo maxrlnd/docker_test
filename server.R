@@ -514,5 +514,20 @@ function(input, output, session) {
     # print(simRuns)
     
   })
+  rv <- reactiveValues(page = 1)
+  
+  observe({
+    toggleState(id = "prevBtn", condition = rv$page > 1)
+    toggleState(id = "nextBtn", condition = rv$page < NUM_PAGES)
+    hide(selector = ".page")
+    show(sprintf("step%s", rv$page))
+  })
+
+  navPage <- function(direction) {
+    rv$page <- rv$page + direction
+  }
+  
+  observeEvent(input$prevBtn, navPage(-1))
+  observeEvent(input$nextBtn, navPage(1))
   
 }
