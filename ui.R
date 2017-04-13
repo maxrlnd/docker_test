@@ -39,6 +39,15 @@ tagList(
                   }', yearHandler, '
                   });')
     ),
+    tags$script(
+      '
+      Shiny.addCustomMessageHandler("scrollCallback",
+      function(color) {
+      var objDiv = document.getElementById("outDiv");
+      objDiv.scrollTop = objDiv.scrollHeight;
+      }
+      );'
+    ),
 
     tags$script(HTML("
     /* In coherence with the original Shiny way, tab names are created with random numbers. 
@@ -99,8 +108,8 @@ tabsetPanel(id = "mainPanels",
  tabPanel("debug",
           fluidRow(
             textInput("code", "Enter Code to be Run"),
-            actionButton("runCode", "Run Code"), 
-            actionButton("saveInputs", "Save all Input")
+            actionButton("runCode", "Run Code")
+            # actionButton("saveInputs", "Save all Input")
           )),
  # tabPanel("Input",
  #          fluidRow(
@@ -235,25 +244,6 @@ tabsetPanel(id = "mainPanels",
              actionButton("agree", "I Agree")
       )
     )),
- tabPanel("hiddenTest", 
-          hidden(
-            lapply(seq(NUM_PAGES), function(i) {
-              fluidRow(div(
-                class = "page",
-                id = paste0("step", i)
-              ),p(paste("hello", i))
-              )
-              
-            })
-          ),
-          br(),
-          # uiOutput(paste0("winterInfo", currentPage)),
-          
-          uiOutput("pageOut"),
-          textOutput("page"),
-          actionButton("prevBtn", "< Previous"),
-          actionButton("nextBtn", "Next >")
-          ),
  
 
  tabPanel("Background Info",
@@ -516,7 +506,11 @@ tabsetPanel(id = "mainPanels",
                                 choices = c("Lottery A: 90% chance of winning $2.00, 10% chance of winning $1.60",
                                             "Lottery B: 90% chance of winning $3.85, 10% chance of winning $0.10"))
                    )
-          ))
+          )),
+ 
+ tabPanel("Ranch Simulation", 
+    uiOutput("pageOut")
+ )
  
   
 ), 

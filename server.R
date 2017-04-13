@@ -158,9 +158,9 @@ function(input, output, session) {
   
   #####Year Tab Functions#####################
   
-  ## This loop Creates the necessary output functions for each year tab 
+  ## This loop Creates the necessary output functions for each year tab
   lapply(1:simLength, function(i){
-    
+    # lapply(c("p", "r"), function(j){})
     ## Reactive taglist for the first set of winter info at the start of each year, updates when
     ## myOuts updates
     assign(paste0("reactiveWinter", i), reactive({
@@ -169,11 +169,12 @@ function(input, output, session) {
       tagList(
         h4("Winter Finance Assessment"),
         p(paste0("Your Current Herd has ", round(myOuts[i, herd], 0), " cows, not including calves or yearlings.")),
-        p(paste0("Your Bank Balance is: $", round(myOuts[i, assets.cash], 0))),
+        p(paste0("Your Bank Balance is $", round(myOuts[i, assets.cash], 0))),
         p(paste0("Your current net worth, including cows and your bank balance, is $", round(myOuts[i, net.wrth], 0), ".")),
-        p(paste0("Your range is currently at: ", round(myOuts[i, forage.potential] * 100, 0), "%")),
+        p(paste0("Your range is currently at ", round(myOuts[i, forage.potential] * 100, 0), "%")),
         p(paste0("You paid: $", round(myOuts[i, cost.ins], 0), " for insurance")),
-        plotOutput(paste0("worthPlot", i))
+        plotOutput(paste0("worthPlot", i)),
+        tags$hr(style="border-color: darkgray;")
       )
     }))
     
@@ -249,7 +250,9 @@ function(input, output, session) {
     
     ## UI for winter Info
     output[[paste0("winterInfo", i)]] <- renderUI({
+      tagList(
          get(paste0("reactiveWinter", i))()
+       )
     })
     
     ## Display rain info up to July and allow user to choose adaptation level
@@ -297,9 +300,24 @@ function(input, output, session) {
     output[[paste0("continue", i)]] <- renderUI({
       if(!is.null(input[[paste0("year", i, "Start")]])){
         if(input[[paste0("year", i, "Start")]] == 1){
-          actionButton(paste0("year", i, "Summer"), "Continue")
+          tagList(
+            fluidRow(column(12, style = "background-color:white;", div(style = "height:900px;"))),
+            actionButton(paste0("year", i, "Summer"), "Continue")
+          )
         }
       }
+    })
+    
+    output[[paste0("nextButton", i)]] <- renderUI({
+      if(!is.null(input[[paste0("sell", i)]])){
+        if(input[[paste0("sell", i)]] == 1){
+          tagList(
+            fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
+            actionButton("nextBtn", "Begin Next Year >")
+          )
+        }
+      }
+
     })
     
     ## Create button to sell calves and cows once decisions are made
@@ -307,7 +325,10 @@ function(input, output, session) {
     output[[paste0("sellButton", i)]] <- renderUI({
       if(!is.null(input[[paste0("year", i, "Summer")]])){
         if(input[[paste0("year", i, "Summer")]] == 1){
-          actionButton(paste0("sell", i), "Sell Calves and Cows")
+          tagList(
+            fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
+            actionButton(paste0("sell", i), "Sell Calves and Cows")
+          )
         }
       }
     })
@@ -321,7 +342,8 @@ function(input, output, session) {
       yprecip[, 9:12 := 0]
       ave <- station.gauge$avg
       yearAvg <- rbindlist(list(yprecip, ave), use.names = T)
-      julyRain <- round((yearAvg[1,]/yearAvg[2,]) * 100, 2)      
+      julyRain <- round((yearAvg[1,]/yearAvg[2,]) * 100, 2)
+      julyRain[, 9:12 := "?"]
       # julyRain <- station.gauge$stgg[Year == (startYear + i - 1),-1]/station.gauge$avg * 100
       # julyRain[, 7:12 := "?"]
     })
@@ -368,7 +390,7 @@ function(input, output, session) {
       yearAvg <- melt(yearAvg, id.vars = "id")
       setnames(yearAvg, c("id", "Month", "Rainfall"))
       ggplot(yearAvg, aes(x = Month, y = Rainfall, fill = id)) + 
-        geom_bar(width = .6, stat = "identity", position = position_dodge(width=1.3)) + 
+        geom_bar(width = .6, stat = "identity", position = position_dodge(width=0.7)) + 
         theme(legend.title = element_blank()) + ggtitle("Rainfall")
       
     })
@@ -376,6 +398,10 @@ function(input, output, session) {
     # Reactive to disable start simualation button after they're clicked
     observeEvent(input[[paste0("year", i, "Start")]], {
       shinyjs::disable(paste0("year", i, "Start"))
+    })
+    
+    observeEvent(input[[paste0("year", i, "Start")]], {
+      session$sendCustomMessage(type = "scrollCallback", 1)
     })
     
     ## Disable cow and calf sliders after sell button
@@ -458,7 +484,7 @@ function(input, output, session) {
   })
   
   ## Reactive value for current year
-  values <- reactiveValues("currentYear" = 1)
+  values <- reactiveValues("currentYear" = 1, "starting" = TRUE)
   
   ## Code to dynamically add new tabs
   output$creationPool <- renderUI({})
@@ -521,7 +547,7 @@ function(input, output, session) {
   
   observe({
     toggleState(id = "prevBtn", condition = rv$page > 1)
-    toggleState(id = "nextBtn", condition = rv$page < NUM_PAGES)
+    toggleState(id = "nextBtn", condition = rv$page < simLength + 1)
     hide(selector = ".page")
     show(sprintf("step%s", rv$page))
   })
@@ -531,44 +557,56 @@ function(input, output, session) {
   }
   
   output$pageOut <- renderUI({
+  
+  if(rv$page <= simLength){  
     fluidRow(
-                     column(8,
-                            uiOutput(paste0("winterInfo", rv$page)),
-                            fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
-                            uiOutput(paste0("decision", rv$page)),
-                            uiOutput(paste0("insuranceUpdate", rv$page)),
-                            uiOutput(paste0("cowSell", rv$page))
-                     ),
-                     column(2,
-                            fluidRow(column(12, style = "background-color:white;", div(style = "height:170px;"))),
-                            actionButton(paste0("year", rv$page, "Start"), "Begin Simulation"),
-                            fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
-                            uiOutput(paste0("continue", rv$page)),
-                            fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
-                            uiOutput(paste0("sellButton", rv$page))
-                     )
-                   )
+       column(9,
+              uiOutput(paste0("winterInfo", rv$page)),
+              fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
+              uiOutput(paste0("decision", rv$page)),
+              uiOutput(paste0("insuranceUpdate", rv$page)),
+              uiOutput(paste0("cowSell", rv$page))
+       ),
+       column(2,
+              fluidRow(column(12, style = "background-color:white;", div(style = "height:470px;"))),
+              actionButton(paste0("year", rv$page, "Start"), "Begin Simulation"),
+              uiOutput(paste0("continue", rv$page)),
+              uiOutput(paste0("sellButton", rv$page)),
+              uiOutput(paste0("nextButton", rv$page))
+       )
+     )
+  }else{
+    fluidRow(
+      column(width = 10,
+      h4(paste0("Congratulations! You've completed ", simLength, " years of ranching.")),
+      p(paste0("At the end of the simulation your ranch had ", myOuts$herd[simLength], " cows")),
+      p(paste0("Through ranching you accumulated $", round(myOuts$assets.cash[simLength], 0), " in cash" )),
+      actionButton("saveInputs", "Save results and recieve completion code"),
+      offset = .5)
+    )
+  }
   })
   
   observeEvent(input$prevBtn, navPage(-1))
   observeEvent(input$nextBtn, navPage(1))
   observeEvent(input$saveInputs, {
-    if(!dir.exists("results")){
-      dir.create("results")
+    myDir <- "results"
+    if(!dir.exists(myDir)){
+      dir.create(myDir)
     }
-    files <- dir("results")
+    files <- dir(myDir)
     files <- files[order(files)]
     
-    if(length(dir("results")) == 0){
+    if(length(dir(myDir)) == 0){
       lastFile <- 0
     }else{
       lastFile <- files[length(files)]
-      lastFile <- as.numeric(substr(lastFile, 1, nchar(lastFile) - 4))
+      lastFile <- as.numeric(substr(lastFile, 7, nchar(lastFile) - 4))
     }
-    fileName <- paste0("results/", lastFile + 1, ".csv")
     saveData <- reactiveValuesToList(input)
     # save(saveData, file = "newSave.RData")
     saveData <- inputToDF(saveData)
-    write.csv(saveData, file = fileName, row.names = F)
+    write.csv(saveData, file = paste0("results/input", lastFile + 1, ".csv"), row.names = F)
+    write.csv(myOuts, file = paste0("results/output", lastFile + 1, ".csv"), row.names = F)
   })
 }

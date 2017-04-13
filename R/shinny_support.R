@@ -96,6 +96,7 @@ getCowSell <- function(forage, wean, currentYear){
                 min = 0, max = calvesAvailable, value =  standardCalfSale, step = 1, width = "600px"),
     sliderInput(paste0("cow", currentYear, "Sale"), "How many cows do you want to sell",
                 min = 0, max = myOuts[currentYear, herd], value = standardCowSale, step = 1, width = "600px"),
+    tags$li(paste0("You currently have ", myOuts[currentYear, herd], "cows and ", calvesAvailable, " calves." )),
     tags$li(paste("If you sell", standardCalfSale, "calves and",  standardCowSale,  "cows, your herd will stay approximately the 
             same size as it is now. If you sell more, then your herd size will decrease. 
             If you sell fewer, then your herd size will grow.")),
