@@ -74,7 +74,7 @@ myOuts <- createResultsFrame(simRuns)
 currentYear <- 1
 practiceYear <- 1
 startYear <- 2002
-simLength <- 2
+simLength <- 5
 
 ## Calcualte indemnities for all years of the simulation
 indem <- lapply(startYear:(startYear + simLength - 1), function(x){
