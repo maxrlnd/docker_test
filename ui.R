@@ -42,12 +42,12 @@ tagList(
     tags$script(
       '
       Shiny.addCustomMessageHandler("scrollCallback",
-      function(color) {
-      var objDiv = document.getElementById("outDiv");
-      objDiv.scrollTop = objDiv.scrollHeight;
+      function(msg) {
+      console.log("aCMH" + msg)
+      window.scrollTo(0,document.body.scrollHeight);
       }
       );'
-    ),
+  ),
 
     tags$script(HTML("
     /* In coherence with the original Shiny way, tab names are created with random numbers. 
@@ -313,211 +313,211 @@ tabsetPanel(id = "mainPanels",
               
               h5("In the next section, you will take a quiz to ensure that you
                  know the basic information you will need in this game."),
-              actionButton("quizStart", "Begin Quiz")
+              actionButton("simStart", "Begin Ranch Game")
               
             )
           )),
   
-  ## Panel for comprehension quiz
- tabPanel("Quiz",
-  fluidRow(
-    column(5,
-           h4("Comprehension Quiz"),
-           h5("You may look back at the background info tab to find the 
-              information you need to answer these questions."),
-           numericInput("ranchSizeQ", "What is the size of your ranch (in acres)?", 
-                        0, min = 0, step = 100),
-           br(),
-           textOutput("ranchVal"),
-           numericInput("herdSizeQ", "How many cows do you have in your herd (not 
-                        including calves or yearlings)?", 0, min = 0, step = 100),
-           textOutput("herdSizeVal"),
-           radioButtons("cullQ", "What does it mean to 'cull' a cow?", 
-                        c("To keep a cow in the herd to breed in the following year",
-                          "To sell a cow")),
-           textOutput("cullVal"),
-           checkboxGroupInput("weanQ", "What happens if you keep a weaned calf instead of selling it (select all that apply)?",
-                              choices = c("You earn revenue from the sale" = "sale",
-                                          "Your herd will grow" = "grow",
-                                          "Your herd will shrink" = "shrink",
-                                          "You will produce more calves in the year after next" = "wean",
-                                          "You will create more grazing pressure on your land, eventually leading to possible damages to your forage production" = "land")),
-           textOutput("weanVal"),
-           textInput("lHerdQ", "What is the largest herd you can keep on your land without causing damage if rainfall is normal?"),
-           textOutput("lHerdVal"),
-           checkboxGroupInput("bigHerdQ", "What happens if you increase the size of your herd beyond the recommended maximum (Select all that apply)",
-                              choices = c("You will produce more calves" = "moreCalves",
-                                          "You will damage your land, especially if there is not enough rainfall" = "damage")),
-           textOutput("bigHerdVal"),
-           radioButtons("priceQ", "In this game, do calf prices change each year or stay the same?", 
-                        choices = c("Change" = "change", "Stay the same" = "same")),
-           textOutput("priceVal")
-    ),
-        column(5,
-           br(),
-           checkboxGroupInput("adaptQ", "What will likely happen if there is not enough rain and 
-                        you do not buy sufficient hay?", 
-                        choices = c("Your calves will be underweight and will generate less revenue at market." = "underweight", 
-                                    "Your cows will produce fewer calves next year." = "fewerBirths",
-                                    "Your calves will have higher rates of mortality which leaves you with fewer calves to sell at market." = "fewerCalves",
-                                    "You will have to cull more cows." = "cullMore")),
-           textOutput("adaptVal"),
-           selectInput("earningsQ", "Your net worth at the end of the game will be translated into real-life bonus money 
-                      at a rate of $100,000 game money to $1 real money. So if you have $300,000 in the net worth (bank 
-                      account plus the value of your herd), how much bonus money will you get after the game ends?",
-                       choices = c("","$0", "$3", "$6", "$10")),
-           textOutput("earningsVal"),
-           selectInput("practiceQ", "True or False, before starting the game, you will play five “practice rounds” that 
-                      will not count towards your final net worth.", choices = c("", "True", "False")),
-           textOutput("practiceVal"),
-           selectInput("bonusQ", "If you do not complete the survey after the simulation, will you receive your bonus?",
-                       choices = c("", "Yes", "No")),
-           textOutput("bonusVal"),
-           
-           #INSURANCE TREATMENT ONLY #Randomize
-           uiOutput("insuranceQuiz"),
-           actionButton("quizSub", "Submit"),
-           renderText("quizWarning")
-           )
-  )),
-                   
-  ## Panel for users to enter demographics         
-  tabPanel("Demographics",
-    fluidRow(
-      br(),
-      column(5,
-        
-        selectInput("gender", "Select Gender", c("", "Female", "Male", "Other")),
-        textInput("age", "Enter Age"),
-        checkboxGroupInput("race", "Please specify your race (select all that apply)", 
-                           choices = c("American Indian or Alaskan Native", "Asian",
-                                       "Black or African American", "Native Hawaiian or Other Pacific Islander",
-                                       "White", "Other")),
-        checkboxGroupInput("ethnicity", "Please specify your ethnicity (select all that apply)",
-                           choices = c("Hispanic or Latino", "Not Hispanic or Latino")),
-        radioButtons("attn", "Please select five if you are still reading this question",
-                     choices = c("1", "2", "3", "4", "5")),
-        textInput("country", "In which country do you reside?"),
-        selectInput("state", "In which state do you reside?",
-                  choices = c("", "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", 
-                              "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", 
-                              "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", 
-                              "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", 
-                              "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", 
-                              "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", 
-                              "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", 
-                              "Wyoming", "None of the above"), selected = ""),
-        conditionalPanel(condition = "input.state == 'None of the above'", 
-                        textInput("state_specify", "You chose none of the above. Please specify the state in which you live:")),
-        textInput("zip", "What is your five digit zip code?")
-        ),
-      column(5,
-        selectInput("ranchKnowledge", "Before this experiment, how much did you know about cattle ranching?",
-                    choices = c("", "Nothing", "I’ve read or talked about cattle ranching at least once before",
-                                "I am familiar with cattle ranching", "I am very knowledgeable about cattle ranching")),
-        selectInput("droughtKnowledge", "Before this experiment, how much did you know about drought?",
-                    choices = c("", "Nothing", "I’ve read or talked about drought at least once before",
-                                "I am familiar with the concept of drought", "I am very knowledgeable about the concept of drought")),
-        selectInput("droughtImpact", "Does drought impact your life, and, if so, to what degree?",
-                    choices = c("", "No, drought has no impact on my life", "No, drought has little impact on my life",
-                                "Yes, drought has impacted my life a little bit", "Yes, to a high degree")),
-        selectInput("veg", "Are you a vegetarian or vegan?", choices = c("", "Yes", "No")),
-        selectInput("income", "What was your total household income before taxes from all sources in 2016?",
-                    choices = c("", "Less than $15,000", "$15,000 to $29,999", "$30,000 to $44,999", "$45,000 to $59,999",
-                                "$60,000 to $74,999", "$75,000 to $89,999", "$90,000 to $104,999", "$105,000 to $150,000",
-                                "$150,000 and up")),
-        selectInput("education", "What is the highest level of education you have completed?", 
-                    choices = c("", "Less than high school", "High school diploma or equivalent", "Associate degree",
-                                "Trade school degree or certificate", "Bachelors degree", 
-                                "Graduate degree (Masters, PhD, MD, JD, etc.)")),
-        selectInput("attn2", "Do you agree or disagree: please leave this question blank if you are still reading.",
-                    choices = c("", "Strongly Agree", "Agree", "Disagree", "Strongly Disagree")),
-        selectInput("vote", "When you vote, if there are only Democrats or Republicans on the ballot, which party do you tend to vote for?", 
-                    choices = c("", "I nearly always vote for Democrats", "I vote for Democrats more often than I vote for Republicans",
-                                "Half the time I vote for Democrats and half the time I vote for Republicans", 
-                                "I vote for Republicans more often than I vote for Democrats", "I nearly always vote for Republicans",
-                                "I am not eligible to vote.", "I am eligible, but I do not vote.")),
-        selectInput("enviro", "Do you identify as an environmentalist?", 
-                    choices = c("", "Yes", "No", "It depends on the issue")),
-        
-        actionButton("demoSub", "Submit")
-        )
-      
-        
-
-    )),
- 
- ## Panel for risk aversion measures
- tabPanel("Lotteries",
-          fluidRow(
-            br(),
-            column(12,
-                   h4("Choose Your Lottery"),
-                   p("In this section, you will have another chance to earn additional money."),
-                   p("You will be presented with two different lotteries. Lottery A and Lottery B 
-                    will have different payoffs with different odds. To have a chance to earn additional 
-                    money, you will choose between lottery A and lottery B."),
-                   p("You will make 10 different choices between lotteries."),
-                   p("We will select ten participants in this study to win one of their lottery choices
-                    in the form of an MTurk bonus."),
-                   p("For the winners, one of these choices will be randomly drawn. For that lottery choice, one of the 
-                    payoffs will be randomly drawn according to the probabilities given in the lottery. 
-                    The winners will be paid the amount drawn in addition to their previous earnings in this survey.")
-            ),
-            column(5,
-                   br(),
-                   radioButtons("lottery10_90",
-                                "Which lottery would you rather play?",
-                                choices = c("Lottery A: 10% chance of winning $2.00, 90% chance of winning $1.60",
-                                            "Lottery B: 10% chance of winning $3.85, 90% chance of winning $0.10")),
-                   radioButtons("lottery20_80",
-                                "Which lottery would you rather play?",
-                                choices = c("Lottery A: 20% chance of winning $2.00, 80% chance of winning $1.60",
-                                            "Lottery B: 20% chance of winning $3.85, 80% chance of winning $0.10")),
-                   radioButtons("lottery30_70",
-                                "Which lottery would you rather play?",
-                                choices = c("Lottery A: 30% chance of winning $2.00, 70% chance of winning $1.60",
-                                            "Lottery B: 30% chance of winning $3.85, 70% chance of winning $0.10")),
-                   radioButtons("lottery40_60",
-                                "Which lottery would you rather play?",
-                                choices = c("Lottery A: 40% chance of winning $2.00, 60% chance of winning $1.60",
-                                            "Lottery B: 40% chance of winning $3.85, 60% chance of winning $0.10")),
-                   radioButtons("lottery50_50",
-                                "Which lottery would you rather play?",
-                                choices = c("Lottery A: 50% chance of winning $2.00, 50% chance of winning $1.60",
-                                            "Lottery B: 50% chance of winning $3.85, 50% chance of winning $0.10"))
-            ),
-            column(5,
-                   br(),
-                   radioButtons("lottery60_40",
-                                "Which lottery would you rather play?",
-                                choices = c("Lottery A: 60% chance of winning $2.00, 40% chance of winning $1.60",
-                                            "Lottery B: 60% chance of winning $3.85, 40% chance of winning $0.10")),
-                   radioButtons("lottery70_30",
-                                "Which lottery would you rather play?",
-                                choices = c("Lottery A: 70% chance of winning $2.00, 30% chance of winning $1.60",
-                                            "Lottery B: 70% chance of winning $3.85, 30% chance of winning $0.10")),
-                   radioButtons("lottery80_20",
-                                "Which lottery would you rather play?",
-                                choices = c("Lottery A: 80% chance of winning $2.00, 20% chance of winning $1.60",
-                                            "Lottery B: 80% chance of winning $3.85, 20% chance of winning $0.10")),
-                   radioButtons("lottery90_10",
-                                "Which lottery would you rather play?",
-                                choices = c("Lottery A: 90% chance of winning $2.00, 10% chance of winning $1.60",
-                                            "Lottery B: 90% chance of winning $3.85, 10% chance of winning $0.10"))
-                   )
-          )),
+ #  ## Panel for comprehension quiz
+ # tabPanel("Quiz",
+ #  fluidRow(
+ #    column(5,
+ #           h4("Comprehension Quiz"),
+ #           h5("You may look back at the background info tab to find the 
+ #              information you need to answer these questions."),
+ #           numericInput("ranchSizeQ", "What is the size of your ranch (in acres)?", 
+ #                        0, min = 0, step = 100),
+ #           br(),
+ #           textOutput("ranchVal"),
+ #           numericInput("herdSizeQ", "How many cows do you have in your herd (not 
+ #                        including calves or yearlings)?", 0, min = 0, step = 100),
+ #           textOutput("herdSizeVal"),
+ #           radioButtons("cullQ", "What does it mean to 'cull' a cow?", 
+ #                        c("To keep a cow in the herd to breed in the following year",
+ #                          "To sell a cow")),
+ #           textOutput("cullVal"),
+ #           checkboxGroupInput("weanQ", "What happens if you keep a weaned calf instead of selling it (select all that apply)?",
+ #                              choices = c("You earn revenue from the sale" = "sale",
+ #                                          "Your herd will grow" = "grow",
+ #                                          "Your herd will shrink" = "shrink",
+ #                                          "You will produce more calves in the year after next" = "wean",
+ #                                          "You will create more grazing pressure on your land, eventually leading to possible damages to your forage production" = "land")),
+ #           textOutput("weanVal"),
+ #           textInput("lHerdQ", "What is the largest herd you can keep on your land without causing damage if rainfall is normal?"),
+ #           textOutput("lHerdVal"),
+ #           checkboxGroupInput("bigHerdQ", "What happens if you increase the size of your herd beyond the recommended maximum (Select all that apply)",
+ #                              choices = c("You will produce more calves" = "moreCalves",
+ #                                          "You will damage your land, especially if there is not enough rainfall" = "damage")),
+ #           textOutput("bigHerdVal"),
+ #           radioButtons("priceQ", "In this game, do calf prices change each year or stay the same?", 
+ #                        choices = c("Change" = "change", "Stay the same" = "same")),
+ #           textOutput("priceVal")
+ #    ),
+ #        column(5,
+ #           br(),
+ #           checkboxGroupInput("adaptQ", "What will likely happen if there is not enough rain and 
+ #                        you do not buy sufficient hay?", 
+ #                        choices = c("Your calves will be underweight and will generate less revenue at market." = "underweight", 
+ #                                    "Your cows will produce fewer calves next year." = "fewerBirths",
+ #                                    "Your calves will have higher rates of mortality which leaves you with fewer calves to sell at market." = "fewerCalves",
+ #                                    "You will have to cull more cows." = "cullMore")),
+ #           textOutput("adaptVal"),
+ #           selectInput("earningsQ", "Your net worth at the end of the game will be translated into real-life bonus money 
+ #                      at a rate of $100,000 game money to $1 real money. So if you have $300,000 in the net worth (bank 
+ #                      account plus the value of your herd), how much bonus money will you get after the game ends?",
+ #                       choices = c("","$0", "$3", "$6", "$10")),
+ #           textOutput("earningsVal"),
+ #           selectInput("practiceQ", "True or False, before starting the game, you will play five “practice rounds” that 
+ #                      will not count towards your final net worth.", choices = c("", "True", "False")),
+ #           textOutput("practiceVal"),
+ #           selectInput("bonusQ", "If you do not complete the survey after the simulation, will you receive your bonus?",
+ #                       choices = c("", "Yes", "No")),
+ #           textOutput("bonusVal"),
+ #           
+ #           #INSURANCE TREATMENT ONLY #Randomize
+ #           uiOutput("insuranceQuiz"),
+ #           actionButton("quizSub", "Submit"),
+ #           renderText("quizWarning")
+ #           )
+ #  )),
+ #                   
+ #  ## Panel for users to enter demographics         
+ #  tabPanel("Demographics",
+ #    fluidRow(
+ #      br(),
+ #      column(5,
+ #        
+ #        selectInput("gender", "Select Gender", c("", "Female", "Male", "Other")),
+ #        textInput("age", "Enter Age"),
+ #        checkboxGroupInput("race", "Please specify your race (select all that apply)", 
+ #                           choices = c("American Indian or Alaskan Native", "Asian",
+ #                                       "Black or African American", "Native Hawaiian or Other Pacific Islander",
+ #                                       "White", "Other")),
+ #        checkboxGroupInput("ethnicity", "Please specify your ethnicity (select all that apply)",
+ #                           choices = c("Hispanic or Latino", "Not Hispanic or Latino")),
+ #        radioButtons("attn", "Please select five if you are still reading this question",
+ #                     choices = c("1", "2", "3", "4", "5")),
+ #        textInput("country", "In which country do you reside?"),
+ #        selectInput("state", "In which state do you reside?",
+ #                  choices = c("", "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", 
+ #                              "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", 
+ #                              "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", 
+ #                              "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", 
+ #                              "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", 
+ #                              "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", 
+ #                              "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", 
+ #                              "Wyoming", "None of the above"), selected = ""),
+ #        conditionalPanel(condition = "input.state == 'None of the above'", 
+ #                        textInput("state_specify", "You chose none of the above. Please specify the state in which you live:")),
+ #        textInput("zip", "What is your five digit zip code?")
+ #        ),
+ #      column(5,
+ #        selectInput("ranchKnowledge", "Before this experiment, how much did you know about cattle ranching?",
+ #                    choices = c("", "Nothing", "I’ve read or talked about cattle ranching at least once before",
+ #                                "I am familiar with cattle ranching", "I am very knowledgeable about cattle ranching")),
+ #        selectInput("droughtKnowledge", "Before this experiment, how much did you know about drought?",
+ #                    choices = c("", "Nothing", "I’ve read or talked about drought at least once before",
+ #                                "I am familiar with the concept of drought", "I am very knowledgeable about the concept of drought")),
+ #        selectInput("droughtImpact", "Does drought impact your life, and, if so, to what degree?",
+ #                    choices = c("", "No, drought has no impact on my life", "No, drought has little impact on my life",
+ #                                "Yes, drought has impacted my life a little bit", "Yes, to a high degree")),
+ #        selectInput("veg", "Are you a vegetarian or vegan?", choices = c("", "Yes", "No")),
+ #        selectInput("income", "What was your total household income before taxes from all sources in 2016?",
+ #                    choices = c("", "Less than $15,000", "$15,000 to $29,999", "$30,000 to $44,999", "$45,000 to $59,999",
+ #                                "$60,000 to $74,999", "$75,000 to $89,999", "$90,000 to $104,999", "$105,000 to $150,000",
+ #                                "$150,000 and up")),
+ #        selectInput("education", "What is the highest level of education you have completed?", 
+ #                    choices = c("", "Less than high school", "High school diploma or equivalent", "Associate degree",
+ #                                "Trade school degree or certificate", "Bachelors degree", 
+ #                                "Graduate degree (Masters, PhD, MD, JD, etc.)")),
+ #        selectInput("attn2", "Do you agree or disagree: please leave this question blank if you are still reading.",
+ #                    choices = c("", "Strongly Agree", "Agree", "Disagree", "Strongly Disagree")),
+ #        selectInput("vote", "When you vote, if there are only Democrats or Republicans on the ballot, which party do you tend to vote for?", 
+ #                    choices = c("", "I nearly always vote for Democrats", "I vote for Democrats more often than I vote for Republicans",
+ #                                "Half the time I vote for Democrats and half the time I vote for Republicans", 
+ #                                "I vote for Republicans more often than I vote for Democrats", "I nearly always vote for Republicans",
+ #                                "I am not eligible to vote.", "I am eligible, but I do not vote.")),
+ #        selectInput("enviro", "Do you identify as an environmentalist?", 
+ #                    choices = c("", "Yes", "No", "It depends on the issue")),
+ #        
+ #        actionButton("demoSub", "Submit")
+ #        )
+ #      
+ #        
+ # 
+ #    )),
+ # 
+ # ## Panel for risk aversion measures
+ # tabPanel("Lotteries",
+ #          fluidRow(
+ #            br(),
+ #            column(12,
+ #                   h4("Choose Your Lottery"),
+ #                   p("In this section, you will have another chance to earn additional money."),
+ #                   p("You will be presented with two different lotteries. Lottery A and Lottery B 
+ #                    will have different payoffs with different odds. To have a chance to earn additional 
+ #                    money, you will choose between lottery A and lottery B."),
+ #                   p("You will make 10 different choices between lotteries."),
+ #                   p("We will select ten participants in this study to win one of their lottery choices
+ #                    in the form of an MTurk bonus."),
+ #                   p("For the winners, one of these choices will be randomly drawn. For that lottery choice, one of the 
+ #                    payoffs will be randomly drawn according to the probabilities given in the lottery. 
+ #                    The winners will be paid the amount drawn in addition to their previous earnings in this survey.")
+ #            ),
+ #            column(5,
+ #                   br(),
+ #                   radioButtons("lottery10_90",
+ #                                "Which lottery would you rather play?",
+ #                                choices = c("Lottery A: 10% chance of winning $2.00, 90% chance of winning $1.60",
+ #                                            "Lottery B: 10% chance of winning $3.85, 90% chance of winning $0.10")),
+ #                   radioButtons("lottery20_80",
+ #                                "Which lottery would you rather play?",
+ #                                choices = c("Lottery A: 20% chance of winning $2.00, 80% chance of winning $1.60",
+ #                                            "Lottery B: 20% chance of winning $3.85, 80% chance of winning $0.10")),
+ #                   radioButtons("lottery30_70",
+ #                                "Which lottery would you rather play?",
+ #                                choices = c("Lottery A: 30% chance of winning $2.00, 70% chance of winning $1.60",
+ #                                            "Lottery B: 30% chance of winning $3.85, 70% chance of winning $0.10")),
+ #                   radioButtons("lottery40_60",
+ #                                "Which lottery would you rather play?",
+ #                                choices = c("Lottery A: 40% chance of winning $2.00, 60% chance of winning $1.60",
+ #                                            "Lottery B: 40% chance of winning $3.85, 60% chance of winning $0.10")),
+ #                   radioButtons("lottery50_50",
+ #                                "Which lottery would you rather play?",
+ #                                choices = c("Lottery A: 50% chance of winning $2.00, 50% chance of winning $1.60",
+ #                                            "Lottery B: 50% chance of winning $3.85, 50% chance of winning $0.10"))
+ #            ),
+ #            column(5,
+ #                   br(),
+ #                   radioButtons("lottery60_40",
+ #                                "Which lottery would you rather play?",
+ #                                choices = c("Lottery A: 60% chance of winning $2.00, 40% chance of winning $1.60",
+ #                                            "Lottery B: 60% chance of winning $3.85, 40% chance of winning $0.10")),
+ #                   radioButtons("lottery70_30",
+ #                                "Which lottery would you rather play?",
+ #                                choices = c("Lottery A: 70% chance of winning $2.00, 30% chance of winning $1.60",
+ #                                            "Lottery B: 70% chance of winning $3.85, 30% chance of winning $0.10")),
+ #                   radioButtons("lottery80_20",
+ #                                "Which lottery would you rather play?",
+ #                                choices = c("Lottery A: 80% chance of winning $2.00, 20% chance of winning $1.60",
+ #                                            "Lottery B: 80% chance of winning $3.85, 20% chance of winning $0.10")),
+ #                   radioButtons("lottery90_10",
+ #                                "Which lottery would you rather play?",
+ #                                choices = c("Lottery A: 90% chance of winning $2.00, 10% chance of winning $1.60",
+ #                                            "Lottery B: 90% chance of winning $3.85, 10% chance of winning $0.10"))
+ #                   )
+ #          )),
  
  tabPanel("Ranch Simulation", 
     uiOutput("pageOut")
  )
  
   
-), 
+)#, 
 ## Code to insert new tabs, these get inserted into the main panel tabset via the JS at top
 
 
-uiOutput("creationPool", style = "display: none;")
+# uiOutput("creationPool", style = "display: none;")
 
 )
 )
