@@ -10,6 +10,8 @@ function(input, output, session) {
               selector = "#navBar li a[data-value=Quiz]")
   toggleClass(class = "disabled",
               selector = "#navBar li a[data-value='Background Info']")
+  toggleClass(class = "disabled",
+              selector = "#navBar li a[data-value='Ranch Simulation']")
   # lapply(1:simLength, function(x)toggleClass(class = "disabled", selector = paste0("#navBar li a[data-value=Year ", x, "]")))
 
   output$weanVal <- renderText({
@@ -398,11 +400,12 @@ function(input, output, session) {
     # Reactive to disable start simualation button after they're clicked
     observeEvent(input[[paste0("year", i, "Start")]], {
       shinyjs::disable(paste0("year", i, "Start"))
+      delay(100,session$sendCustomMessage(type = "scrollCallback", 1))
     })
     
-    observeEvent(input[[paste0("year", i, "Start")]], {
-      session$sendCustomMessage(type = "scrollCallback", 1)
-    })
+    # observeEvent(input[[paste0("year", i, "Start")]], {
+    #   session$sendCustomMessage(type = "scrollCallback", 1)
+    # })
     
     ## Disable cow and calf sliders after sell button
     ## Disable sell button
@@ -432,7 +435,7 @@ function(input, output, session) {
     observeEvent(input[[paste0("year", i, "Summer")]], {
       shinyjs::disable(paste0("year", i, "Summer"))
       shinyjs::disable(paste0("d", i, "AdaptSpent"))
-
+      delay(100,session$sendCustomMessage(type = "scrollCallback", 1))
     })
   }) ##End of lapply
   
@@ -477,14 +480,14 @@ function(input, output, session) {
     updateTabsetPanel(session, "mainPanels", selected = "Background Info")
   })
   
-  observeEvent(input$quizStart, {
+  observeEvent(input$simStart, {
     toggleClass(class = "disabled",
-                selector = "#navBar li a[data-value='Quiz']")
-    updateTabsetPanel(session, "mainPanels", selected = "Quiz")
+                selector = "#navBar li a[data-value='Ranch Simulation']")
+    updateTabsetPanel(session, "mainPanels", selected = "Ranch Simulation")
   })
   
   ## Reactive value for current year
-  values <- reactiveValues("currentYear" = 1, "starting" = TRUE)
+  values <- reactiveValues("currentYear" = 1, "starting" = TRUE, "saveComplete" = FALSE, "beginSaving" = FALSE)
   
   ## Code to dynamically add new tabs
   output$creationPool <- renderUI({})
@@ -582,31 +585,47 @@ function(input, output, session) {
       p(paste0("At the end of the simulation your ranch had ", myOuts$herd[simLength], " cows")),
       p(paste0("Through ranching you accumulated $", round(myOuts$assets.cash[simLength], 0), " in cash" )),
       actionButton("saveInputs", "Save results and recieve completion code"),
+      uiOutput("complete"),
       offset = .5)
     )
   }
   })
-  
+
+  output$complete <- renderUI({
+    req(values$saveComplete)
+    h4("Your Data has been saved, complete code...")
+  })
   observeEvent(input$prevBtn, navPage(-1))
   observeEvent(input$nextBtn, navPage(1))
   observeEvent(input$saveInputs, {
-    myDir <- "results"
-    if(!dir.exists(myDir)){
-      dir.create(myDir)
-    }
-    files <- dir(myDir)
-    files <- files[order(files)]
+    shinyjs::disable("saveInputs")
+    # myDir <- "results"
+    # if(!dir.exists(myDir)){
+    #   dir.create(myDir)
+    # }
+    files <- gs_ls()$sheet_title
+    # files <- files[order(files)]
     
-    if(length(dir(myDir)) == 0){
+    if(length(files) == 0){
       lastFile <- 0
     }else{
-      lastFile <- files[length(files)]
-      lastFile <- as.numeric(substr(lastFile, 7, nchar(lastFile) - 4))
+      # lastFile <- files[length(files)]
+      # lastFile <- as.numeric(substr(lastFile, nchar(lastFile), nchar(lastFile)))
+      lastFile <- regmatches(files, gregexpr('[0-9]+',files))
+      lapply(lastFile, as.numeric) %>% unlist() %>% max() -> lastFile
     }
     saveData <- reactiveValuesToList(input)
     # save(saveData, file = "newSave.RData")
     saveData <- inputToDF(saveData)
-    write.csv(saveData, file = paste0("results/input", lastFile + 1, ".csv"), row.names = F)
-    write.csv(myOuts, file = paste0("results/output", lastFile + 1, ".csv"), row.names = F)
+    withProgress(message = "Saving Data", value = 1/3, {
+    gs_new(title =  paste0("input", lastFile + 1), 
+           input = saveData, trim = TRUE, verbose = TRUE)
+    incProgress(1/3)
+    gs_new(title =  paste0("output", lastFile + 1), 
+           input = myOuts, trim = TRUE, verbose = TRUE)
+    })
+    values$saveComplete <- TRUE
+    # write.csv(saveData, file = paste0("results/input", lastFile + 1, ".csv"), row.names = F)
+    # write.csv(myOuts, file = paste0("results/output", lastFile + 1, ".csv"), row.names = F)
   })
 }
