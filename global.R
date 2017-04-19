@@ -87,6 +87,13 @@ indem <- lapply(startYear:(startYear + simLength - 1), function(x){
 # purchaseInsurance <- sample(c(T, F), 1)
 purchaseInsurance <- T
 
+if(!purchaseInsurance){
+  indem <- lapply(indem, function(x){
+    x[, c("producer_prem", "indemnity", "full_prem") := 0]
+    return(x)
+  })
+}
+
 ## Counter to keep track of quiz
 quizCounter <- 0
 

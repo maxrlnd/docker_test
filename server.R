@@ -142,21 +142,21 @@ function(input, output, session) {
       )
     )
   })
-  output$insuranceQuiz <- renderUI({
-    if(purchaseInsurance){
-      tagList(
-        selectInput("premiumQ", "How much does your rain-index insurance cost each year?",
-                    choices = c("", "$0", "$100", "something reasonable")),
-        textOutput("premiumVal"),
-        radioButtons("rainmonthsQ", "Your insurance payouts depend on rain in which months?",
-                     choices = c("May-June, July-August", "May-June, June-July", 
-                                 "February-March, May-June", "July-August, October-November")),
-        textOutput("rainmonthsVal"),
-        selectInput("payoutQ", "Would you get a larger insurance payout if you get 5 inches of rain or 2 inches of rain during 
-                    a month that is insured?", choices = c("", "5 inches", "2 inches")),
-        textOutput("payoutVal")
-    )}
-  })
+  # output$insuranceQuiz <- renderUI({
+  #   if(purchaseInsurance){
+  #     tagList(
+  #       selectInput("premiumQ", "How much does your rain-index insurance cost each year?",
+  #                   choices = c("", "$0", "$100", "something reasonable")),
+  #       textOutput("premiumVal"),
+  #       radioButtons("rainmonthsQ", "Your insurance payouts depend on rain in which months?",
+  #                    choices = c("May-June, July-August", "May-June, June-July", 
+  #                                "February-March, May-June", "July-August, October-November")),
+  #       textOutput("rainmonthsVal"),
+  #       selectInput("payoutQ", "Would you get a larger insurance payout if you get 5 inches of rain or 2 inches of rain during 
+  #                   a month that is insured?", choices = c("", "5 inches", "2 inches")),
+  #       textOutput("payoutVal")
+  #   )}
+  # })
   
   #####Year Tab Functions#####################
   
@@ -276,9 +276,18 @@ function(input, output, session) {
           tagList(
             h4("Insurance Payout"),
             if(currentIndem > 0){
-              p(paste0("You have received a check for $", currentIndem, " from your rain insurance policy."))
+              tagList(
+                p(paste0("You have received a check for $", currentIndem, " from your rain insurance policy.")),
+                textInput(paste0("insuranceDeposit", i), 
+                          "Please type the amount of the check below and press Deposit to add the money to your bank account.",
+                          width = "100%"),
+                actionButton(paste0("insCont", i), "Deposit")
+              )
             }else{
-              p("You did not recieve a check for your rain insurance policy")
+              tagList(
+                p("You did not recieve a check for your rain insurance policy"),
+                actionButton(paste0("insCont", i), "Continue")
+              )
             }
           )
         }
@@ -288,14 +297,15 @@ function(input, output, session) {
     
     ## Present options to sell cows
     output[[paste0("cowSell", i)]] <- renderUI({
-      if(!is.null(input[[paste0("year", i, "Summer")]])){
-        if(input[[paste0("year", i, "Summer")]] == 1){
+      # if(!is.null(input[[paste0("year", i, "Summer")]])){
+      #   if(input[[paste0("year", i, "Summer")]] == 1){
+      req(input[[paste0("insCont", i)]])
           tagList(
             getCowSell(get(paste0("effectiveForage", i))(), AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1), i),
             plotOutput(paste0("cowPlot", i))
           )
-        }
-      }
+      #   }
+      # }
     })
     
     ## Create a button to continue after selecting adaptation level
@@ -436,6 +446,10 @@ function(input, output, session) {
       shinyjs::disable(paste0("year", i, "Summer"))
       shinyjs::disable(paste0("d", i, "AdaptSpent"))
       delay(100,session$sendCustomMessage(type = "scrollCallback", 1))
+    })
+    
+    observeEvent(input[[paste0("insCont", i)]], {
+      shinyjs::disable(paste0("insCont", i))
     })
   }) ##End of lapply
   

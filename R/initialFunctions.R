@@ -211,16 +211,19 @@ getStationGauge<-function(target.loc="CPER"){
   if(target.loc=="CPER"){ # Use COOP sites or CPER: Default to CPER
     
     ## Zone Weights
-    stzone <- 3 # state forage zone
-    # multiple operations since reading from
-    # external file that may be replaced
-    zonewt <- read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx", sheet = "Drought Calculator", skip = 5)[5:8, ]
-    zonewt <- sapply(data.frame(zonewt[, which(names(zonewt) == "Jan"):which(names(zonewt) == "Dec")]), as.numeric)
+    stzone <- 1 # state forage zone
+    
+    zonewt <- matrix(c(0.01, 0.01, 0.05, 0.08,0.17,0.21,0.17,0.13,0.11,0.05,0.01,0.01), 
+                     nrow = 1, ncol = 12)
+    colnames(zonewt) <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", 
+                          "Aug", "Sep", "Oct", "Nov", "Dec")
     
     ## Station precip gauge
-    stgg <- data.frame(read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx", "CPER Precip", skip = 1))
-    stgg <- stgg[, -which(names(stgg) %in% c("TOTAL", "Var.15"))]
-    stgg <- stgg[stgg$Year %in% c(1948:2016, "AVE"), ]
+    # stgg <- data.frame(read_excel("misc/One_Drought_User_Interface_w_NOAA_Index.xlsx", "CPER Precip", skip = 1))
+    # stgg <- stgg[, -which(names(stgg) %in% c("TOTAL", "Var.15"))]
+    # stgg <- stgg[stgg$Year %in% c(1948:2016, "AVE"), ]
+    
+    load("data/cperPrecip.RData")
     
     ## Target grid cell
     tgrd = 25002  # target grid cell - CPER default
