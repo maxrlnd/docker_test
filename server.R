@@ -642,4 +642,22 @@ function(input, output, session) {
     # write.csv(saveData, file = paste0("results/input", lastFile + 1, ".csv"), row.names = F)
     # write.csv(myOuts, file = paste0("results/output", lastFile + 1, ".csv"), row.names = F)
   })
+  
+  observeEvent(input$applyInsChange, {
+    req(input$insChange)
+    if(input$insChange){
+      purchaseInsurance <<- T
+      indem <<- lapply(startYear:(startYear + simLength - 1), function(x){
+        with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
+                                  pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+      })
+    }else{
+      purchaseInsurance <<- FALSE
+      indem <<- lapply(indem, function(x){
+        x[, c("producer_prem", "indemnity", "full_prem") := 0]
+        return(x)
+      }) 
+    }
+      
+  })
 }

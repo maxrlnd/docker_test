@@ -108,7 +108,9 @@ tabsetPanel(id = "mainPanels",
  tabPanel("debug",
           fluidRow(
             textInput("code", "Enter Code to be Run"),
-            actionButton("runCode", "Run Code")
+            actionButton("runCode", "Run Code"),
+            textInput("insChange", "Enter True or False to use insurance or not"),
+            actionButton("applyInsChange", "Change Insurance")
             # actionButton("saveInputs", "Save all Input")
           )),
  # tabPanel("Input",
