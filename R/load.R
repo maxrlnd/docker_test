@@ -18,12 +18,14 @@ library(ggplot2)
 # library("trend")
 # library(rgeos)
 # library("maptools")
-# library(readxl)
+library(readxl)
 # library(fpc)
 library(magrittr)
 # library(rgdal)
 # library(snowfall)
-# library(readr)
+library(readr)
+library(V8)
+library(googlesheets)
 
 ## gird_base only needs to be loaded if we're going to be doing any raster stuff
 # load("data/grid_base.RData") # Load base grid data
