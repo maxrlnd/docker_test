@@ -201,7 +201,14 @@ function(input, output, session) {
           cows <- data.table("Year" = years, "Herd Size" = c(myOuts[i, herd],
                                                              get(paste0("herdSize", i))(), herdy1))
           print(cows)
-          ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity") +   geom_text(aes(label=`Herd Size`), position=position_dodge(width=0.9), vjust=-0.25)
+          cows$`Herd Size` = round(cows$`Herd Size`, 0)
+          ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity", fill = 'blue') +
+            geom_text(aes(label = `Herd Size`), size = 3, position = position_stack(vjust = 1.03)) +
+            theme(text = element_text(size = 20))
+        
+          #Fix Font Size
+          #Fix Fatness of bar graphs
+          
         }
       }
     })
@@ -214,8 +221,19 @@ function(input, output, session) {
       plotOuts <- melt(plotOuts, id.vars = "Year")
       setnames(plotOuts, c("Year", "Area", "Value in $"))
       plotOuts$Area <- factor(plotOuts$Area)
+      library(scales)
+      #Rounding PlotOut dataframe table
+      
+      
       ggplot(plotOuts, aes(x = Year, y = `Value in $`, fill = Area)) + geom_bar(stat = "identity") + 
-        ggtitle("Net Worth") + theme(legend.title = element_blank())
+        ggtitle("Net Worth") + theme(legend.title = element_blank()) +
+        scale_y_continuous(labels = comma) +
+        geom_text(aes(label = dollar(`Value in $`),), size = 3, position = position_stack(vjust = 0.3)) +
+        theme(text = element_text(size = 20))
+      #change default color schemes
+      #Green for cash, light peach for cows
+      #X AXis - Year 1, Year2, Year 3, etc. 
+      #X Label, Character Vector
     })
     
     ## Bar graph to display rainfall
@@ -231,12 +249,12 @@ function(input, output, session) {
       yearAvg <- melt(yearAvg, id.vars = "id")
       setnames(yearAvg, c("id", "Month", "Rainfall"))
       ggplot(yearAvg, aes(x = Month, y = Rainfall, fill = id, label = Rainfall)) + 
-        geom_bar(width = .9, stat = "identity", position = "stack") + 
+        geom_bar(width = .9, stat = "identity", position = 'dodge') + 
         #facet_wrap(~ id) +
-        geom_text(size = 3, position = position_stack(vjust = 0.5)) +
-        theme(legend.title = element_blank()) + ggtitle("Rainfall")
+        #geom_text(size = 3, position = position_stack(vjust = 0.5)) +
+        theme(legend.title = element_blank(), text = element_text(size = 15)) + ggtitle("Rainfall")
       #position_dodge(width=1.3)
-      
+      #Rain color it!
     })
     
     # Reactive to disable start simualation button after they're clicked
