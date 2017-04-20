@@ -4,7 +4,7 @@ function(input, output, session) {
               selector = "#navBar li a[data-value=Demographics]")
   toggleClass(class = "disabled",
               selector = "#navBar li a[data-value=Quiz]")
-  # lapply(1:simLength, function(x)toggleClass(class = "disabled", selector = paste0("#navBar li a[data-value=Year ", x, "]")))
+  # lapply(1:simLengthx, function(x)toggleClass(class = "disabled", selector = paste0("#navBar li a[data-value=Year ", x, "]")))
 
   ## Dynamic UI for Demo graphics
   output$exp <- renderUI({
@@ -201,7 +201,7 @@ function(input, output, session) {
           cows <- data.table("Year" = years, "Herd Size" = c(myOuts[i, herd],
                                                              get(paste0("herdSize", i))(), herdy1))
           print(cows)
-          ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity")
+          ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity") +   geom_text(aes(label=`Herd Size`), position=position_dodge(width=0.9), vjust=-0.25)
         }
       }
     })
@@ -230,9 +230,12 @@ function(input, output, session) {
       yearAvg[, "id" := c("Actual Rain", "Average Rain")]
       yearAvg <- melt(yearAvg, id.vars = "id")
       setnames(yearAvg, c("id", "Month", "Rainfall"))
-      ggplot(yearAvg, aes(x = Month, y = Rainfall, fill = id)) + 
-        geom_bar(width = .6, stat = "identity", position = position_dodge(width=1.3)) + 
+      ggplot(yearAvg, aes(x = Month, y = Rainfall, fill = id, label = Rainfall)) + 
+        geom_bar(width = .9, stat = "identity", position = "stack") + 
+        #facet_wrap(~ id) +
+        geom_text(size = 3, position = position_stack(vjust = 0.5)) +
         theme(legend.title = element_blank()) + ggtitle("Rainfall")
+      #position_dodge(width=1.3)
       
     })
     

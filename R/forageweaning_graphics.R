@@ -67,6 +67,8 @@ wean_percentage_df %>%
   geom_point() +
   labs(title = 'Forage and Weaning percent', x = 'forage', y = 'weaning percentage')
 
+
+
 #first colum n -were you put the column names from the data frame
 #2nd column - where do you put the values
 #pipe operator %>% takes what on left, takes it as inptu to the next functgion (stuff to the right of %)
