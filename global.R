@@ -48,7 +48,7 @@ practiceVars <- getSimVars(
   sim_length = 3,
   use.forage = T,
   random.acres=FALSE,
-  random.productivity=TRUE,
+  random.productivity=FALSE,
   acres)
 
 ## create state variables for full runs
@@ -59,12 +59,14 @@ simvars <- getSimVars(
   sim_length = 10,
   use.forage = T,
   random.acres=FALSE,
-  random.productivity=TRUE,
+  random.productivity=FALSE,
   acres)
 
 ## Create list of constant vars, state vars, and station gauges
 practiceRuns <- (append(append(station.gauge, constvars), (practiceVars)))
+practiceRuns$p.wn <- rep(1.45, length(practiceRuns$p.wn))
 simRuns <- (append(append(station.gauge, constvars), (simvars)))
+simRuns$p.wn <- rep(1.45, length(simRuns$p.wn))
 
 ## Create results frames for practice and simulation
 practiceOuts <- createResultsFrame(practiceRuns)

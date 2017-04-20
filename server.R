@@ -167,7 +167,9 @@ function(input, output, session) {
     ## myOuts updates
     assign(paste0("reactiveWinter", i), reactive({
       input[[paste0("sell", i-1)]]
-      
+      if(myOuts[i, herd] == 0){
+        myOuts[i, cost.ins] <<- 0
+      }
       tagList(
         h4("Winter Finance Assessment"),
         p(paste0("Your Current Herd has ", round(myOuts[i, herd], 0), " cows, not including calves or yearlings.")),
@@ -253,6 +255,7 @@ function(input, output, session) {
     ## UI for winter Info
     output[[paste0("winterInfo", i)]] <- renderUI({
       tagList(
+         h3(paste0("Year ", i, " of ", simLength)),
          get(paste0("reactiveWinter", i))()
        )
     })
@@ -272,6 +275,9 @@ function(input, output, session) {
     output[[paste0("insuranceUpdate", i)]] <- renderUI({
       if(!is.null(input[[paste0("year", i, "Summer")]])){
         if(input[[paste0("year", i, "Summer")]]){
+          if(myOuts[i, herd] == 0){
+            indem[[i]]$indemnity <<- 0
+          }
           currentIndem <- round(indem[[i]]$indemnity, 0)
           tagList(
             h4("Insurance Payout"),
@@ -279,9 +285,10 @@ function(input, output, session) {
               tagList(
                 p(paste0("You have received a check for $", currentIndem, " from your rain insurance policy.")),
                 textInput(paste0("insuranceDeposit", i), 
-                          "Please type the amount of the check below and press Deposit to add the money to your bank account.",
+                          "Please type the amount of the check below and to add the money to your bank account and continue.",
                           width = "100%"),
-                actionButton(paste0("insCont", i), "Deposit")
+                # actionButton(paste0("deposit", i), "Deposit"),
+                uiOutput(paste0("postDeposit", i))
               )
             }else{
               tagList(
@@ -300,6 +307,8 @@ function(input, output, session) {
       # if(!is.null(input[[paste0("year", i, "Summer")]])){
       #   if(input[[paste0("year", i, "Summer")]] == 1){
       req(input[[paste0("insCont", i)]])
+      print(get(paste0("effectiveForage", i))())
+      print( AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1))
           tagList(
             getCowSell(get(paste0("effectiveForage", i))(), AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1), i),
             plotOutput(paste0("cowPlot", i))
@@ -342,6 +351,18 @@ function(input, output, session) {
             actionButton(paste0("sell", i), "Sell Calves and Cows")
           )
         }
+      }
+    })
+    
+    output[[paste0("postDeposit", i)]] <- renderUI({
+      if(input[[paste0("insuranceDeposit", i)]] != ""){
+        validate(
+          need(input[[paste0("insuranceDeposit", i)]] == round(indem[[i]]$indemnity, 0), genericWrong)
+        )
+        fluidRow(
+          h4(paste0("Your current bank balance is $", round(myOuts[i, assets.cash] + indem[[i]]$indemnity, 0))),
+          actionButton(paste0("insCont", i), "Continue")
+        )
       }
     })
     
@@ -430,14 +451,7 @@ function(input, output, session) {
                             newHerd = get(paste0("herdSize", i))(), zones = get(paste0("currentZones", i))(), 
                             adaptInten = CalculateAdaptationIntensity(get(paste0("effectiveForage", i))()),
                             currentYear = i)
-      # print(myOuts)
       values$currentYear <- values$currentYear + 1
-      # toggleClass(class = "disabled",
-      #             selector = paste0("#navBar li a[data-value=Year ", i, "]"))
-      # addTabToTabset(createNewYr(values$currentYear), "mainPanels")
-      print(input$List_of_tab)
-      updateTabsetPanel(session, "mainPanels",
-                        selected = paste0("Year ", values$currentYear))
     })
     
     
@@ -450,6 +464,7 @@ function(input, output, session) {
     
     observeEvent(input[[paste0("insCont", i)]], {
       shinyjs::disable(paste0("insCont", i))
+      delay(100,session$sendCustomMessage(type = "scrollCallback", 1))
     })
   }) ##End of lapply
   
@@ -489,12 +504,14 @@ function(input, output, session) {
   ## Disable agree button on instructions after it has been clicked and move to
   ## Demographics tab
   observeEvent(input$agree, {
+    disable("agree")
     toggleClass(class = "disabled",
                 selector = "#navBar li a[data-value='Background Info']")
     updateTabsetPanel(session, "mainPanels", selected = "Background Info")
   })
   
   observeEvent(input$simStart, {
+    disable("simStart")
     toggleClass(class = "disabled",
                 selector = "#navBar li a[data-value='Ranch Simulation']")
     updateTabsetPanel(session, "mainPanels", selected = "Ranch Simulation")
@@ -515,40 +532,8 @@ function(input, output, session) {
     session$sendCustomMessage(type = "addTabToTabset", message = list(titles = titles, tabsetName = tabsetName))
   }
   
-  ## Commented code to add all tab panels at once currently not used as tab panels are added dynamically
 
-  # yearTabs <-
-  #   lapply(1:5, function(z){
-  #     hidden(
-  #     tabPanel(paste("Year", z),
-  #              fluidRow(
-  #                column(8,
-  #                       uiOutput(paste0("winterInfo", z)),
-  #                       fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
-  #                       uiOutput(paste0("decision", z)),
-  #                       uiOutput(paste0("insuranceUpdate", z)),
-  #                       uiOutput(paste0("cowSell", z))
-  #                ),
-  #                column(2,
-  #                       fluidRow(column(12, style = "background-color:white;", div(style = "height:170px;"))),
-  #                       actionButton(paste0("year", z, "Start"), "Begin Simulation"),
-  #                       fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
-  #                       uiOutput(paste0("continue", z)),
-  #                       fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
-  #                       uiOutput(paste0("sellButton", z))
-  #                )
-  #              )
-  #     ))
-  #   })
-  # addTabToTabset(yearTabs, "mainPanels")
-
-  # addTabToTabset(createNewYr(1), "mainPanels")
-  # toggleClass(selector = "#navbar li a[data-value=Temp-2]")
-  ## So this is supposed to update the constant variables which works
-  ## but it does it through a << side effect...ugly
-  ## So it needs to be fixed
   observeEvent(input$update, {
-    # print(simRuns)
     simRunsList <- as.list(simRuns)
     inputList <- reactiveValuesToList(input)
     overlap <- intersect(names(simRunsList), names(inputList))
@@ -556,8 +541,6 @@ function(input, output, session) {
     simRuns <<- simRunsList
     myOuts <<- createResultsFrame(simRuns)
     startYear <<- input$act.st.yr
-    # print(simRuns)
-    
   })
   rv <- reactiveValues(page = 1)
   output$page <- renderText(rv$page)
