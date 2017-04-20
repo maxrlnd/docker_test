@@ -298,7 +298,10 @@ function(input, output, session) {
               )
             }else{
               tagList(
-                p("You did not recieve a check for your rain insurance policy"),
+                p("You got sufficient rain this summer! In the graph below you can see how much
+                  it has rained since you decided whether or not to purchase hay (July and August)."),
+                plotOutput(paste0("rainGraphSep", currentYear)),
+                p("Because rainfall was close to or above normal levels, you did not recieve a check for your rain insurance policy"),
                 actionButton(paste0("insCont", i), "Continue")
               )
             }
