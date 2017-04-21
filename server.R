@@ -304,7 +304,8 @@ function(input, output, session) {
               )
             }else{
               tagList(
-                p("You got sufficient rain this summer! In the graph below you can see how much
+                p("You got sufficient rain this summer, so your grass should be in good shape for your cattle! 
+                  In the graph below you can see how much
                   it has rained since you decided whether or not to purchase hay (July and August)."),
                 plotOutput(paste0("rainGraphSep", currentYear)),
                 p("Because rainfall was close to or above normal levels, you did not recieve a check for your rain insurance policy"),
@@ -467,7 +468,7 @@ function(input, output, session) {
       
     })
     
-    ## Bar graph to display rainfall
+    ## Bar graph to display rainfall with July and August added
     output[[paste0("rainGraphSep", i)]] <- renderPlot({
       currentYear <- (startYear + i - 1)
       yprecip <- station.gauge$stgg[Year %in% (currentYear - 1):currentYear, ]  # monthly precip amounts for start year

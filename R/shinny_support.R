@@ -94,21 +94,38 @@ getCowSell <- function(forage, wean, currentYear){
   ## Create UI elements
   tagList(
     br(),
+    br(),
     h4("Fall Cow and Calf Sales"),
-    sliderInput(paste0("calves", currentYear, "Sale"), "How many calves do you want to sell",
-                min = 0, max = calvesAvailable, value =  standardCalfSale, step = 1, width = "600px"),
-    sliderInput(paste0("cow", currentYear, "Sale"), "How many cows do you want to sell",
-                min = 0, max = myOuts[currentYear, herd], value = standardCowSale, step = 1, width = "600px"),
-    tags$li(paste0("You currently have ", myOuts[currentYear, herd], " cows and ", calvesAvailable, " calves." )),
-    tags$li(paste("If you sell", standardCalfSale, "calves and",  standardCowSale,  "cows, your herd will stay approximately the 
+    br(),
+    
+    h5(paste0("Your weaned calves weigh ", "wn.wt", " pounds, on average.")),
+    tags$li("The normal target weight is 600lbs."), 
+    tags$li("If you calves are lighter, it is because the mother cows
+                   may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."),
+    br(),
+    
+    h5(paste0("You currently have ", myOuts[currentYear, herd], " cows and ", calvesAvailable, " calves.")),
+    tags$li(paste0("With the current market price of $1.30/pound, each calf you sell will bring in $","wn.wt*1.30", " of cash.")), 
+    tags$li("For every cow you sell, you will bring in $850 of cash."),
+    br(),
+    
+    h5(paste("If you sell", standardCalfSale, "calves and",  standardCowSale,  "cows, your herd will stay approximately the 
             same size as it is now. If you sell more, then your herd size will decrease. 
             If you sell fewer, then your herd size will grow.")),
     tags$li("Selling a cow now means that you get more revenue this year, 
             but you will produce fewer calves next year."),
     tags$li("Keeping a calf now means that you get less revenue this year, 
             but that calf will start producing calves the year after next."),
-    tags$li(paste0("The carrying capacity of your range is ",simRuns$carrying.cap * simRuns$acres, " if your herd is larger
-                   than this your range will become less productive"))
+    br(),
+    
+    h5(paste0("Remember, the carrying capacity of your range is ",simRuns$carrying.cap * simRuns$acres, " cow-calf pairs. 
+              If your herd is larger than this you risk damaging your range and producing less grass for your herd.")),
+    br(),
+    sliderInput(paste0("calves", currentYear, "Sale"), "How many calves do you want to sell?",
+                min = 0, max = calvesAvailable, value =  standardCalfSale, step = 1, width = "600px"),
+    sliderInput(paste0("cow", currentYear, "Sale"), "How many cows do you want to sell?",
+                min = 0, max = myOuts[currentYear, herd], value = standardCowSale, step = 1, width = "600px"),
+    br()
     
   )
 }
