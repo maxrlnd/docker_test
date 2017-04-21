@@ -202,17 +202,15 @@ function(input, output, session) {
                                                              get(paste0("herdSize", i))(), herdy1))
           print(cows)
           cows$`Herd Size` = round(cows$`Herd Size`, 0)
-          ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity", fill = 'blue') +
-            geom_text(aes(label = `Herd Size`), size = 3, position = position_stack(vjust = 1.03)) +
+          ggplot(cows, aes(x = Year, y = `Herd Size`, )) + geom_bar(stat = "identity", width = .3, fill = "#8b4513") +
+            geom_text(aes(label = `Herd Size`), size = 10, position = position_stack(vjust = .5), color = "#ffffff") +
             theme(text = element_text(size = 20))
-        
           #Fix Font Size
           #Fix Fatness of bar graphs
           
         }
       }
     })
-    
     ## Bar graph to display net worth
     output[[paste0("worthPlot", i)]] <- renderPlot({
       plotOuts <- myOuts[, c("yr", "assets.cow", "assets.cash"), with = F]
@@ -228,8 +226,10 @@ function(input, output, session) {
       ggplot(plotOuts, aes(x = Year, y = `Value in $`, fill = Area)) + geom_bar(stat = "identity") + 
         ggtitle("Net Worth") + theme(legend.title = element_blank()) +
         scale_y_continuous(labels = comma) +
-        geom_text(aes(label = dollar(`Value in $`),), size = 3, position = position_stack(vjust = 0.3)) +
-        theme(text = element_text(size = 20))
+        #geom_text(aes(label = dollar(`Value in $`),), size = 5, position = position_stack(vjust = 0.3), angle = 90) +
+        geom_text(aes(label = dollar(`Value in $`)), size = 5, position = position_stack(vjust = 0.3)) +
+        theme(text = element_text(size = 20)) +
+        scale_fill_manual(values = c("#f4a460", "#85bb65"))
       #change default color schemes
       #Green for cash, light peach for cows
       #X AXis - Year 1, Year2, Year 3, etc. 
@@ -252,7 +252,8 @@ function(input, output, session) {
         geom_bar(width = .9, stat = "identity", position = 'dodge') + 
         #facet_wrap(~ id) +
         #geom_text(size = 3, position = position_stack(vjust = 0.5)) +
-        theme(legend.title = element_blank(), text = element_text(size = 15)) + ggtitle("Rainfall")
+        theme(legend.title = element_blank(), text = element_text(size = 15)) + ggtitle("Rainfall") +
+        scale_fill_manual(values = c("#00008b", "#1e90ff"))
       #position_dodge(width=1.3)
       #Rain color it!
     })
