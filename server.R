@@ -10,8 +10,8 @@ function(input, output, session) {
               selector = "#navBar li a[data-value=Quiz]")
   toggleClass(class = "disabled",
               selector = "#navBar li a[data-value='Background Info']")
-  toggleClass(class = "disabled",
-              selector = "#navBar li a[data-value='Ranch Simulation']")
+  # toggleClass(class = "disabled",
+  #             selector = "#navBar li a[data-value='Ranch Simulation']")
   # lapply(1:simLength, function(x)toggleClass(class = "disabled", selector = paste0("#navBar li a[data-value=Year ", x, "]")))
 
   output$weanVal <- renderText({
@@ -288,7 +288,8 @@ function(input, output, session) {
                           "Please type the amount of the check below and to add the money to your bank account and continue.",
                           width = "100%"),
                 # actionButton(paste0("deposit", i), "Deposit"),
-                uiOutput(paste0("postDeposit", i))
+                uiOutput(paste0("postDeposit", i)),
+                uiOutput(paste0("postDepositButt", i))
               )
             }else{
               tagList(
@@ -347,14 +348,15 @@ function(input, output, session) {
     ## Create button to sell calves and cows once decisions are made
     ## Additionally moves simualation to the next year
     output[[paste0("sellButton", i)]] <- renderUI({
-      if(!is.null(input[[paste0("year", i, "Summer")]])){
-        if(input[[paste0("year", i, "Summer")]] == 1){
-          tagList(
-            fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
+      # if(!is.null(input[[paste0("year", i, "Summer")]])){
+      #   if(input[[paste0("year", i, "Summer")]] == 1){
+      req(input[[paste0("insCont", i)]])    
+      tagList(
+            fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
             actionButton(paste0("sell", i), "Sell Calves and Cows")
           )
-        }
-      }
+      #   }
+      # }
     })
     
     output[[paste0("postDeposit", i)]] <- renderUI({
@@ -363,9 +365,32 @@ function(input, output, session) {
           need(input[[paste0("insuranceDeposit", i)]] == round(indem[[i]]$indemnity, 0), genericWrong)
         )
         fluidRow(
-          h4(paste0("Your current bank balance is $", round(myOuts[i, assets.cash] + indem[[i]]$indemnity, 0))),
+          h4(paste0("Your current bank balance is $", round(myOuts[i, assets.cash] + indem[[i]]$indemnity, 0)))
+        )
+      }
+    })
+    
+    output[[paste0("insSpace", i)]] <- renderUI({
+      req(input[[paste0("year", i, "Summer")]])
+      fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;")))
+    })
+    
+    output[[paste0("postDepositButt", i)]] <- renderUI({
+      
+      if(!is.null(input[[paste0("year", i, "Summer")]])){
+        print("hello")
+      if(indem[[i]]$indemnity == 0){
+        tagList(
           actionButton(paste0("insCont", i), "Continue")
         )
+      }else{
+      if(input[[paste0("insuranceDeposit", i)]] != ""){
+        req(input[[paste0("insuranceDeposit", i)]] == round(indem[[i]]$indemnity, 0))
+        tagList(
+          actionButton(paste0("insCont", i), "Continue")
+        )
+      }
+      }
       }
     })
     
@@ -574,6 +599,7 @@ function(input, output, session) {
               fluidRow(column(12, style = "background-color:white;", div(style = "height:470px;"))),
               actionButton(paste0("year", rv$page, "Start"), "Begin Simulation"),
               uiOutput(paste0("continue", rv$page)),
+              uiOutput(paste0("insSpace", rv$page)),
               uiOutput(paste0("sellButton", rv$page)),
               uiOutput(paste0("nextButton", rv$page))
        )
