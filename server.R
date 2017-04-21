@@ -171,6 +171,7 @@ function(input, output, session) {
         myOuts[i, cost.ins] <<- 0
       }
       tagList(
+        br(),
         h4("Winter Finance Assessment"),
         p(paste0("Your Current Herd has ", round(myOuts[i, herd], 0), " cows, not including calves or yearlings.")),
         p(paste0("Your Bank Balance is $", round(myOuts[i, assets.cash], 0))),
@@ -280,10 +281,20 @@ function(input, output, session) {
           }
           currentIndem <- round(indem[[i]]$indemnity, 0)
           tagList(
+            br(),
+            br(),
             h4("Insurance Payout"),
             if(currentIndem > 0){
               tagList(
-                p(paste0("You have received a check for $", currentIndem, " from your rain insurance policy.")),
+                p("You didn't get much rain this summer! In the graph below you can see how much
+                  it has rained since you decided whether or not to purchase hay (July and August)."),
+                plotOutput(paste0("rainGraphSep", currentYear)),
+                p("Since you have rainfall insurance, 
+                  you get a check to help cover your losses and extra expenses.
+                  (Your rainfall insurance pays out when the rain falls significantly below
+                  normal in May, June, July, and August.)"),
+                br(),
+                h4(paste0("You have received a check for $", currentIndem, " from your rain insurance policy.")),
                 textInput(paste0("insuranceDeposit", i), 
                           "Please type the amount of the check below and to add the money to your bank account and continue.",
                           width = "100%"),
@@ -365,14 +376,14 @@ function(input, output, session) {
           need(input[[paste0("insuranceDeposit", i)]] == round(indem[[i]]$indemnity, 0), genericWrong)
         )
         fluidRow(
-          h4(paste0("Your current bank balance is $", round(myOuts[i, assets.cash] + indem[[i]]$indemnity, 0)))
+          h4(paste0("After your expenditures on hay and your insurance check, your new bank balance is $", round(myOuts[i, assets.cash] + indem[[i]]$indemnity, 0)))
         )
       }
     })
     
     output[[paste0("insSpace", i)]] <- renderUI({
       req(input[[paste0("year", i, "Summer")]])
-      fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;")))
+      fluidRow(column(12, style = "background-color:white;", div(style = "height:1050px;")))
     })
     
     output[[paste0("postDepositButt", i)]] <- renderUI({
@@ -445,6 +456,24 @@ function(input, output, session) {
       yprecip <- cbind((yprecip[Year == currentYear - 1, c("NOV", "DEC")]), 
                        (yprecip[Year == currentYear, -c("NOV", "DEC", "Year")]))
       yprecip[, 9:12 := 0]
+      ave <- station.gauge$avg
+      yearAvg <- rbindlist(list(yprecip, ave), use.names = T)
+      yearAvg[, "id" := c("Actual Rain", "Average Rain")]
+      yearAvg <- melt(yearAvg, id.vars = "id")
+      setnames(yearAvg, c("id", "Month", "Rainfall"))
+      ggplot(yearAvg, aes(x = Month, y = Rainfall, fill = id)) + 
+        geom_bar(width = .6, stat = "identity", position = position_dodge(width=0.7)) + 
+        theme(legend.title = element_blank()) + ggtitle("Rainfall")
+      
+    })
+    
+    ## Bar graph to display rainfall
+    output[[paste0("rainGraphSep", i)]] <- renderPlot({
+      currentYear <- (startYear + i - 1)
+      yprecip <- station.gauge$stgg[Year %in% (currentYear - 1):currentYear, ]  # monthly precip amounts for start year
+      yprecip <- cbind((yprecip[Year == currentYear - 1, c("NOV", "DEC")]), 
+                       (yprecip[Year == currentYear, -c("NOV", "DEC", "Year")]))
+      yprecip[, 11:12 := 0]
       ave <- station.gauge$avg
       yearAvg <- rbindlist(list(yprecip, ave), use.names = T)
       yearAvg[, "id" := c("Actual Rain", "Average Rain")]

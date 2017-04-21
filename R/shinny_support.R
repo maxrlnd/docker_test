@@ -52,8 +52,10 @@ getJulyInfo <- function(currentYear){
     p(paste0("If rainfall for the rest of the year is average your available forage will be ", forageList[1], "% of normal")),
     p(paste0("If rainfall for the rest of the year is above average your available forage will be ", forageList[2], "% of normal")),
     p(paste0("If rainfall for the rest of the year is below average your available forage will be ", forageList[3], "% of normal")),
+    br(),
     sliderInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd",
                 min = 0, max = adaptationCost[4], value = 0, step = 100, width = "600px"),
+    br(),
     p(paste0("If rainfall over the next few months is normal, you should buy $", adaptationCost[1], 
             " of hay to get your herd in ideal shape for market.")),
     p(paste0("If rainfall over the next few months is above normal, you should buy $", adaptationCost[2], 
@@ -91,6 +93,7 @@ getCowSell <- function(forage, wean, currentYear){
   
   ## Create UI elements
   tagList(
+    br(),
     h4("Fall Cow and Calf Sales"),
     sliderInput(paste0("calves", currentYear, "Sale"), "How many calves do you want to sell",
                 min = 0, max = calvesAvailable, value =  standardCalfSale, step = 1, width = "600px"),
