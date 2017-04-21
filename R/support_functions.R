@@ -93,7 +93,7 @@ getSimVars = function(station.gauge,
   # previously 'p.wn.yr1', now vectorized for iteration
   # (I only have this here because vectors can't be represented well in `constant_vars.csv`)
   # ****We likely are going to want to begin varying these but I'll leave them for now
-  assign("p.wn", c(1.31, rep(1.25, sim_length - 1)), envir = simvars)
+  assign("p.wn", rep(1.3, sim_length)), envir = simvars)
 
   ## set target insurance years
   assign("yyr", simvars$styr:((sim_length-1) + simvars$styr), envir = simvars) # all five years

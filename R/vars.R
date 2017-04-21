@@ -83,7 +83,7 @@ calf.wt.adj <- ifelse(drought.action==1, -0.1, 0)
 # Wean weights
 # make this constant??
 # previously 'p.wn.yr1', now vectorized for iteration
-p.wn<-c(1.31,1.25,1.25,1.25,1.25) 
+p.wn<- rep(1.3, 5) 
 
 # act.st.yr <- 1
 # act.st.m <- 6
