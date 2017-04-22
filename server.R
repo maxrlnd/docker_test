@@ -433,11 +433,17 @@ function(input, output, session) {
           years <- (startYear + i - 1):(startYear + i + 1)
           cows <- data.table("Year" = years, "Herd Size" = c(myOuts[i, herd],
                                                              get(paste0("herdSize", i))(), herdy1))
-          ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity")
+          print(cows)
+          cows$`Herd Size` = round(cows$`Herd Size`, 0)
+          ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity", width = .3, fill = "#8b4513") +
+            geom_text(aes(label = `Herd Size`), size = 10, position = position_stack( vjust = .5), color = "#ffffff") +
+            theme(text = element_text(size = 20))
+          #Fix Font Size
+          #Fix Fatness of bar graphs
+          
         }
       }
     })
-    
     ## Bar graph to display net worth
     output[[paste0("worthPlot", i)]] <- renderPlot({
       plotOuts <- myOuts[, c("yr", "assets.cow", "assets.cash"), with = F]
@@ -446,8 +452,21 @@ function(input, output, session) {
       plotOuts <- melt(plotOuts, id.vars = "Year")
       setnames(plotOuts, c("Year", "Area", "Value in $"))
       plotOuts$Area <- factor(plotOuts$Area)
+      library(scales)
+      #Rounding PlotOut dataframe table
+      
+      
       ggplot(plotOuts, aes(x = Year, y = `Value in $`, fill = Area)) + geom_bar(stat = "identity") + 
-        ggtitle("Net Worth") + theme(legend.title = element_blank())
+        ggtitle("Net Worth") + theme(legend.title = element_blank()) +
+        scale_y_continuous(labels = comma) +
+        #geom_text(aes(label = dollar(`Value in $`),), size = 5, position = position_stack(vjust = 0.3), angle = 90) +
+        geom_text(aes(label = dollar(`Value in $`)), size = 5, position = position_stack(vjust = 0.3), angle = 90) +
+        theme(text = element_text(size = 20)) +
+        scale_fill_manual(values = c("#f4a460", "#85bb65"))
+      #change default color schemes
+      #Green for cash, light peach for cows
+      #X AXis - Year 1, Year2, Year 3, etc. 
+      #X Label, Character Vector
     })
     
     ## Bar graph to display rainfall
@@ -462,9 +481,14 @@ function(input, output, session) {
       yearAvg[, "id" := c("Actual Rain", "Average Rain")]
       yearAvg <- melt(yearAvg, id.vars = "id")
       setnames(yearAvg, c("id", "Month", "Rainfall"))
-      ggplot(yearAvg, aes(x = Month, y = Rainfall, fill = id)) + 
-        geom_bar(width = .6, stat = "identity", position = position_dodge(width=0.7)) + 
-        theme(legend.title = element_blank()) + ggtitle("Rainfall")
+      ggplot(yearAvg, aes(x = Month, y = Rainfall, fill = id, label = Rainfall)) + 
+        geom_bar(width = .9, stat = "identity", position = 'dodge') + 
+        #facet_wrap(~ id) +
+        #geom_text(size = 3, position = position_stack(vjust = 0.5)) +
+        theme(legend.title = element_blank(), text = element_text(size = 15)) + ggtitle("Rainfall") +
+        scale_fill_manual(values = c("#00008b", "#1e90ff"))
+      #position_dodge(width=1.3)
+      #Rain color it!
       
     })
     
@@ -483,7 +507,6 @@ function(input, output, session) {
       ggplot(yearAvg, aes(x = Month, y = Rainfall, fill = id)) + 
         geom_bar(width = .6, stat = "identity", position = position_dodge(width=0.7)) + 
         theme(legend.title = element_blank()) + ggtitle("Rainfall")
-      
     })
     
     # Reactive to disable start simualation button after they're clicked
