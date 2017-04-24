@@ -39,9 +39,10 @@ getJulyInfo <- function(currentYear){
   adaptationInten <- c(adaptationInten, 1)
   adaptationCost <- sapply(adaptationInten, getAdaptCost, adpt_choice = "feed", pars = simRuns, 
                            days.act = 180, current_herd = herd)
+  adaptMax <- max(adaptationCost)
   ## Round outputs for display
   forageList <- round(forageList, 2) * 100
-  adaptationCost <- round(adaptationCost, -2)
+  adaptationCost <- prettyNum(round(adaptationCost, -2), big.mark=",",scientific=FALSE)
   
   ## Create taglist showing all adpatation
   tagList(
@@ -54,7 +55,7 @@ getJulyInfo <- function(currentYear){
     p(paste0("If rainfall for the rest of the year is below average your available forage will be ", forageList[3], "% of normal")),
     br(),
     sliderInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd",
-                min = 0, max = adaptationCost[4], value = 0, step = 100, width = "600px"),
+                min = 0, max = adaptMax, value = 0, step = 100, width = "600px"),
     br(),
     p(paste0("If rainfall over the next few months is normal, you should buy $", adaptationCost[1], 
             " of hay to get your herd in ideal shape for market.")),
@@ -90,6 +91,7 @@ getCowSell <- function(forage, wean, currentYear){
   ## Calculate Standard Sales
   standardCowSale <- floor(herd * simRuns$cull.num)
   standardCalfSale <- floor(calvesAvailable * simRuns$calf.sell)
+  weanWeight <- round(calfDroughtWeight(simRuns$normal.wn.wt, forage), 0)
   
   ## Create UI elements
   tagList(
@@ -98,14 +100,15 @@ getCowSell <- function(forage, wean, currentYear){
     h4("Fall Cow and Calf Sales"),
     br(),
     
-    h5(paste0("Your weaned calves weigh ", "wn.wt", " pounds, on average.")),
+    h5(paste0("Your weaned calves weigh ", weanWeight , " pounds, on average.")),
     tags$li("The normal target weight is 600lbs."), 
     tags$li("If you calves are lighter, it is because the mother cows
                    may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."),
     br(),
     
     h5(paste0("You currently have ", myOuts[currentYear, herd], " cows and ", calvesAvailable, " calves.")),
-    tags$li(paste0("With the current market price of $1.30/pound, each calf you sell will bring in $","wn.wt*1.30", " of cash.")), 
+    tags$li(paste0("With the current market price of $",simRuns$p.wn[1], "/pound, each calf you sell will bring in $", 
+                   round(weanWeight * simRuns$p.wn[1], 0) , " of cash.")), 
     tags$li("For every cow you sell, you will bring in $850 of cash."),
     br(),
     
@@ -273,13 +276,13 @@ shinyInsMat <- function(yy, clv, acres, pfactor, insPurchase, tgrd){
   insPurchase = ip
   
   ##Calculate policy rate
-  plrt = prod(clv, acres, pfactor) * 33  # is the baseprice for the cper station
+  plrt = prod(clv, acres, pfactor) * 30.4  # is the baseprice for the cper station
   
   ## Calculate the protection for each index interval
   monthProtec <- plrt * insPurchase
   
   ## Calculate Premium for each Month Below are premiums per 100 for CPER gridcell
-  monthPrem <- (monthProtec * .01) * c(25.06, 23.44, 18.01, 15.38, 13.29, 14.83, 14.65, 16.63, 22.26, 23.02, 26.46)
+  monthPrem <- (monthProtec * .01) * c(24.82, 23.30, 17.96, 16, 13.58, 14.69, 14.54, 17, 21.96, 23.30, 26.63)
   names(monthPrem) <- paste0("i", 1:11)
   ## Calculate Premium subsidy for each month
   subSidy <- round(monthPrem * sbdy, 2)

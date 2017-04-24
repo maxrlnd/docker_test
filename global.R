@@ -64,17 +64,17 @@ simvars <- getSimVars(
 
 ## Create list of constant vars, state vars, and station gauges
 practiceRuns <- (append(append(station.gauge, constvars), (practiceVars)))
-practiceRuns$p.wn <- rep(1.45, length(practiceRuns$p.wn))
+practiceRuns$p.wn <- rep(1.30, length(practiceRuns$p.wn))
 simRuns <- (append(append(station.gauge, constvars), (simvars)))
-simRuns$p.wn <- rep(1.45, length(simRuns$p.wn))
+simRuns$p.wn <- rep(1.30, length(simRuns$p.wn))
 
 ## Create results frames for practice and simulation
 practiceOuts <- createResultsFrame(practiceRuns)
+practiceOuts[1, cost.ins := indem[[1]]$producer_prem]
 myOuts <- createResultsFrame(simRuns)
+myOuts[1, cost.ins := indem[[1]]$producer_prem]
 
 ## Set starting year, and simulation length
-currentYear <- 1
-practiceYear <- 1
 startYear <- 2002
 simLength <- 5
 

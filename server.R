@@ -173,11 +173,17 @@ function(input, output, session) {
       tagList(
         br(),
         h4("Winter Finance Assessment"),
-        p(paste0("Your Current Herd has ", round(myOuts[i, herd], 0), " cows, not including calves or yearlings.")),
-        p(paste0("Your Bank Balance is $", round(myOuts[i, assets.cash], 0))),
-        p(paste0("Your current net worth, including cows and your bank balance, is $", round(myOuts[i, net.wrth], 0), ".")),
+        p(paste0("Your Current Herd has ", 
+                 prettyNum(myOuts[i, herd], digits = 0,big.mark=",",scientific=FALSE), 
+                 " cows, not including calves or yearlings.")),
+        p(paste0("Your Bank Balance is $", prettyNum(myOuts[i, assets.cash], digits = 0,
+                                                     big.mark=",",scientific=FALSE))),
+        p(paste0("Your current net worth, including cows and your bank balance, is $", 
+                 prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",",scientific=FALSE), ".")),
         p(paste0("Your range is currently at ", round(myOuts[i, forage.potential] * 100, 0), "%")),
-        p(paste0("You paid: $", round(myOuts[i, cost.ins], 0), " for insurance")),
+        p(paste0("You paid: $", prettyNum(myOuts[i, cost.ins], digits = 0, 
+                                          big.mark=",",scientific=FALSE),
+                 " for insurance")),
         plotOutput(paste0("worthPlot", i)),
         tags$hr(style="border-color: darkgray;")
       )
@@ -279,7 +285,7 @@ function(input, output, session) {
           if(myOuts[i, herd] == 0){
             indem[[i]]$indemnity <<- 0
           }
-          currentIndem <- round(indem[[i]]$indemnity, 0)
+          currentIndem <- prettyNum(indem[[i]]$indemnity, digits = 0, big.mark=",",scientific=FALSE)
           tagList(
             br(),
             br(),
@@ -307,7 +313,7 @@ function(input, output, session) {
                 p("You got sufficient rain this summer, so your grass should be in good shape for your cattle! 
                   In the graph below you can see how much
                   it has rained since you decided whether or not to purchase hay (July and August)."),
-                plotOutput(paste0("rainGraphSep", currentYear)),
+                plotOutput(paste0("rainGraphSep", i)),
                 p("Because rainfall was close to or above normal levels, you did not recieve a check for your rain insurance policy"),
                 actionButton(paste0("insCont", i), "Continue")
               )
@@ -373,11 +379,15 @@ function(input, output, session) {
     
     output[[paste0("postDeposit", i)]] <- renderUI({
       if(input[[paste0("insuranceDeposit", i)]] != ""){
+        userIns <- tryCatch(as.numeric(gsub(",", "", input[[paste0("insuranceDeposit", i)]])),
+                            warning = function(war)return(0))
         validate(
-          need(input[[paste0("insuranceDeposit", i)]] == round(indem[[i]]$indemnity, 0), genericWrong)
+          need(userIns == round(indem[[i]]$indemnity, 0), genericWrong)
         )
         fluidRow(
-          h4(paste0("After your expenditures on hay and your insurance check, your new bank balance is $", round(myOuts[i, assets.cash] + indem[[i]]$indemnity, 0)))
+          h4(paste0("After your expenditures on hay and your insurance check, your new bank balance is $", 
+                    prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity, 
+                              digits = 0, big.mark=",",scientific=FALSE)))
         )
       }
     })
@@ -390,14 +400,16 @@ function(input, output, session) {
     output[[paste0("postDepositButt", i)]] <- renderUI({
       
       if(!is.null(input[[paste0("year", i, "Summer")]])){
-        print("hello")
       if(indem[[i]]$indemnity == 0){
         tagList(
           actionButton(paste0("insCont", i), "Continue")
         )
       }else{
       if(input[[paste0("insuranceDeposit", i)]] != ""){
-        req(input[[paste0("insuranceDeposit", i)]] == round(indem[[i]]$indemnity, 0))
+        userIns <- tryCatch(as.numeric(gsub(",", "", input[[paste0("insuranceDeposit", i)]])),
+                            warning = function(war)return(0))
+        
+        req(userIns == round(indem[[i]]$indemnity, 0))
         tagList(
           actionButton(paste0("insCont", i), "Continue")
         )
@@ -452,7 +464,6 @@ function(input, output, session) {
       plotOuts <- melt(plotOuts, id.vars = "Year")
       setnames(plotOuts, c("Year", "Area", "Value in $"))
       plotOuts$Area <- factor(plotOuts$Area)
-      library(scales)
       #Rounding PlotOut dataframe table
       
       
@@ -512,7 +523,7 @@ function(input, output, session) {
     # Reactive to disable start simualation button after they're clicked
     observeEvent(input[[paste0("year", i, "Start")]], {
       shinyjs::disable(paste0("year", i, "Start"))
-      delay(100,session$sendCustomMessage(type = "scrollCallback", 1))
+      delay(100,session$sendCustomMessage(type = "scrollCallbackRain", 1))
     })
     
     # observeEvent(input[[paste0("year", i, "Start")]], {

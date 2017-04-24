@@ -11,13 +11,6 @@ tagList(
   extendShinyjs(text = "shinyjs.closewindow = function() { window.close(); }"),
   tags$style(css),
   tags$head(
-    # tags$script(paste0('Shiny.addCustomMessageHandler("myCallbackHandler",
-    #               function(typeMessage) {console.log(typeMessage)
-    #               if(typeMessage == 6){
-    #               console.log("got here");
-    #               $("a:contains(Demographics)").click();
-    #               }', yearHandler, '});'
-    #               )),
     tags$style(HTML("
     .shiny-output-error-validation {
     color: red;
@@ -45,6 +38,15 @@ tagList(
       function(msg) {
       console.log("aCMH" + msg)
       window.scrollTo(0,document.body.scrollHeight);
+      }
+      );'
+  ),
+  tags$script(
+    '
+      Shiny.addCustomMessageHandler("scrollCallbackRain",
+      function(msg) {
+      console.log("aCMH" + msg)
+      window.scrollTo(0,rainGraph1.getBoundingClientRect().top - 100);
       }
       );'
   ),
