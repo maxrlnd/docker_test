@@ -288,7 +288,7 @@ function(input, output, session) {
               tagList(
                 p("You didn't get much rain this summer! In the graph below you can see how much
                   it has rained since you decided whether or not to purchase hay (July and August)."),
-                plotOutput(paste0("rainGraphSep", currentYear)),
+                plotOutput(paste0("rainGraphSep", i)),
                 p("Since you have rainfall insurance, 
                   you get a check to help cover your losses and extra expenses.
                   (Your rainfall insurance pays out when the rain falls significantly below
