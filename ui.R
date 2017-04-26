@@ -34,19 +34,28 @@ tagList(
     ),
     tags$script(
       '
-      Shiny.addCustomMessageHandler("scrollCallback",
+      Shiny.addCustomMessageHandler("scrollCallbackIns",
       function(msg) {
-      console.log("aCMH" + msg)
-      window.scrollTo(0,document.body.scrollHeight);
+      console.log(msg)
+      window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().bottom + 250);
       }
       );'
   ),
   tags$script(
     '
+    Shiny.addCustomMessageHandler("scrollCallbackCow",
+    function(msg) {
+    console.log(msg)
+    window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().bottom + 600);
+    }
+    );'
+  ),
+  tags$script(
+    '
       Shiny.addCustomMessageHandler("scrollCallbackRain",
       function(msg) {
-      console.log("aCMH" + msg)
-      window.scrollTo(0,rainGraph1.getBoundingClientRect().top - 100);
+      console.log(msg)
+      window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().top - 100);
       }
       );'
   ),

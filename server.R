@@ -382,12 +382,8 @@ function(input, output, session) {
     # Reactive to disable start simualation button after they're clicked
     observeEvent(input[[paste0("year", i, "Start")]], {
       shinyjs::disable(paste0("year", i, "Start"))
-      delay(100,session$sendCustomMessage(type = "scrollCallbackRain", 1))
+      delay(100,session$sendCustomMessage(type = "scrollCallbackRain", paste0("rainGraph", i)))
     })
-    
-    # observeEvent(input[[paste0("year", i, "Start")]], {
-    #   session$sendCustomMessage(type = "scrollCallback", 1)
-    # })
     
     ## Disable cow and calf sliders after sell button
     ## Disable sell button
@@ -410,12 +406,12 @@ function(input, output, session) {
     observeEvent(input[[paste0("year", i, "Summer")]], {
       shinyjs::disable(paste0("year", i, "Summer"))
       shinyjs::disable(paste0("d", i, "AdaptSpent"))
-      delay(100,session$sendCustomMessage(type = "scrollCallback", 1))
+      delay(100,session$sendCustomMessage(type = "scrollCallbackIns", paste0("rainGraphSep", i)))
     })
     
     observeEvent(input[[paste0("insCont", i)]], {
       shinyjs::disable(paste0("insCont", i))
-      delay(100,session$sendCustomMessage(type = "scrollCallback", 1))
+      delay(100,session$sendCustomMessage(type = "scrollCallbackCow", paste0("cowSell", i)))
     })
   }) ##End of lapply
   
