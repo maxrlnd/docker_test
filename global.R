@@ -68,12 +68,6 @@ practiceRuns$p.wn <- rep(1.30, length(practiceRuns$p.wn))
 simRuns <- (append(append(station.gauge, constvars), (simvars)))
 simRuns$p.wn <- rep(1.30, length(simRuns$p.wn))
 
-## Create results frames for practice and simulation
-practiceOuts <- createResultsFrame(practiceRuns)
-practiceOuts[1, cost.ins := indem[[1]]$producer_prem]
-myOuts <- createResultsFrame(simRuns)
-myOuts[1, cost.ins := indem[[1]]$producer_prem]
-
 ## Set starting year, and simulation length
 startYear <- 2002
 simLength <- 5
@@ -81,9 +75,14 @@ simLength <- 5
 ## Calcualte indemnities for all years of the simulation
 indem <- lapply(startYear:(startYear + simLength - 1), function(x){
   with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
-                       pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+                            pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
 })
 
+## Create results frames for practice and simulation
+practiceOuts <- createResultsFrame(practiceRuns)
+practiceOuts[1, cost.ins := indem[[1]]$producer_prem]
+myOuts <- createResultsFrame(simRuns)
+myOuts[1, cost.ins := indem[[1]]$producer_prem]
 
 ## Is insurance purchased?
 # purchaseInsurance <- sample(c(T, F), 1)

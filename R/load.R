@@ -42,6 +42,7 @@ library(scales)
 # }
 load("data/noaaIndex_shiny.RData")
 
+
 ## Miscellaneous supporting var's/data
 # State code - for pulling COOP sites & mlra forage weights
 if(!exists("wrc.state")){
