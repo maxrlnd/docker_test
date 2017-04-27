@@ -474,6 +474,29 @@ tabsetPanel(id = "mainPanels",
  #          )),
  
  tabPanel("Ranch Simulation", 
+          tags$head(tags$style(HTML("
+                                .btn {
+                                    color:rgb(0, 0, 0);
+                                    text-align: left;
+                                    border-color: rgb(255,255,255);
+                                    background-color: rgb(43, 181, 52);}
+                                    
+                                .btn:focus{
+                                    background-color:rgb(255,255,255);
+                                    }
+                                    
+                                    
+                                .btn:hover{
+                                    #border-color: rgb(255,255,255);
+                                    background-color: rgb(255,255,255)
+                                    color: rgb(255,255,255);
+                                    font-weight: bold;
+                                    }
+                                  
+                                    
+                                    "))),
+          
+          
     uiOutput("pageOut")
  )
  
