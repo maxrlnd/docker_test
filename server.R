@@ -39,7 +39,7 @@ function(input, output, session) {
                                                      big.mark=",",scientific=FALSE))),
         p(paste0("Your current net worth, including cows and your bank balance, is $", 
                  prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",",scientific=FALSE), ".")),
-        p(paste0("Your range is currently at ", round(myOuts[i, forage.potential] * 100, 0), "%")),
+        p(paste0("Your range is currently at ", ifelse(round(myOuts[i, forage.potential] * 100, 0) > 100, 100, round(myOuts[i, forage.potential] * 100, 0)), "%")),
         p(paste0("You paid: $", prettyNum(myOuts[i, cost.ins], digits = 0, 
                                           big.mark=",",scientific=FALSE),
                  " for insurance")),
