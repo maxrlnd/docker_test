@@ -479,16 +479,16 @@ tabsetPanel(id = "mainPanels",
                                     color:rgb(0, 0, 0);
                                     text-align: left;
                                     border-color: rgb(255,255,255);
-                                    background-color: rgb(207,184,124);}
+                                    background-color: rgb(43, 181, 52);}
                                     
                                 .btn:focus{
                                     background-color:rgb(255,255,255);
                                     }
                                     
                                     
-                                    .btn:hover{
+                                .btn:hover{
                                     #border-color: rgb(255,255,255);
-                                    background-color: rgb(88,90,2
+                                    background-color: rgb(255,255,255)
                                     color: rgb(255,255,255);
                                     font-weight: bold;
                                     }
