@@ -474,6 +474,9 @@ tabsetPanel(id = "mainPanels",
  #          )),
  
  tabPanel("Ranch Simulation", 
+          # CSS tags to control the button colors, .btn is the default state, 
+          # focus is what happens after the button is clicked, 
+          # hover is the response to a rollover
           tags$head(tags$style(HTML("
                                 .btn {
                                     color:rgb(0, 0, 0);
