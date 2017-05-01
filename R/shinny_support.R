@@ -46,23 +46,24 @@ getJulyInfo <- function(currentYear){
   
   ## Create taglist showing all adpatation
   tagList(
-    h4("Summer Adaptation Investment Decision"),
-    h5("Rainfall as a percent of normal (100 is average rainfall)"),
+    h3(paste0("Year ", currentYear, ": Summer Adaptation Investment Decision")),
+    p("It is now the end of June and you are mostly through the most important growing season for forage on your range.
+      While good rainfall levels for July and August will still help increase the grass avaialble for your herd, you
+      have to decide now how much hay to buy to supplement the grass on your range. Look to the advice below to help
+      you decide how much, if any, to invest in hay."),
+    br(),
     plotOutput(paste0("rainGraph", currentYear)),
     tableOutput(paste0("julyRain", currentYear)),
-    p(paste0("If rainfall for the rest of the year is average your available forage will be ", forageList[1], "% of normal")),
-    p(paste0("If rainfall for the rest of the year is above average your available forage will be ", forageList[2], "% of normal")),
-    p(paste0("If rainfall for the rest of the year is below average your available forage will be ", forageList[3], "% of normal")),
+    p(paste0("If rainfall for the rest of the year is average your available forage will be ", forageList[1], "% of normal. In this case, 
+             you should buy $", adaptationCost[1], " of hay to get your herd in ideal shape for market.")),
+    p(paste0("If rainfall for the rest of the year is above average your available forage will be ", forageList[2], "% of normal.
+             In this case, you should buy $", adaptationCost[2], " of hay to get your herd in ideal shape for market.")),
+    p(paste0("If rainfall for the rest of the year is below average your available forage will be ", forageList[3], "% of normal.
+             In this case, you should buy $", adaptationCost[3], " of hay to get your herd in ideal shape for market.")),
     br(),
     sliderInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd",
                 min = 0, max = adaptMax, value = 0, step = 100, width = "600px"),
-    br(),
-    p(paste0("If rainfall over the next few months is normal, you should buy $", adaptationCost[1], 
-            " of hay to get your herd in ideal shape for market.")),
-    p(paste0("If rainfall over the next few months is above normal, you should buy $", adaptationCost[2], 
-            " of hay to get your herd in ideal shape for market.")),
-    p(paste0("If rainfall over the next few months is below normal, you should buy $", adaptationCost[3], 
-            " of hay to get your herd in ideal shape for market."))
+    h5("Remember, if you don't have enough cash on hand, you can borrow money to buy hay at an interest rate of 6.5%")
   )
 }
 
@@ -97,7 +98,9 @@ getCowSell <- function(forage, wean, currentYear){
   tagList(
     br(),
     br(),
-    h4("Fall Cow and Calf Sales"),
+    h3(paste0("Year ", currentYear, ": Fall Cow and Calf Sales")),
+    p("It is the end of the season and it is time to take your calves to market.
+      Use the information below to decide how many cows and calves you want to sell this year."),
     br(),
     
     h5(paste0("Your weaned calves weigh ", weanWeight , " pounds, on average.")),
