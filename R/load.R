@@ -6,7 +6,7 @@
 # require(lubridate)
 library(plyr)
 library(dplyr)
-library(raster)
+# library(raster)
 # library("ncdf4")
 # library("rgdal")
 # library("fields")
@@ -18,12 +18,15 @@ library(ggplot2)
 # library("trend")
 # library(rgeos)
 # library("maptools")
-library(readxl)
+# library(readxl)
 # library(fpc)
 library(magrittr)
-library(rgdal)
-library(snowfall)
+# library(rgdal)
+# library(snowfall)
 library(readr)
+library(V8)
+library(googlesheets)
+library(scales)
 
 ## gird_base only needs to be loaded if we're going to be doing any raster stuff
 # load("data/grid_base.RData") # Load base grid data
@@ -39,19 +42,20 @@ library(readr)
 # }
 load("data/noaaIndex_shiny.RData")
 
+
 ## Miscellaneous supporting var's/data
 # State code - for pulling COOP sites & mlra forage weights
 if(!exists("wrc.state")){
   wrc.state="co"
 }
 
-# Shortcut for sourcing 'R/coop_scraper.R'
-if(!exists("coops")){
-  load("data/coops.RData") 
-}
+# # Shortcut for sourcing 'R/coop_scraper.R'
+# if(!exists("coops")){
+#   load("data/coops.RData") 
+# }
 
-# load MLRA zone data
-if(!exists("mlra")){
-  mlra=readOGR("data","mlra_v42")
-}
+# # load MLRA zone data
+# if(!exists("mlra")){
+#   mlra=readOGR("data","mlra_v42")
+# }
 

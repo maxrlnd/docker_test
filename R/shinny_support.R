@@ -18,7 +18,6 @@ getJulyInfo <- function(currentYear){
   myYear <- startYear + currentYear - 1
   herd <- myOuts[currentYear, herd]
   zones <- station.gauge$zonewt
-  print(myYear)
   
   ## Calcualte available forage for normal, high, and low precip over remaining months
   forargeList <- vector("numeric", 3)
@@ -40,27 +39,31 @@ getJulyInfo <- function(currentYear){
   adaptationInten <- c(adaptationInten, 1)
   adaptationCost <- sapply(adaptationInten, getAdaptCost, adpt_choice = "feed", pars = simRuns, 
                            days.act = 180, current_herd = herd)
+  adaptMax <- max(adaptationCost)
   ## Round outputs for display
   forageList <- round(forageList, 2) * 100
-  adaptationCost <- round(adaptationCost, -2)
+  adaptationCost <- prettyNum(round(adaptationCost, -2), big.mark=",",scientific=FALSE)
   
   ## Create taglist showing all adpatation
   tagList(
-    h4("Summer Adaptation Investment Decision"),
-    h5("Rainfall as a percent of normal (100 is average rainfall)"),
+    h3(paste0("Year ", currentYear, ": Summer Adaptation Investment Decision")),
+    p("It is now the end of June and you are mostly through the most important growing season for forage on your range.
+      While good rainfall levels for July and August will still help increase the grass avaialble for your herd, you
+      have to decide now how much hay to buy to supplement the grass on your range. Look to the advice below to help
+      you decide how much, if any, to invest in hay."),
+    br(),
     plotOutput(paste0("rainGraph", currentYear)),
     tableOutput(paste0("julyRain", currentYear)),
-    p(paste0("If rainfall for the rest of the year is average your available forage will be ", forageList[1], "% of normal")),
-    p(paste0("If rainfall for the rest of the year is above average your available forage will be ", forageList[2], "% of normal")),
-    p(paste0("If rainfall for the rest of the year is below average your available forage will be ", forageList[3], "% of normal")),
+    p(paste0("If rainfall for the rest of the year is average your available forage will be ", forageList[1], "% of normal. In this case, 
+             you should buy $", adaptationCost[1], " of hay to get your herd in ideal shape for market.")),
+    p(paste0("If rainfall for the rest of the year is above average your available forage will be ", forageList[2], "% of normal.
+             In this case, you should buy $", adaptationCost[2], " of hay to get your herd in ideal shape for market.")),
+    p(paste0("If rainfall for the rest of the year is below average your available forage will be ", forageList[3], "% of normal.
+             In this case, you should buy $", adaptationCost[3], " of hay to get your herd in ideal shape for market.")),
+    br(),
     sliderInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd",
-                min = 0, max = adaptationCost[4], value = 0, step = 100, width = "600px"),
-    p(paste0("If rainfall over the next few months is normal, you should buy $", adaptationCost[1], 
-            " of hay to get your herd in ideal shape for market.")),
-    p(paste0("If rainfall over the next few months is above normal, you should buy $", adaptationCost[2], 
-            " of hay to get your herd in ideal shape for market.")),
-    p(paste0("If rainfall over the next few months is below normal, you should buy $", adaptationCost[3], 
-            " of hay to get your herd in ideal shape for market."))
+                min = 0, max = adaptMax, value = 0, step = 100, width = "600px"),
+    h5("Remember, if you don't have enough cash on hand, you can borrow money to buy hay at an interest rate of 6.5%")
   )
 }
 
@@ -89,21 +92,46 @@ getCowSell <- function(forage, wean, currentYear){
   ## Calculate Standard Sales
   standardCowSale <- floor(herd * simRuns$cull.num)
   standardCalfSale <- floor(calvesAvailable * simRuns$calf.sell)
+  weanWeight <- round(calfDroughtWeight(simRuns$normal.wn.wt, forage), 0)
   
   ## Create UI elements
   tagList(
-    h4("Fall Cow and Calf Sales"),
-    sliderInput(paste0("calves", currentYear, "Sale"), "How many calves do you want to sell",
-                min = 0, max = calvesAvailable, value =  standardCalfSale, step = 1, width = "600px"),
-    sliderInput(paste0("cow", currentYear, "Sale"), "How many cows do you want to sell",
-                min = 0, max = myOuts[currentYear, herd], value = standardCowSale, step = 1, width = "600px"),
-    tags$li(paste("If you sell", standardCalfSale, "calves and",  standardCowSale,  "cows, your herd will stay approximately the 
+    br(),
+    br(),
+    h3(paste0("Year ", currentYear, ": Fall Cow and Calf Sales")),
+    p("It is the end of the season and it is time to take your calves to market.
+      Use the information below to decide how many cows and calves you want to sell this year."),
+    br(),
+    
+    h5(paste0("Your weaned calves weigh ", weanWeight , " pounds, on average.")),
+    tags$li("The normal target weight is 600lbs."), 
+    tags$li("If you calves are lighter, it is because the mother cows
+                   may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."),
+    br(),
+    
+    h5(paste0("You currently have ", myOuts[currentYear, herd], " cows and ", calvesAvailable, " calves.")),
+    tags$li(paste0("With the current market price of $",simRuns$p.wn[1], "/pound, each calf you sell will bring in $", 
+                   round(weanWeight * simRuns$p.wn[1], 0) , " of cash.")), 
+    tags$li("For every cow you sell, you will bring in $850 of cash."),
+    br(),
+    
+    h5(paste("If you sell", standardCalfSale, "calves and",  standardCowSale,  "cows, your herd will stay approximately the 
             same size as it is now. If you sell more, then your herd size will decrease. 
             If you sell fewer, then your herd size will grow.")),
     tags$li("Selling a cow now means that you get more revenue this year, 
             but you will produce fewer calves next year."),
     tags$li("Keeping a calf now means that you get less revenue this year, 
-            but that calf will start producing calves the year after next.")
+            but that calf will start producing calves the year after next."),
+    br(),
+    
+    h5(paste0("Remember, the carrying capacity of your range is ",simRuns$carrying.cap * simRuns$acres, " cow-calf pairs. 
+              If your herd is larger than this you risk damaging your range and producing less grass for your herd.")),
+    br(),
+    sliderInput(paste0("calves", currentYear, "Sale"), "How many calves do you want to sell?",
+                min = 0, max = calvesAvailable, value =  standardCalfSale, step = 1, width = "600px"),
+    sliderInput(paste0("cow", currentYear, "Sale"), "How many cows do you want to sell?",
+                min = 0, max = myOuts[currentYear, herd], value = standardCowSale, step = 1, width = "600px"),
+    br()
     
   )
 }
@@ -130,7 +158,7 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
   myOuts = data.table of all outputs
   "
   
-  print(zones)
+
   currentHerd <- myOuts[currentYear, herd]
   pastYear <- currentYear
   currentYear <- currentYear + 1
@@ -138,7 +166,6 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
   myOuts[currentYear, rev.calf := CalculateExpSales(herd = NA, wn.succ = NA, 
                                                      wn.wt = calfDroughtWeight(simRuns$normal.wn.wt, forage), 
                                                      calf.sell = calfSale, p.wn = simRuns$p.wn[pastYear])]
-  print(paste("wean", calfDroughtWeight(simRuns$normal.wn.wt, forage)))
   myOuts[currentYear, rev.ins := indem$indemnity]
   myOuts[currentYear, rev.int := myOuts[pastYear, assets.cash] * simRuns$invst.int]
   myOuts[currentYear, rev.tot := myOuts[currentYear, rev.ins] + myOuts[currentYear, rev.int] + myOuts[currentYear, rev.calf]]
@@ -187,8 +214,7 @@ createNewYr <- function(year){
   Outputs:
   list of 1 tabset panel with year UI
   "
-  if(year==1){word = "Year-"}else{word = "Temp-"}
-  list(tabPanel(paste0(word, year),
+  list(tabPanel(paste0("Year ", year),
            fluidRow(
              column(8,
                     uiOutput(paste0("winterInfo", year)),
@@ -253,13 +279,13 @@ shinyInsMat <- function(yy, clv, acres, pfactor, insPurchase, tgrd){
   insPurchase = ip
   
   ##Calculate policy rate
-  plrt = prod(clv, acres, pfactor) * 33  # is the baseprice for the cper station
+  plrt = prod(clv, acres, pfactor) * 30.4  # is the baseprice for the cper station
   
   ## Calculate the protection for each index interval
   monthProtec <- plrt * insPurchase
   
   ## Calculate Premium for each Month Below are premiums per 100 for CPER gridcell
-  monthPrem <- (monthProtec * .01) * c(25.06, 23.44, 18.01, 15.38, 13.29, 14.83, 14.65, 16.63, 22.26, 23.02, 26.46)
+  monthPrem <- (monthProtec * .01) * c(24.82, 23.30, 17.96, 16, 13.58, 14.69, 14.54, 17, 21.96, 23.30, 26.63)
   names(monthPrem) <- paste0("i", 1:11)
   ## Calculate Premium subsidy for each month
   subSidy <- round(monthPrem * sbdy, 2)
@@ -280,6 +306,20 @@ shinyInsMat <- function(yy, clv, acres, pfactor, insPurchase, tgrd){
   
   returnTable = data.table(matrix(nrow = 1, ncol = 4, data = c(yy, sum(subPrem), sum(indem), sum(monthPrem))))  # empty matrix - year, indemnity, producer premium x number years
   setnames(returnTable, c("year", "producer_prem", "indemnity", "full_prem"))
+  
+  return(returnTable)
+}
+
+inputToDF <- function(inputList){
+  inputList <- inputList[names(inputList) != "enviro"]
+  maxLength <- max(sapply(inputList, length))
+  returnTable <- data.table("names" = names(inputList))
+  returnTable[, paste0("value",1:maxLength) := list(rep("", nrow(returnTable)))]
+  returnTable <- returnTable[names != "enviro"]
+  for(i in 1:maxLength){
+    returnTable[, paste0("value", i) := data.table(sapply(inputList, function(x)as.character(x[i])))]
+    returnTable[, paste0("value", i) := as.character(get(paste0("value", i)))]
+  }
   
   return(returnTable)
 }

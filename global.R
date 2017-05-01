@@ -48,7 +48,7 @@ practiceVars <- getSimVars(
   sim_length = 3,
   use.forage = T,
   random.acres=FALSE,
-  random.productivity=TRUE,
+  random.productivity=FALSE,
   acres)
 
 ## create state variables for full runs
@@ -59,36 +59,50 @@ simvars <- getSimVars(
   sim_length = 10,
   use.forage = T,
   random.acres=FALSE,
-  random.productivity=TRUE,
+  random.productivity=FALSE,
   acres)
 
 ## Create list of constant vars, state vars, and station gauges
 practiceRuns <- (append(append(station.gauge, constvars), (practiceVars)))
+practiceRuns$p.wn <- rep(1.30, length(practiceRuns$p.wn))
 simRuns <- (append(append(station.gauge, constvars), (simvars)))
-
-## Create results frames for practice and simulation
-practiceOuts <- createResultsFrame(practiceRuns)
-myOuts <- createResultsFrame(simRuns)
+simRuns$p.wn <- rep(1.30, length(simRuns$p.wn))
 
 ## Set starting year, and simulation length
-currentYear <- 1
-practiceYear <- 1
 startYear <- 2002
 simLength <- 5
 
 ## Calcualte indemnities for all years of the simulation
 indem <- lapply(startYear:(startYear + simLength - 1), function(x){
   with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
-                       pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+                            pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
 })
 
+## Create results frames for practice and simulation
+practiceOuts <- createResultsFrame(practiceRuns)
+practiceOuts[1, cost.ins := indem[[1]]$producer_prem]
+myOuts <- createResultsFrame(simRuns)
+myOuts[1, cost.ins := indem[[1]]$producer_prem]
 
 ## Is insurance purchased?
 # purchaseInsurance <- sample(c(T, F), 1)
 purchaseInsurance <- T
+
+if(!purchaseInsurance){
+  indem <- lapply(indem, function(x){
+    x[, c("producer_prem", "indemnity", "full_prem") := 0]
+    return(x)
+  })
+}
+
+## Counter to keep track of quiz
+quizCounter <- 0
 
 ## Create JS to switch between year tabs
 yearHandler <- paste0('if(typeMessage == ', 1:simLength, '){
   console.log("got here");
   $("a:contains(Year ', 1:simLength, ')").click();
 }', collapse = "")
+
+NUM_PAGES <- 5
+currentPage <- 1
