@@ -254,7 +254,7 @@ function(input, output, session) {
           need(userIns == round(indem[[i]]$indemnity, 0), genericWrong)
         )
         fluidRow(
-          h4(paste0("After your expenditures on hay and your insurance check, your new bank balance is $", 
+          h4(paste0("After your expenditures on hay and your insurance check, your new bank balance is: $", 
                     prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity, 
                               digits = 0, big.mark=",",scientific=FALSE)))
         )
