@@ -31,19 +31,27 @@ function(input, output, session) {
       }
       tagList(
         br(),
-        h4("Winter Finance Assessment"),
-        p(paste0("Your Current Herd has ", 
-                 prettyNum(myOuts[i, herd], digits = 0,big.mark=",",scientific=FALSE), 
-                 " cows, not including calves or yearlings.")),
-        p(paste0("Your Bank Balance is $", prettyNum(myOuts[i, assets.cash], digits = 0,
-                                                     big.mark=",",scientific=FALSE))),
-        p(paste0("Your current net worth, including cows and your bank balance, is $", 
-                 prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",",scientific=FALSE), ".")),
-        p(paste0("Your range is currently at ", ifelse(round(myOuts[i, forage.potential] * 100, 0) > 100, 100, round(myOuts[i, forage.potential] * 100, 0)), "%")),
-        p(paste0("You paid: $", prettyNum(myOuts[i, cost.ins], digits = 0, 
-                                          big.mark=",",scientific=FALSE),
-                 " for insurance")),
+        h3(paste0("Year ", i,": Winter Finance Assessment")),
+        p("Before calving season begins, it is time to take account of your herd, range, and financial health."),
+        br(),
         plotOutput(paste0("worthPlot", i)),
+        tags$li(paste0("Your herd has ", 
+                 prettyNum(myOuts[i, herd], digits = 0,big.mark=",",scientific=FALSE), 
+                 " cows, not including calves or yearlings (cows that are weaned, but not yet reproducing).")),
+        tags$li(paste0("Your bank balance is $", prettyNum(myOuts[i, assets.cash], digits = 0,
+                                                     big.mark=",",scientific=FALSE))),
+        tags$li(paste0("Your current net worth, including cows and your bank balance, is $", 
+                 prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",",scientific=FALSE), ".")),
+        br(),
+        h4("Range graph"),
+        p(paste0("Your range is currently at ", ifelse(round(myOuts[i, forage.potential] * 100, 0) > 100, 100, round(myOuts[i, forage.potential] * 100, 0)), "%")),
+        br(),
+        h4("Bills Due"),
+        p(paste0("Your rainfall-index insurance premium is due. You owe $", 
+                 prettyNum(myOuts[i, cost.ins], digits = 0, big.mark=",",scientific=FALSE), ". Please enter this amount below to pay your insurance bill.")),
+        textInput(paste0("insurancePremium", i), 
+                  "Please type the amount of the insurance premium below and to pay your bill and continue.",
+                  width = "100%"),
         tags$hr(style="border-color: darkgray;")
       )
     }))
@@ -121,7 +129,8 @@ function(input, output, session) {
     ## UI for winter Info
     output[[paste0("winterInfo", i)]] <- renderUI({
       tagList(
-         h3(paste0("Year ", i, " of ", simLength)),
+         h3(paste0("Year ", i, " of ", simLength, ": Ranching Simulation")),
+         p("Remember, at the end of the simulation, you'll convert your net worth to a real MTurk bonus. Read the information carefully to make the best decisions."),
          get(paste0("reactiveWinter", i))()
        )
     })
@@ -148,7 +157,7 @@ function(input, output, session) {
           tagList(
             br(),
             br(),
-            h4("Insurance Payout"),
+            h3(paste0("Year ", i, ": End of Growing Season")),
             if(currentIndem > 0){
               tagList(
                 p("You didn't get much rain this summer! In the graph below you can see how much
@@ -235,6 +244,7 @@ function(input, output, session) {
       #   }
       # }
     })
+    
     
     output[[paste0("postDeposit", i)]] <- renderUI({
       if(input[[paste0("insuranceDeposit", i)]] != ""){
