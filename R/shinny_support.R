@@ -189,7 +189,7 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
                                       myOuts[currentYear, cap.taxes]]
   myOuts[currentYear, net.wrth := myOuts[currentYear, assets.cash] + myOuts[currentYear, assets.cow]]
   myOuts[currentYear, wn.succ := wean]
-  myOuts[currentYear, forage.potential := forage]
+  myOuts[currentYear, forage.production := forage]
   myOuts[currentYear, herd := round(newHerd, 0)]
   myOuts[currentYear, calves.sold := calfSale / floor(currentHerd * wean)]
   myOuts[currentYear, cows.culled := cowSales / currentHerd]

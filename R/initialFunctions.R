@@ -280,7 +280,7 @@ createResultsFrame <- function(pars = NULL){
                    "rev.tot", "cost.op", "cost.ins", "cost.adpt",
                    "cost.int", "cost.tot", "profit", "taxes", "aftax.inc", 
                    "cap.sales", "cap.purch", "cap.taxes", "assets.cow", 
-                   "assets.cash", "net.wrth", "wn.succ", "forage.potential", 
+                   "assets.cash", "net.wrth", "wn.succ", "forage.production", 
                    "herd", "calves.sold", "cows.culled", "zone.change", "Gt")
   ## fills in rows using initial variables from pars
   if(!is.null(pars)){
@@ -291,7 +291,7 @@ createResultsFrame <- function(pars = NULL){
     sim_results[1, net.wrth := assets.cow + assets.cash]
     sim_results[, adapt_choice := as.character(adapt_choice)]
     sim_results[1, adapt_choice := "noadpt"]
-    sim_results[1, forage.potential := 1]
+    sim_results[1, forage.production := 1]
     sim_results[1, wn.succ := pars$normal.wn.succ]
     sim_results[1, calves.sold := pars$calf.sell]
     sim_results[1, cows.culled := pars$cull.num]

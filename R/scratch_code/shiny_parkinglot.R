@@ -325,7 +325,7 @@ getWinterInfo <- function(currentYear){
     p(paste0("Your Current Net Worth is: $", myOuts[currentYear, net.wrth])),
     p(paste0("Your Current Herd is: ", myOuts[currentYear, herd])),
     p(paste0("Your Bank Balance is: $", myOuts[currentYear, assets.cash])),
-    p(paste0("Your range is currently at: ", myOuts[currentYear, forage.potential] * 100, "%")),
+    p(paste0("Your range is currently at: ", myOuts[currentYear, forage.production] * 100, "%")),
     p(paste0("You paid: $", myOuts[currentYear, cost.ins], " for insurance"))
   )
 }

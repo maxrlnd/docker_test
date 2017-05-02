@@ -788,9 +788,9 @@ foragePWt <- function(stgg, zonewt, stzone, styear, decision = FALSE){
   }
 
   # Compute annual forage potential weight for zone
-  forage.potential <- sum(foragewt)
+  forage.production <- sum(foragewt)
 
-  forage.potential
+  forage.production
 
 }
 
@@ -860,13 +860,13 @@ forageWeights2Intervals<-function(fpwt){
 
 # Calf Weight Functions ---------------------------------------------------
 
-calfDroughtWeight<-function(normal.wn.wt, forage.potential){
+calfDroughtWeight<-function(normal.wn.wt, forage.production){
   "
   Description: If forage potential is less than 1, then the calf weight is less
   #****Is this method of reducing weight back up by the literature?
   "
-  if(forage.potential < 1) {
-    wn.wt <- normal.wn.wt * (1 - (1 - forage.potential)/3)
+  if(forage.production < 1) {
+    wn.wt <- normal.wn.wt * (1 - (1 - forage.production)/3)
   }
   else{
     wn.wt <- normal.wn.wt
@@ -976,7 +976,7 @@ CalculateDaysAction <- function(act.st.yr, act.st.m, act.end.yr, act.end.m, drou
   days.act.vect
 }
 
-CalculateAdaptationIntensity <- function(forage.potential, drought.adaptation.cost.factor = 1) {
+CalculateAdaptationIntensity <- function(forage.production, drought.adaptation.cost.factor = 1) {
   " Description: Takes forage potential and an adaptation intensity factor to 
     provide a scalar of drought action. If forage potential is above 1 (no drought), 
     then this variable goes to 0 (no adaptation). 
@@ -985,14 +985,14 @@ CalculateAdaptationIntensity <- function(forage.potential, drought.adaptation.co
         actual adaptation behavior. Currently defaults to 1 which assumes a 
         one-to-one ratio of drops in forage percentage to need for forage 
         replacement.)
-      forage.potential (the percentage of average forage produced in a year 
+      forage.production (the percentage of average forage produced in a year 
         based on rainfall. See forage potential functions.)
     Output: intens.adj (scales action to account for forage potential's 
       deviation from the norm.)
     Assumptions: The variable has a maximum of 1, which assumes that drought 
       actions are parameterized at full forage replacement for the full herd.
   "
-  intens.adj <- ifelse(forage.potential >= 1, 0, (1 - forage.potential) * drought.adaptation.cost.factor)
+  intens.adj <- ifelse(forage.production >= 1, 0, (1 - forage.production) * drought.adaptation.cost.factor)
   intens.adj <- ifelse(intens.adj > 1, 1, intens.adj)  # putting a ceiling of this variable at 1 (no more than 100% of drought action)
   intens.adj
 }
@@ -1503,8 +1503,8 @@ sim_run <- function(pars) {
   # and the **CHANGE** in revenues relative to the no drought baseline.
 
   # Calculate vector of days of drought adaptation action for each year
-  forage.potential <- sapply(yyr, foragePWt, stgg = stgg, zonewt = zonewt, stzone = stzone)
-  intens.adj <- CalculateAdaptationIntensity(forage.potential)
+  forage.production <- sapply(yyr, foragePWt, stgg = stgg, zonewt = zonewt, stzone = stzone)
+  intens.adj <- CalculateAdaptationIntensity(forage.production)
   days.act <- CalculateDaysAction(act.st.yr, act.st.m, act.end.yr, act.end.m, drought.action)
 
   ## Option 0: No adaptation ##
