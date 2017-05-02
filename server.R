@@ -248,14 +248,15 @@ function(input, output, session) {
     
     output[[paste0("postDeposit", i)]] <- renderUI({
       if(input[[paste0("insuranceDeposit", i)]] != ""){
-        userIns <- tryCatch(as.numeric(gsub(",", "", input[[paste0("insuranceDeposit", i)]])),
+        userIns <- gsub(",", "", input[[paste0("insuranceDeposit", i)]])
+        userIns <- tryCatch(as.numeric(gsub("\\$", "", userIns)),
                             warning = function(war)return(0))
         validate(
           need(userIns == round(indem[[i]]$indemnity, 0), genericWrong)
         )
         fluidRow(
           h4(paste0("After your expenditures on hay and your insurance check, your new bank balance is: $", 
-                    prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity, 
+                    prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - indem[[i]]$producer_prem, 
                               digits = 0, big.mark=",",scientific=FALSE)))
         )
       }
@@ -275,7 +276,8 @@ function(input, output, session) {
         )
       }else{
       if(input[[paste0("insuranceDeposit", i)]] != ""){
-        userIns <- tryCatch(as.numeric(gsub(",", "", input[[paste0("insuranceDeposit", i)]])),
+        userIns <- gsub(",", "", input[[paste0("insuranceDeposit", i)]])
+        userIns <- tryCatch(as.numeric(gsub("\\$", "", userIns)),
                             warning = function(war)return(0))
         
         req(userIns == round(indem[[i]]$indemnity, 0))
@@ -601,4 +603,14 @@ function(input, output, session) {
     }
       
   })
+  observeEvent(input$reset_button, {
+    createOutputs(practiceRuns, simRuns, indem)
+    js$reset()
+  })
+  session$onSessionEnded(function() {
+    createOutputs(practiceRuns, simRuns, indem)
+    js$reset()
+    stopApp()
+  })
+  
 }

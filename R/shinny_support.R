@@ -323,3 +323,12 @@ inputToDF <- function(inputList){
   
   return(returnTable)
 }
+
+createOutputs <- function(practiceRuns, simRuns, indem){
+  practiceOuts <- createResultsFrame(practiceRuns)
+  practiceOuts[1, cost.ins := indem[[1]]$producer_prem]
+  myOuts <- createResultsFrame(simRuns)
+  myOuts[1, cost.ins := indem[[1]]$producer_prem]
+  practiceOuts <<- practiceOuts
+  myOuts <<- myOuts
+}

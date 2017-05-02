@@ -9,6 +9,7 @@ tagList(
   useShinyjs(),
   extendShinyjs(text = jscode, functions = "init"),
   extendShinyjs(text = "shinyjs.closewindow = function() { window.close(); }"),
+  extendShinyjs(text = jsResetCode),
   tags$style(css),
   tags$head(
     tags$style(HTML("
@@ -73,7 +74,8 @@ tabsetPanel(id = "mainPanels",
             textInput("code", "Enter Code to be Run"),
             actionButton("runCode", "Run Code"),
             textInput("insChange", "Enter True or False to use insurance or not"),
-            actionButton("applyInsChange", "Change Insurance")
+            actionButton("applyInsChange", "Change Insurance"),
+            actionButton("reset_button", "Reset Page")
             # actionButton("saveInputs", "Save all Input")
           )),
  # tabPanel("Input",
