@@ -52,6 +52,7 @@ function(input, output, session) {
         textInput(paste0("insurancePremium", i), 
                   "Please type the amount of the insurance premium below and to pay your bill and continue.",
                   width = "100%"),
+        uiOutput(paste0("premCheck", i)),
         tags$hr(style="border-color: darkgray;")
       )
     }))
@@ -135,6 +136,15 @@ function(input, output, session) {
        )
     })
     
+    ## Start Button
+    output[[paste0("start", i)]] <- renderUI({
+      userPay <- gsub(",", "", input[[paste0("insurancePremium", i)]])
+      userPay <- tryCatch(as.numeric(gsub("\\$", "", userPay)),
+                          warning = function(war)return(0))
+      req(userPay == round(indem[[i]]$producer_prem, 0), genericWrong)
+      actionButton(paste0("year", i, "Start"), "Begin Simulation")
+    })
+    
     ## Display rain info up to July and allow user to choose adaptation level
     output[[paste0("decision", i)]] <- renderUI({
       if(!is.null(input[[paste0("year", i, "Start")]])){  
@@ -144,6 +154,17 @@ function(input, output, session) {
           )
         }
       }
+    })
+    
+    ## Error message for incorrect prem deposit
+    output[[paste0("premCheck", i)]] <- renderUI({
+      userPay <- gsub(",", "", input[[paste0("insurancePremium", i)]])
+      userPay <- tryCatch(as.numeric(gsub("\\$", "", userPay)),
+                          warning = function(war)return(0))
+      req(userPay)
+      validate(
+        need(userPay == round(indem[[i]]$producer_prem, 0), genericWrong)
+      )
     })
     
     ## Display Update for insurance info
@@ -183,6 +204,10 @@ function(input, output, session) {
                   it has rained since you decided whether or not to purchase hay (July and August)."),
                 plotOutput(paste0("rainGraphSep", i)),
                 p("Because rainfall was close to or above normal levels, you did not recieve a check for your rain insurance policy"),
+                h4(paste0("After your expenditures on hay and insurance, your new bank balance is: $", 
+                          prettyNum(myOuts[i, assets.cash] - 
+                                      indem[[i]]$producer_prem - input[[paste0("d", i, "AdaptSpent")]], 
+                                    digits = 0, big.mark=",",scientific=FALSE))),
                 actionButton(paste0("insCont", i), "Continue")
               )
             }
@@ -256,7 +281,8 @@ function(input, output, session) {
         )
         fluidRow(
           h4(paste0("After your expenditures on hay and your insurance check, your new bank balance is: $", 
-                    prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - indem[[i]]$producer_prem, 
+                    prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+                                indem[[i]]$producer_prem - input[[paste0("d", i, "AdaptSpent")]], 
                               digits = 0, big.mark=",",scientific=FALSE)))
         )
       }
@@ -528,7 +554,7 @@ function(input, output, session) {
        ),
        column(2,
               fluidRow(column(12, style = "background-color:white;", div(style = "height:470px;"))),
-              actionButton(paste0("year", rv$page, "Start"), "Begin Simulation"),
+              uiOutput(paste0("start", rv$page)),
               uiOutput(paste0("continue", rv$page)),
               uiOutput(paste0("insSpace", rv$page)),
               uiOutput(paste0("sellButton", rv$page)),
