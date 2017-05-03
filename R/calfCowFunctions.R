@@ -119,7 +119,7 @@ getHerdSize <- function(results_1ya, results_2ya, deathRate){
 shinyHerd <- function(herd1, cull1, herd2, calves2, deathRate){
   "
   Function: shinyHerd
-  Description: function to calculae size of herd for shiny app
+  Description: function to calculate size of herd for shiny app
   
   Inputs:
   herd1 = herd size 1 year ago
