@@ -226,7 +226,9 @@ function(input, output, session) {
       print( AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1))
           tagList(
             getCowSell(get(paste0("effectiveForage", i))(), AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1), i),
-            plotOutput(paste0("cowPlot", i))
+            plotOutput(paste0("cowPlot", i)),
+            p("Keep in mind that yearlings (weaned calves that are not yet producing calves) 
+              aren't counted in these herd size numbers. You also do not have the option to sell them in this game.")
           )
       #   }
       # }
