@@ -150,13 +150,13 @@ whatIfForage <- function(station.gauge, zonewt, styear, herd, carryingCap,
   
   # Compute annual forage potential weight for zone
   forage.production <- sum(foragewt)
-  
+  print(paste("precarry", forage.production))
   ## Adjust for carying Capacity
   if(herd != 0){
     carryingCap <- herd/carryingCap
-    forage.production <-forage.production/carryingCap  
+    forage.production <- forage.production/carryingCap  
   }
-  
+  print(paste("postCarry", forage.production))
   return(forage.production)
   
   
