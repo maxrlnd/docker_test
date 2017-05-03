@@ -128,7 +128,7 @@ getSimVars = function(station.gauge,
   if(autoSelect.insurance == TRUE){
     assign("insp", insAlloc(fpwt = zonewt, niv = 2), envir = simvars) # automatic selection
   }else{
-    assign("insp", rbind(c(3, 0.5), c(5, 0.5)), envir = simvars) # insurance purchase
+    assign("insp", rbind(c(5, 0.5), c(7, 0.5)), envir = simvars) # insurance purchase
   }
   detach(station.gauge)
   
