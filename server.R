@@ -44,7 +44,7 @@ function(input, output, session) {
                  prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",", scientific=FALSE), ".")),
         br(),
         h4("Range graph"),
-        p(paste0("Your range is currently at ", ifelse(round(myOuts[i, forage.potential] * 100, 0) > 100, 100, round(myOuts[i, forage.potential] * 100, 0)), "%")),
+        p(paste0("Your range is currently at ", ifelse(round(get(paste0("currentZones", i))() * 100, 0) > 100, 100, round(myOuts[i, forage.potential] * 100, 0)), "%")),
         br(),
         h4("Bills Due"),
         p(paste0("Your rainfall-index insurance premium is due. You owe $", 
