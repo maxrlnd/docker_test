@@ -265,9 +265,9 @@ getStationGauge<-function(target.loc="CPER"){
 createResultsFrame <- function(pars = NULL){
   "
   Function: createResultsFrame
-  Description: This function creates a theoretical previous result from the year before the simultaion begins
+  Description: This function creates a theoretical previous result from the year before the simulation begins
     right now this assumes that there was no drought the year before the simulation and 
-    revenues were 0. These assumptions are likely unrealistic and can be adjusted to accomidated different
+    revenues were 0. These assumptions are likely unrealistic and can be adjusted to accomodate different
     scenarios.
   
   Inputs:
@@ -281,7 +281,8 @@ createResultsFrame <- function(pars = NULL){
                    "cost.int", "cost.tot", "profit", "taxes", "aftax.inc", 
                    "cap.sales", "cap.purch", "cap.taxes", "assets.cow", 
                    "assets.cash", "net.wrth", "wn.succ", "forage.production", 
-                   "herd", "calves.sold", "cows.culled", "zone.change", "Gt")
+                   "herd", "calves.sold", "cows.culled", "zone.change", "Gt",
+                   "forage.potential")
   ## fills in rows using initial variables from pars
   if(!is.null(pars)){
     sim_results <- data.table(matrix(0, pars$sim_length + 1, length(resultNames)))
@@ -297,6 +298,7 @@ createResultsFrame <- function(pars = NULL){
     sim_results[1, cows.culled := pars$cull.num]
     sim_results[1, zone.change := 1]
     sim_results[1, Gt := 0]
+    sim_results[1, forage.potential := 1]
     
   ## if pars isn't prsent fills in everything with 0's 
   }else{

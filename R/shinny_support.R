@@ -201,6 +201,7 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
                                                                                  current_herd = currentHerd, 
                                                                                  intens.adj = adaptInten),  
                                     1 - forage)]
+  myOuts[currentYear, forage.potential := sum(station.gauge$zonewt)]
 }
 
 createNewYr <- function(year){

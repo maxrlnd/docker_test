@@ -36,15 +36,15 @@ function(input, output, session) {
         br(),
         plotOutput(paste0("worthPlot", i)),
         tags$li(paste0("Your herd has ", 
-                 prettyNum(myOuts[i, herd], digits = 0,big.mark=",",scientific=FALSE), 
+                 prettyNum(myOuts[i, herd], digits = 0, big.mark=",", scientific=FALSE), 
                  " cows, not including calves or yearlings (cows that are weaned, but not yet reproducing).")),
         tags$li(paste0("Your bank balance is $", prettyNum(myOuts[i, assets.cash], digits = 0,
-                                                     big.mark=",",scientific=FALSE))),
+                                                     big.mark=",", scientific=FALSE))),
         tags$li(paste0("Your current net worth, including cows and your bank balance, is $", 
-                 prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",",scientific=FALSE), ".")),
+                 prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",", scientific=FALSE), ".")),
         br(),
         h4("Range graph"),
-        p(paste0("Your range is currently at ", ifelse(round(myOuts[i, forage.production] * 100, 0) > 100, 100, round(myOuts[i, forage.production] * 100, 0)), "%")),
+        p(paste0("Your range is currently at ", ifelse(round(myOuts[i, forage.potential] * 100, 0) > 100, 100, round(myOuts[i, forage.potential] * 100, 0)), "%")),
         br(),
         h4("Bills Due"),
         p(paste0("Your rainfall-index insurance premium is due. You owe $", 
@@ -73,7 +73,7 @@ function(input, output, session) {
       return(zones)
     }))
     
-    ## Reactive to track forage fore ach year
+    ## Reactive to track forage for each year
     assign(paste0("effectiveForage", i), reactive({
       
       ## Establish current state
@@ -81,10 +81,10 @@ function(input, output, session) {
       herd <- myOuts[i, herd]
       zones <- get(paste0("currentZones", i))()
       
-      ## Calcualte available forage using Nov-Nov as a year
+      ## Calculate available forage using Nov-Nov as a year
       forage <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
      
-      ## Calcualte adaptation intensity based on forage
+      ## Calculate adaptation intensity based on forage
       adaptationInten <- CalculateAdaptationIntensity(forage)
       
       ## Calculate adaptation cost
