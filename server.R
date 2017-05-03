@@ -44,7 +44,7 @@ function(input, output, session) {
                  prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",", scientific=FALSE), ".")),
         br(),
         h4("Range graph"),
-        p(paste0("Your range is currently at ", ifelse(round(myOuts[i, forage.potential] * 100, 0) > 100, 100, round(myOuts[i, forage.potential] * 100, 0)), "%")),
+        p(paste0("Your range is currently at ", ifelse(round(get(paste0("currentZones", i))() * 100, 0) > 100, 100, round(myOuts[i, forage.potential] * 100, 0)), "%")),
         br(),
         h4("Bills Due"),
         p(paste0("Your rainfall-index insurance premium is due. You owe $", 
@@ -104,15 +104,15 @@ function(input, output, session) {
       ## Get cows being sold based on slide position
       cows <- input[[paste0("cow", i, "Sale")]]
       
-      ## Calculate herd size for the first year
+      ## Calculate herd size for the first year in the simulation (i = 1)
       if(i == 1){
         herd <- myOuts[i, herd]
-        shinyHerd(herd1 = herd, cull1 = cows, herd2 = herd, 
+        shinyHerd(herd1 = herd, cull1 = cows, herd2 = herd,  # Assumes that herd size has been stable for previous two years
                   calves2 = herd * simRuns$normal.wn.succ * (1 - simRuns$calf.sell),
                   deathRate = simRuns$death.rate)
         
         
-      ## Herd size for second year
+      ## Herd size for all subsequent years (i > 1)
       }else{
         herd <- myOuts[i, herd]
         herd2 <- myOuts[i - 1, herd]
@@ -226,7 +226,9 @@ function(input, output, session) {
       print( AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1))
           tagList(
             getCowSell(get(paste0("effectiveForage", i))(), AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1), i),
-            plotOutput(paste0("cowPlot", i))
+            plotOutput(paste0("cowPlot", i)),
+            p("Keep in mind that yearlings (weaned calves that are not yet producing calves) 
+              aren't counted in these herd size numbers. You also do not have the option to sell them in this game.")
           )
       #   }
       # }
@@ -336,15 +338,15 @@ function(input, output, session) {
         if(input[[paste0("year", i, "Summer")]] == 1){
           cows <- input[[paste0("cow", i, "Sale")]]
           calves <- input[[paste0("calves", i, "Sale")]]
-          herd <- myOuts[i, herd]
-          herdy1 <- shinyHerd(herd1 = get(paste0("herdSize", i))(), cull1 = cows, herd2 = herd,
-                              calves2 = (herd - calves), deathRate = simRuns$death.rate)
+          herdy0 <- myOuts[i, herd]  # Current herd size (determined by last years choices)
+          herdy1 <- get(paste0("herdSize", i))()  # Next year's herd size
+          herdy2 <- shinyHerd(herd1 = herdy1, cull1 = cows, herd2 = herdy0,
+                              calves2 = (herd - calves), deathRate = simRuns$death.rate)  # Herd size for the year after next
           years <- (startYear + i - 1):(startYear + i + 1)
-          cows <- data.table("Year" = years, "Herd Size" = c(myOuts[i, herd],
-                                                             get(paste0("herdSize", i))(), herdy1))
-          print(cows)
-          cows$`Herd Size` = round(cows$`Herd Size`, 0)
-          ggplot(cows, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity", width = .3, fill = "#8b4513") +
+          herd.projection <- data.table("Year" = years, "Herd Size" = c(herdy0, herdy1, herdy2))
+          print(herd.projection)
+          herd.projection$`Herd Size` = round(herd.projection$`Herd Size`, 0)
+          ggplot(herd.projection, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity", width = .3, fill = "#8b4513") +
             geom_text(aes(label = `Herd Size`), size = 10, position = position_stack( vjust = .5), color = "#ffffff") +
             theme(text = element_text(size = 20))
           #Fix Font Size
