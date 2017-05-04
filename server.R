@@ -43,7 +43,7 @@ function(input, output, session) {
         tags$li(p("Your current net worth, including cows and your bank balance, is $", 
                  span(prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large"), ".")),
         br(),
-        h4("Range graph"),
+        h4("Range Condition"),
         p("Your range is currently at ", span(ifelse(round(get(paste0("currentZones", i))() * 100, 0) > 100, 100, round(myOuts[i, forage.potential] * 100, 0)),style="font-weight:bold;font-size:large"), "%"),
         br(),
         h4("Bills Due"),

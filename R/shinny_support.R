@@ -103,13 +103,13 @@ getCowSell <- function(forage, wean, currentYear){
       Use the information below to decide how many cows and calves you want to sell this year."),
     br(),
     
-    h5(paste0("Your weaned calves weigh ", weanWeight , " pounds, on average.", "Your weaned calves weigh ", 600 - weanWeight, " pounds below average")),
+    h5(paste0("Your weaned calves weigh ", weanWeight , " pounds, on average.", " Your weaned calves weigh ", 600 - weanWeight, " pounds below average.")),
     tags$li("The normal target weight is 600lbs."), 
     tags$li("If you calves are lighter, it is because the mother cows
                    may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."),
     br(),
     
-    h5(paste0("You currently have ", myOuts[currentYear, herd], " cows and ", calvesAvailable, " calves.")),
+    h5(paste0("You currently have ", myOuts[currentYear, herd], " cows and ", calvesAvailable, " calves.", " At the normal target weight, each calf you sell would have brought in $", simRuns$p.wn[1]*600, " of cash.")),
     tags$li(paste0("With the current market price of $",simRuns$p.wn[1], "/pound, each calf you sell will bring in $", 
                    round(weanWeight * simRuns$p.wn[1], 0) , " of cash.")), 
     tags$li("For every cow you sell, you will bring in $850 of cash."),
