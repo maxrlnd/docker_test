@@ -278,9 +278,11 @@ function(input, output, session) {
         userIns <- gsub(",", "", input[[paste0("insuranceDeposit", i)]])
         userIns <- tryCatch(as.numeric(gsub("\\$", "", userIns)),
                             warning = function(war)return(0))
-        validate(
-          need(userIns == round(indem[[i]]$indemnity, 0), genericWrong)
-        )
+        if(!debugMode){
+          validate(
+            need(userIns == round(indem[[i]]$indemnity, 0), genericWrong)
+          )
+        }
         fluidRow(
           h4(paste0("After your expenditures on hay and your insurance check, your new bank balance is: $", 
                     prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
@@ -303,12 +305,14 @@ function(input, output, session) {
           actionButton(paste0("insCont", i), "Continue")
         )
       }else{
-      if(input[[paste0("insuranceDeposit", i)]] != ""){
+      if(debugMode & input[[paste0("insuranceDeposit", i)]] == ""){
+        actionButton(paste0("insCont", i), "Continue")
+      }else if(input[[paste0("insuranceDeposit", i)]] != ""){
         userIns <- gsub(",", "", input[[paste0("insuranceDeposit", i)]])
         userIns <- tryCatch(as.numeric(gsub("\\$", "", userIns)),
                             warning = function(war)return(0))
         
-        req(userIns == round(indem[[i]]$indemnity, 0))
+        if(!debugMode){req(userIns == round(indem[[i]]$indemnity, 0))}
         tagList(
           actionButton(paste0("insCont", i), "Continue")
         )
@@ -356,7 +360,6 @@ function(input, output, session) {
           
           years <- (startYear + i - 1):(startYear + i + 1)
           herd.projection <- data.table("Year" = years, "Herd Size" = c(herdy0, herdy1, herdy2))
-          print(herd.projection)
           herd.projection$`Herd Size` = round(herd.projection$`Herd Size`, 0)
           ggplot(herd.projection, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity", width = .3, fill = "#8b4513") +
             geom_text(aes(label = `Herd Size`), size = 10, position = position_stack( vjust = .5), color = "#ffffff") +
@@ -408,7 +411,8 @@ function(input, output, session) {
         #facet_wrap(~ id) +
         #geom_text(size = 3, position = position_stack(vjust = 0.5)) +
         theme(legend.title = element_blank(), text = element_text(size = 15)) + ggtitle("Rainfall") +
-        scale_fill_manual(values = c("#00008b", "#1e90ff"))
+        scale_fill_manual(values = c("#00008b", "#1e90ff")) +
+        ylab("Rainfall (Inches)")
       #position_dodge(width=1.3)
       #Rain color it!
       
@@ -427,8 +431,10 @@ function(input, output, session) {
       yearAvg <- melt(yearAvg, id.vars = "id")
       setnames(yearAvg, c("id", "Month", "Rainfall"))
       ggplot(yearAvg, aes(x = Month, y = Rainfall, fill = id)) + 
-        geom_bar(width = .6, stat = "identity", position = position_dodge(width=0.7)) + 
-        theme(legend.title = element_blank()) + ggtitle("Rainfall")
+        geom_bar(width = .9, stat = "identity", position = position_dodge(width=0.7)) + 
+        theme(legend.title = element_blank(), text = element_text(size = 15)) + ggtitle("Rainfall") +
+        scale_fill_manual(values = c("#00008b", "#1e90ff")) +
+        ylab("Rainfall (Inches)")
     })
     
     # Reactive to disable start simulation button after they're clicked
