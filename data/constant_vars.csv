@@ -16,7 +16,7 @@ max.wt,40000
 cow.wt,1200
 calf.wt,375
 normal.wn.wt,600
-calf.sell,0.77
+calf.sell,0.761
 normal.wn.succ,0.88
 p.calf.t0,1.45
 p.cow,850
@@ -25,7 +25,7 @@ purchase.insurance,1
 invst.int,0.0125
 cap.tax.rate,0.15
 t,5
-cull.num,0.16
+cull.num,0.166
 loan.int,0.065
 op.cost.adj,-100
 herdless.op.cost,5000

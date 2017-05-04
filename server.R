@@ -353,8 +353,6 @@ function(input, output, session) {
           herdy2 <- shinyHerd(herd_1 = herdy1,  # t-1 for year 2 is next years herd size
                               cull_1 = myOuts[1, cows.culled] * herdy1,  # we don't know how many cows they will cull next year. assume stability/default of 16% (draw from )
                               herd_2 = herdy0,  # t-2 for year 2 is this year
-                              
-                              #### NOTE: simRuns$normal.wn.succ is a stand-in for this year's actual weaning percentage! Change this later
                               calves_2 = (floor(herdy0 * AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1)) - calves),  # Calves in the herd this year minus those that are sold via the slider input
                               deathRate = simRuns$death.rate)  
           
