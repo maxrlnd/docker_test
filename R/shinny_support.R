@@ -103,7 +103,7 @@ getCowSell <- function(forage, wean, currentYear){
       Use the information below to decide how many cows and calves you want to sell this year."),
     br(),
     
-    h5(paste0("Your weaned calves weigh ", weanWeight , " pounds, on average.")),
+    h5(paste0("Your weaned calves weigh ", weanWeight , " pounds, on average.", "Your weaned calves weigh ", 600 - weanWeight, " pounds below average")),
     tags$li("The normal target weight is 600lbs."), 
     tags$li("If you calves are lighter, it is because the mother cows
                    may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."),
