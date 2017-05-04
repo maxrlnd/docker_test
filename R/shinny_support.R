@@ -86,7 +86,7 @@ getCowSell <- function(forage, wean, currentYear){
   herd <- myOuts[currentYear, herd]
   
   
-  ## Calcuatle weaned Calves
+  ## Calculate weaned Calves
   calvesAvailable <- floor(herd * wean)
   
   ## Calculate Standard Sales
