@@ -402,7 +402,8 @@ function(input, output, session) {
         #facet_wrap(~ id) +
         #geom_text(size = 3, position = position_stack(vjust = 0.5)) +
         theme(legend.title = element_blank(), text = element_text(size = 15)) + ggtitle("Rainfall") +
-        scale_fill_manual(values = c("#00008b", "#1e90ff"))
+        scale_fill_manual(values = c("#00008b", "#1e90ff")) +
+        ylab("Rainfall (Inches)")
       #position_dodge(width=1.3)
       #Rain color it!
       
@@ -421,8 +422,10 @@ function(input, output, session) {
       yearAvg <- melt(yearAvg, id.vars = "id")
       setnames(yearAvg, c("id", "Month", "Rainfall"))
       ggplot(yearAvg, aes(x = Month, y = Rainfall, fill = id)) + 
-        geom_bar(width = .6, stat = "identity", position = position_dodge(width=0.7)) + 
-        theme(legend.title = element_blank()) + ggtitle("Rainfall")
+        geom_bar(width = .9, stat = "identity", position = position_dodge(width=0.7)) + 
+        theme(legend.title = element_blank(), text = element_text(size = 15)) + ggtitle("Rainfall") +
+        scale_fill_manual(values = c("#00008b", "#1e90ff")) +
+        ylab("Rainfall (Inches)")
     })
     
     # Reactive to disable start simualation button after they're clicked
