@@ -120,7 +120,7 @@ function(input, output, session) {
         calvesSold <- myOuts[i - 1, calves.sold]
         
         shinyHerd(herd_1 = herd, cull_1 = cows, herd_2 = herd_2, 
-                  calves2 = herd_2 * wean_2 * (1 - calvesSold),
+                  calves_2 = herd_2 * wean_2 * (1 - calvesSold),
                   deathRate = simRuns$death.rate)
       }
     }))
