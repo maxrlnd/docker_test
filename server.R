@@ -358,8 +358,9 @@ function(input, output, session) {
                               calves_2 = (floor(herdy0 * AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1)) - calves),  # Calves in the herd this year minus those that are sold via the slider input
                               deathRate = simRuns$death.rate)  
           
-          years <- (startYear + i - 1):(startYear + i + 1)
+          years <- c("This Year","Next Year","In Two Years")
           herd.projection <- data.table("Year" = years, "Herd Size" = c(herdy0, herdy1, herdy2))
+          herd.projection$Year <- factor(herd.projection$Year, levels = c("This Year", "Next Year", "In Two Years"))
           herd.projection$`Herd Size` = round(herd.projection$`Herd Size`, 0)
           ggplot(herd.projection, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity", width = .3, fill = "#8b4513") +
             geom_text(aes(label = `Herd Size`), size = 10, position = position_stack( vjust = .5), color = "#ffffff") +
@@ -431,7 +432,7 @@ function(input, output, session) {
       yearAvg <- melt(yearAvg, id.vars = "id")
       setnames(yearAvg, c("id", "Month", "Rainfall"))
       ggplot(yearAvg, aes(x = Month, y = Rainfall, fill = id)) + 
-        geom_bar(width = .9, stat = "identity", position = position_dodge(width=0.7)) + 
+        geom_bar(width = .9, stat = "identity", position = 'dodge') + 
         theme(legend.title = element_blank(), text = element_text(size = 15)) + ggtitle("Rainfall") +
         scale_fill_manual(values = c("#00008b", "#1e90ff")) +
         ylab("Rainfall (Inches)")
