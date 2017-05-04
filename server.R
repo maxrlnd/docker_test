@@ -341,11 +341,12 @@ function(input, output, session) {
       if(!is.null(input[[paste0("year", i, "Summer")]])){
         if(input[[paste0("year", i, "Summer")]] == 1){
           cows <- input[[paste0("cow", i, "Sale")]]
+          herd1ya <- ifelse(i == 1, simRuns$herd, myOuts[i-1, herd])
           herdy0 <- myOuts[i, herd]  # Current herd size (determined by last years choices)
           calves <- herdy0 * AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1) - input[[paste0("calves", i, "Sale")]]
           herdy1 <- get(paste0("herdSize", i))()  # Next year's herd size
-          herdy2 <- shinyHerd(herd1 = herdy1, cull1 = (herdy1 * (cows/herdy0)), herd2 = herdy0,
-                              calves2 = (calves), deathRate = simRuns$death.rate)  # Herd size for the year after next
+          herdy2 <- shinyHerd(herd1 = herdy1, cull1 = (herdy1 * (1 - simRuns$death.rate) * (cows/herdy0)), 
+                              herd2 = herdy0, calves2 = (calves), deathRate = simRuns$death.rate)  # Herd size for the year after next
           print(data.table("names" = c("cows", "calves", "herdy0", "herdy1", "herdy2"), 
                            "values" = c(cows, calves, herdy0, herdy1, herdy2)))
           years <- (startYear + i - 1):(startYear + i + 1)
