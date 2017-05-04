@@ -107,20 +107,20 @@ function(input, output, session) {
       ## Calculate herd size for the first year in the simulation (i = 1)
       if(i == 1){
         herd <- myOuts[i, herd]
-        shinyHerd(herd1 = herd, cull1 = cows, herd2 = herd,  # Assumes that herd size has been stable for previous two years
-                  calves2 = herd * simRuns$normal.wn.succ * (1 - simRuns$calf.sell),
+        shinyHerd(herd_1 = herd, cull_1 = cows, herd_2 = herd,  # Assumes that herd size has been stable for previous two years
+                  calves_2 = herd * simRuns$normal.wn.succ * (1 - simRuns$calf.sell),
                   deathRate = simRuns$death.rate)
         
         
       ## Herd size for all subsequent years (i > 1)
       }else{
         herd <- myOuts[i, herd]
-        herd2 <- myOuts[i - 1, herd]
-        wean2 <- myOuts[i - 1, wn.succ]
+        herd_2 <- myOuts[i - 1, herd]
+        wean_2 <- myOuts[i - 1, wn.succ]
         calvesSold <- myOuts[i - 1, calves.sold]
         
-        shinyHerd(herd1 = herd, cull1 = cows, herd2 = herd2, 
-                  calves2 = herd2 * wean2 * (1 - calvesSold),
+        shinyHerd(herd_1 = herd, cull_1 = cows, herd_2 = herd_2, 
+                  calves2 = herd_2 * wean_2 * (1 - calvesSold),
                   deathRate = simRuns$death.rate)
       }
     }))
@@ -141,8 +141,8 @@ function(input, output, session) {
       userPay <- gsub(",", "", input[[paste0("insurancePremium", i)]])
       userPay <- tryCatch(as.numeric(gsub("\\$", "", userPay)),
                           warning = function(war)return(0))
-      if(!debugMode)req(userPay == round(indem[[i]]$producer_prem, 0), genericWrong)
-      actionButton(paste0("year", i, "Start"), "Begin Simulation")
+      req(userPay == round(indem[[i]]$producer_prem, 0), genericWrong)
+      actionButton(paste0("year", i, "Start"), "Next")
     })
     
     ## Display rain info up to July and allow user to choose adaptation level
@@ -341,14 +341,23 @@ function(input, output, session) {
       if(!is.null(input[[paste0("year", i, "Summer")]])){
         if(input[[paste0("year", i, "Summer")]] == 1){
           cows <- input[[paste0("cow", i, "Sale")]]
-          herd1ya <- ifelse(i == 1, simRuns$herd, myOuts[i-1, herd])
-          herdy0 <- myOuts[i, herd]  # Current herd size (determined by last years choices)
-          calves <- herdy0 * AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1) - input[[paste0("calves", i, "Sale")]]
-          herdy1 <- get(paste0("herdSize", i))()  # Next year's herd size
-          herdy2 <- shinyHerd(herd1 = herdy1, cull1 = (herdy1 * (1 - simRuns$death.rate) * (cows/herdy0)), 
-                              herd2 = herdy0, calves2 = (calves), deathRate = simRuns$death.rate)  # Herd size for the year after next
-          print(data.table("names" = c("cows", "calves", "herdy0", "herdy1", "herdy2"), 
-                           "values" = c(cows, calves, herdy0, herdy1, herdy2)))
+          calves <- input[[paste0("calves", i, "Sale")]]
+          
+          # Current herd size (determined by last years choices)
+          herdy0 <- myOuts[i, herd]  
+          
+          # Next year's herd size
+          herdy1 <- get(paste0("herdSize", i))()  
+          
+          # Herd size for the year after next
+          herdy2 <- shinyHerd(herd_1 = herdy1,  # t-1 for year 2 is next years herd size
+                              cull_1 = myOuts[1, cows.culled] * herdy1,  # we don't know how many cows they will cull next year. assume stability/default of 16% (draw from )
+                              herd_2 = herdy0,  # t-2 for year 2 is this year
+                              
+                              #### NOTE: simRuns$normal.wn.succ is a stand-in for this year's actual weaning percentage! Change this later
+                              calves_2 = (floor(herdy0 * AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1)) - calves),  # Calves in the herd this year minus those that are sold via the slider input
+                              deathRate = simRuns$death.rate)  
+          
           years <- (startYear + i - 1):(startYear + i + 1)
           herd.projection <- data.table("Year" = years, "Herd Size" = c(herdy0, herdy1, herdy2))
           herd.projection$`Herd Size` = round(herd.projection$`Herd Size`, 0)
@@ -428,7 +437,7 @@ function(input, output, session) {
         ylab("Rainfall (Inches)")
     })
     
-    # Reactive to disable start simualation button after they're clicked
+    # Reactive to disable start simulation button after they're clicked
     observeEvent(input[[paste0("year", i, "Start")]], {
       shinyjs::disable(paste0("year", i, "Start"))
       delay(100,session$sendCustomMessage(type = "scrollCallbackRain", paste0("rainGraph", i)))
