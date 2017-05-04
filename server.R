@@ -345,7 +345,7 @@ function(input, output, session) {
           herdy0 <- myOuts[i, herd]  # Current herd size (determined by last years choices)
           herdy1 <- get(paste0("herdSize", i))()  # Next year's herd size
           herdy2 <- shinyHerd(herd1 = herdy1, cull1 = (herdy1 * (cows/herdy0)), herd2 = herdy0,
-                              calves2 = (herd - calves), deathRate = simRuns$death.rate)  # Herd size for the year after next
+                              calves2 = (herdy0 - calves), deathRate = simRuns$death.rate)  # Herd size for the year after next
           years <- (startYear + i - 1):(startYear + i + 1)
           herd.projection <- data.table("Year" = years, "Herd Size" = c(herdy0, herdy1, herdy2))
           print(herd.projection)
