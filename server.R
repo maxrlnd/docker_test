@@ -141,7 +141,7 @@ function(input, output, session) {
       userPay <- gsub(",", "", input[[paste0("insurancePremium", i)]])
       userPay <- tryCatch(as.numeric(gsub("\\$", "", userPay)),
                           warning = function(war)return(0))
-      req(userPay == round(indem[[i]]$producer_prem, 0), genericWrong)
+      if(!debugMode)req(userPay == round(indem[[i]]$producer_prem, 0), genericWrong)
       actionButton(paste0("year", i, "Start"), "Begin Simulation")
     })
     
@@ -278,9 +278,11 @@ function(input, output, session) {
         userIns <- gsub(",", "", input[[paste0("insuranceDeposit", i)]])
         userIns <- tryCatch(as.numeric(gsub("\\$", "", userIns)),
                             warning = function(war)return(0))
-        validate(
-          need(userIns == round(indem[[i]]$indemnity, 0), genericWrong)
-        )
+        if(!debugMode){
+          validate(
+            need(userIns == round(indem[[i]]$indemnity, 0), genericWrong)
+          )
+        }
         fluidRow(
           h4(paste0("After your expenditures on hay and your insurance check, your new bank balance is: $", 
                     prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
@@ -303,12 +305,14 @@ function(input, output, session) {
           actionButton(paste0("insCont", i), "Continue")
         )
       }else{
-      if(input[[paste0("insuranceDeposit", i)]] != ""){
+      if(debugMode & input[[paste0("insuranceDeposit", i)]] == ""){
+        actionButton(paste0("insCont", i), "Continue")
+      }else if(input[[paste0("insuranceDeposit", i)]] != ""){
         userIns <- gsub(",", "", input[[paste0("insuranceDeposit", i)]])
         userIns <- tryCatch(as.numeric(gsub("\\$", "", userIns)),
                             warning = function(war)return(0))
         
-        req(userIns == round(indem[[i]]$indemnity, 0))
+        if(!debugMode){req(userIns == round(indem[[i]]$indemnity, 0))}
         tagList(
           actionButton(paste0("insCont", i), "Continue")
         )
@@ -340,7 +344,7 @@ function(input, output, session) {
           calves <- input[[paste0("calves", i, "Sale")]]
           herdy0 <- myOuts[i, herd]  # Current herd size (determined by last years choices)
           herdy1 <- get(paste0("herdSize", i))()  # Next year's herd size
-          herdy2 <- shinyHerd(herd1 = herdy1, cull1 = cows, herd2 = herdy0,
+          herdy2 <- shinyHerd(herd1 = herdy1, cull1 = (herdy1 * (cows/herdy0)), herd2 = herdy0,
                               calves2 = (herd - calves), deathRate = simRuns$death.rate)  # Herd size for the year after next
           years <- (startYear + i - 1):(startYear + i + 1)
           herd.projection <- data.table("Year" = years, "Herd Size" = c(herdy0, herdy1, herdy2))
