@@ -48,7 +48,7 @@ function(input, output, session) {
         br(),
         h4("Bills Due"),
         p(p("Your rainfall-index insurance premium is due. You owe $", 
-                 span(prettyNum(myOuts[i, cost.ins], digits = 0, big.mark=",",scientific=FALSE),style="font-weight:bold;font-size:large"), ". Please enter this amount below to pay your insurance bill.")),
+                 span(prettyNum(myOuts[i, cost.ins], digits = 0, big.mark=",",scientific=FALSE),style="font-weight:bold;font-size:large;color:red"), ". Please enter this amount below to pay your insurance bill.")),
         textInput(paste0("insurancePremium", i), 
                   "Please type the amount of the insurance premium below and to pay your bill and continue.",
                   width = "100%"),
@@ -189,7 +189,7 @@ function(input, output, session) {
                   (Your rainfall insurance pays out when the rain falls significantly below
                   normal in May, June, July, and August.)"),
                 br(),
-                h4(paste0("You have received a check for $", currentIndem, " from your rain insurance policy.")),
+                h4(p("You have received a check for $", span((currentIndem),style="font-weight:bold;font-size:large;color:green"), " from your rain insurance policy.")),
                 textInput(paste0("insuranceDeposit", i), 
                           "Please type the amount of the check below and to add the money to your bank account and continue.",
                           width = "100%"),
@@ -284,10 +284,22 @@ function(input, output, session) {
           )
         }
         fluidRow(
-          h4(paste0("After your expenditures on hay and your insurance check, your new bank balance is: $", 
-                    prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
-                                indem[[i]]$producer_prem - input[[paste0("d", i, "AdaptSpent")]], 
-                              digits = 0, big.mark=",",scientific=FALSE)))
+          
+          if(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+             indem[[i]]$producer_prem - input[[paste0("d", i, "AdaptSpent")]] > 0){
+            h4(p("After your expenditures on hay and your insurance check, your new bank balance is: $", 
+                      span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+                                  indem[[i]]$producer_prem - input[[paste0("d", i, "AdaptSpent")]], 
+                                digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:green")))
+          }
+          else{
+            h4(p("After your expenditures on hay and your insurance check, your new bank balance is: $", 
+                 span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+                                  indem[[i]]$producer_prem - input[[paste0("d", i, "AdaptSpent")]], 
+                                digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:red")))
+            
+          }
+          
         )
       }
     })
