@@ -42,16 +42,14 @@ wean_weights_df <- data.frame(years, forage, avg_wean_weights)
 
 jitter1 = position_jitter(.05)
 
-ggplot(wean_weights_df, aes(x=forage, y = avg_wean_weights)) + 
+forageandaverageweaningeight = ggplot(wean_weights_df, aes(x=forage, y = avg_wean_weights)) + 
   geom_jitter(position = jitter1) +
   geom_smooth(se = FALSE, ) +
-  labs(title = 'Forage and Average Weaning Weight', x = "Forage", y = "Average Weaning Weight (lb)") +
+  labs(title = 'Forage and Average Weaning Weight', x = "Forage", y = "Average Weaning Weight (lb)", caption = 'Average weaning weight (lb) increases as forage increases, with an asymptotic limit of 600lb at around Forage = 1. ') +
   theme(plot.title = element_text(hjust = 0.5))
 
-ggplot(wean_weights_df, aes(years)) + 
-  geom_bar()
+ggsave('forageandaverageweaningweight.jpg', plot = forageandaverageweaningeight, device = 'jpg', path = 'C:/Users/EvanLih/drought_decision_model/figs/' )
 
-str(wean_weights_df)
 
 # How is forage related to weaning percentage? Assuming no adaptation:
 #Error for me: "Error in FUN(X[[i]], ...) : object 'normal.wn.succ' not found"
@@ -68,6 +66,8 @@ wean_percentage_df %>%
   ggplot(aes(forage, wean_pct, color = which_year)) + 
   geom_point() +
   labs(title = 'Forage and Weaning percent', x = 'forage', y = 'weaning percentage')
+
+
 
 #first colum n -were you put the column names from the data frame
 #2nd column - where do you put the values
@@ -131,6 +131,7 @@ herdWeanPerc <- function(wean_perc, start_herd = 600, cull = .16,
 #rainfall that's relevant for forage. 
 #Don't use forage term, Placeholder/rainfall weighted growth
 #Herd stuff is here, 3 different decades. 
+
 wean_perc_2000s <- weanPercByYears(2001, 2010)
 herd2000s <- herdWeanPerc(wean_perc = wean_perc_2000s)
 forage_df %>%

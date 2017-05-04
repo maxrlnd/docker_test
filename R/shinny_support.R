@@ -189,7 +189,7 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
                                       myOuts[currentYear, cap.taxes]]
   myOuts[currentYear, net.wrth := myOuts[currentYear, assets.cash] + myOuts[currentYear, assets.cow]]
   myOuts[currentYear, wn.succ := wean]
-  myOuts[currentYear, forage.potential := forage]
+  myOuts[currentYear, forage.production := forage]
   myOuts[currentYear, herd := round(newHerd, 0)]
   myOuts[currentYear, calves.sold := calfSale / floor(currentHerd * wean)]
   myOuts[currentYear, cows.culled := cowSales / currentHerd]
@@ -201,6 +201,7 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
                                                                                  current_herd = currentHerd, 
                                                                                  intens.adj = adaptInten),  
                                     1 - forage)]
+  myOuts[currentYear, forage.potential := sum(zones)]
 }
 
 createNewYr <- function(year){
@@ -322,4 +323,13 @@ inputToDF <- function(inputList){
   }
   
   return(returnTable)
+}
+
+createOutputs <- function(practiceRuns, simRuns, indem){
+  practiceOuts <- createResultsFrame(practiceRuns)
+  practiceOuts[1, cost.ins := indem[[1]]$producer_prem]
+  myOuts <- createResultsFrame(simRuns)
+  myOuts[1, cost.ins := indem[[1]]$producer_prem]
+  practiceOuts <<- practiceOuts
+  myOuts <<- myOuts
 }
