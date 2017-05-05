@@ -7,13 +7,14 @@ function(input, output, session) {
     eval(parse(text = input$code))
   })
   
-  toggleClass(class = "disabled",
-              selector = "#navBar li a[data-value=Quiz]")
-  toggleClass(class = "disabled",
-              selector = "#navBar li a[data-value='Background Info']")
-  # toggleClass(class = "disabled",
-  #             selector = "#navBar li a[data-value='Ranch Simulation']")
-  # lapply(1:simLength, function(x)toggleClass(class = "disabled", selector = paste0("#navBar li a[data-value=Year ", x, "]")))
+  if(!debugMode){
+    toggleClass(class = "disabled",
+                selector = "#navBar li a[data-value=Quiz]")
+    toggleClass(class = "disabled",
+                selector = "#navBar li a[data-value='Background Info']")
+    toggleClass(class = "disabled",
+                 selector = "#navBar li a[data-value='Ranch Simulation']")
+  }
   
   
   
@@ -29,6 +30,7 @@ function(input, output, session) {
       if(myOuts[i, herd] == 0){
         myOuts[i, cost.ins] <<- 0
       }
+      delay(10,session$sendCustomMessage(type = "scrollCallbackTop", 0))
       tagList(
         br(),
         h3(paste0("Year ", i,": Winter Finance Assessment")),
@@ -44,7 +46,7 @@ function(input, output, session) {
                  span(prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large"), ".")),
         br(),
         h4("Range Condition"),
-        p("Your range is currently at ", span(ifelse(round(get(paste0("currentZones", i))() * 100, 0) > 100, 100, round(myOuts[i, forage.potential] * 100, 0)),style="font-weight:bold;font-size:large"), "%"),
+        p("Your range is currently at ", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="font-weight:bold;font-size:large"), "%"),
         br(),
         h4("Bills Due"),
         p(p("Your rainfall-index insurance premium is due. You owe $", 
@@ -141,7 +143,9 @@ function(input, output, session) {
       userPay <- gsub(",", "", input[[paste0("insurancePremium", i)]])
       userPay <- tryCatch(as.numeric(gsub("\\$", "", userPay)),
                           warning = function(war)return(0))
-      req(userPay == round(indem[[i]]$producer_prem, 0), genericWrong)
+      if(!debugMode){
+        req(userPay == round(indem[[i]]$producer_prem, 0), genericWrong)
+      }
       actionButton(paste0("year", i, "Start"), "Next")
     })
     
@@ -222,8 +226,8 @@ function(input, output, session) {
       # if(!is.null(input[[paste0("year", i, "Summer")]])){
       #   if(input[[paste0("year", i, "Summer")]] == 1){
       req(input[[paste0("insCont", i)]])
-      print(get(paste0("effectiveForage", i))())
-      print( AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1))
+      # print(get(paste0("effectiveForage", i))())
+      # print( AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1))
           tagList(
             getCowSell(get(paste0("effectiveForage", i))(), AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1), i),
             plotOutput(paste0("cowPlot", i)),
@@ -265,7 +269,7 @@ function(input, output, session) {
       #   if(input[[paste0("year", i, "Summer")]] == 1){
       req(input[[paste0("insCont", i)]])    
       tagList(
-            fluidRow(column(12, style = "background-color:white;", div(style = "height:500px;"))),
+            fluidRow(column(12, style = "background-color:white;", div(style = "height:750px;"))),
             actionButton(paste0("sell", i), "Sell Calves and Cows")
           )
       #   }
@@ -462,8 +466,8 @@ function(input, output, session) {
       disable(paste0("calves", i, "Sale"))
       disable(paste0("cow", i, "Sale"))
       myOuts <<- updateOuts(wean = AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1), 
-                            forage = get(paste0("effectiveForage", i))(), calfSale = input$calves1Sale,
-                            indem = indem[[i]], adaptCost = input$d1AdaptSpent, cowSales = input$cow1Sale, 
+                            forage = get(paste0("effectiveForage", i))(), calfSale = input[[paste0("calves", i, "Sale")]],
+                            indem = indem[[i]], adaptCost = input[[paste0("d", i, "AdaptSpent")]], cowSales = input[[paste0("cow", i, "Sale")]], 
                             newHerd = get(paste0("herdSize", i))(), zones = get(paste0("currentZones", i))(), 
                             adaptInten = CalculateAdaptationIntensity(get(paste0("effectiveForage", i))()),
                             currentYear = i)
@@ -584,7 +588,7 @@ function(input, output, session) {
               uiOutput(paste0("cowSell", rv$page))
        ),
        column(2,
-              fluidRow(column(12, style = "background-color:white;", div(style = "height:470px;"))),
+              fluidRow(column(12, style = "background-color:white;", div(style = "height:1000px;"))),
               uiOutput(paste0("start", rv$page)),
               uiOutput(paste0("continue", rv$page)),
               uiOutput(paste0("insSpace", rv$page)),
