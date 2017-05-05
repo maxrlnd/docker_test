@@ -38,7 +38,7 @@ tagList(
       Shiny.addCustomMessageHandler("scrollCallbackIns",
       function(msg) {
       console.log(msg)
-      window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().bottom + 750);
+      window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().bottom + 680);
       }
       );'
   ),
