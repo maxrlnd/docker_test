@@ -54,12 +54,12 @@ getJulyInfo <- function(currentYear){
     br(),
     plotOutput(paste0("rainGraph", currentYear)),
     tableOutput(paste0("julyRain", currentYear)),
-    p(paste0("If rainfall for the rest of the year is average your available forage will be ", forageList[1], "% of normal. In this case, 
-             you should buy $", adaptationCost[1], " of hay to get your herd in ideal shape for market.")),
-    p(paste0("If rainfall for the rest of the year is above average your available forage will be ", forageList[2], "% of normal.
-             In this case, you should buy $", adaptationCost[2], " of hay to get your herd in ideal shape for market.")),
-    p(paste0("If rainfall for the rest of the year is below average your available forage will be ", forageList[3], "% of normal.
-             In this case, you should buy $", adaptationCost[3], " of hay to get your herd in ideal shape for market.")),
+    p("If rainfall for the rest of the year is average your available forage will be ", span((forageList[1]),style="font-weight:bold;font-size:medium"), "% of normal. In this case, 
+             you should buy $", span((adaptationCost[1]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
+    p("If rainfall for the rest of the year is above average your available forage will be ", span((forageList[2]),style="font-weight:bold;font-size:medium"), "% of normal.
+             In this case, you should buy $", span((adaptationCost[2]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
+    p("If rainfall for the rest of the year is below average your available forage will be ", span((forageList[3]),style="font-weight:bold;font-size:medium"), "% of normal.
+             In this case, you should buy $", span((adaptationCost[3]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
     br(),
     sliderInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd?",
                 min = 0, max = adaptMax, value = 0, step = 100, width = "600px"),
@@ -102,10 +102,15 @@ getCowSell <- function(forage, wean, currentYear){
     p("It is the end of the season and it is time to take your calves to market.
       Use the information below to decide how many cows and calves you want to sell this year."),
     br(),
-    
-    h5(paste0("Your weaned calves weigh ", weanWeight , " pounds, on average.", 
-              " Your weaned calves weigh ", 600 - weanWeight, " pounds below their target weight.
-              This means that you're losing out on ")),
+    if((weanWeight)<600){
+    h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:red") , " pounds, on average.", 
+              " Your weaned calves weigh ", span((600 - weanWeight), style="font-weight:bold;font-size:large;color:red"), " pounds below their target weight.
+              This means that you're losing out on "))
+    }else{
+      h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:green") , " pounds, on average."))
+      
+      }
+    ,
     tags$li("The normal target weight is 600 lbs."), 
     tags$li("If your calves are lighter than 600 lbs, it is because the mother cows
                    may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."),
