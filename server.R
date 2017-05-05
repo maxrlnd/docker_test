@@ -224,7 +224,7 @@ function(input, output, session) {
                           prettyNum(myOuts[i, assets.cash] - 
                                       indem[[i]]$producer_prem - input[[paste0("d", i, "AdaptSpent")]], 
                                     digits = 0, big.mark=",",scientific=FALSE))),
-                actionButton(paste0("insCont", i), "Continue")
+                actionButton(paste0("insCont", i), "Next")
               )
             }
           )
@@ -256,7 +256,7 @@ function(input, output, session) {
         if(input[[paste0("year", i, "Start")]] == 1){
           tagList(
             fluidRow(column(12, style = "background-color:white;", div(style = "height:900px;"))),
-            actionButton(paste0("year", i, "Summer"), "Continue")
+            actionButton(paste0("year", i, "Summer"), "Purchase Hay")
           )
         }
       }
@@ -330,7 +330,7 @@ function(input, output, session) {
       if(!is.null(input[[paste0("year", i, "Summer")]])){
       if(indem[[i]]$indemnity == 0){
         tagList(
-          actionButton(paste0("insCont", i), "Continue")
+          actionButton(paste0("insCont", i), "Next")
         )
       }else{
       if(debugMode & input[[paste0("insuranceDeposit", i)]] == ""){
@@ -342,7 +342,7 @@ function(input, output, session) {
         
         if(!debugMode){req(userIns == round(indem[[i]]$indemnity, 0))}
         tagList(
-          actionButton(paste0("insCont", i), "Continue")
+          actionButton(paste0("insCont", i), "Next")
         )
       }
       }
