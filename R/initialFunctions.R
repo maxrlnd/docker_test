@@ -213,7 +213,7 @@ getStationGauge<-function(target.loc="CPER"){
     ## Zone Weights
     stzone <- 1 # state forage zone
     
-    zonewt <- matrix(c(0.01, 0.01, 0.05, 0.08,0.17,0.21,0.17,0.13,0.11,0.05,0.01,0.01), 
+    zonewt <- matrix(c(0.0, 0.0, 0.02, 0.08,0.20,0.28,0.15,0.12,0.10,0.05,0.0,0.0), 
                      nrow = 1, ncol = 12)
     colnames(zonewt) <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", 
                           "Aug", "Sep", "Oct", "Nov", "Dec")
