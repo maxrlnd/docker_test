@@ -612,8 +612,11 @@ function(input, output, session) {
     fluidRow(
       column(width = 10,
       h4(paste0("Congratulations! You've completed ", simLength, " years of ranching.")),
-      p(paste0("At the end of the simulation your ranch had ", myOuts$herd[simLength], " cows")),
-      p(paste0("Through ranching you accumulated $", round(myOuts$assets.cash[simLength], 0), " in cash" )),
+      br(),
+      p(paste0("Through ranching you accumulated $", round(myOuts$assets.cash[simLength + 1], 0), " in cash" )),
+      p(paste0("You also have a herd worth $", round(myOuts$assets.cows[simLength + 1], 0), ".")),
+      p(paste0("Your total net worth is $", round(myOuts$net.wrth[simLength + 1], 0), ". With a conversation rate of $200,000
+               of simulation money to $1 of MTurk bonus money, you've earned $", round(round(myOuts$net.wrth[simLength + 1], 0)/200000), 2),"."),
       actionButton("saveInputs", "Save results and recieve completion code"),
       uiOutput("complete"),
       offset = .5)
