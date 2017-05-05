@@ -53,7 +53,7 @@ tabPanel("Insurance",
                            h4(textOutput("text1"))
              )
          )
-),
+)
 
 tabPanel("Input",
          fluidRow(
@@ -143,7 +143,7 @@ tabPanel("Input",
                   
            )
          )
-),
+)
 
 output$map <- renderLeaflet({
   leaflet() %>%

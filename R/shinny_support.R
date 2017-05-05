@@ -46,23 +46,24 @@ getJulyInfo <- function(currentYear){
   
   ## Create taglist showing all adpatation
   tagList(
-    h4("Summer Adaptation Investment Decision"),
-    h5("Rainfall as a percent of normal (100 is average rainfall)"),
+    h3(paste0("Year ", currentYear, ": Summer Adaptation Investment Decision")),
+    p("It is now the end of June and you are mostly through the most important growing season for forage on your range.
+      While good rainfall levels for July and August will still help increase the grass avaialble for your herd, you
+      have to decide now how much hay to buy to supplement the grass on your range. Look to the advice below to help
+      you decide how much, if any, to invest in hay."),
+    br(),
     plotOutput(paste0("rainGraph", currentYear)),
     tableOutput(paste0("julyRain", currentYear)),
-    p(paste0("If rainfall for the rest of the year is average your available forage will be ", forageList[1], "% of normal")),
-    p(paste0("If rainfall for the rest of the year is above average your available forage will be ", forageList[2], "% of normal")),
-    p(paste0("If rainfall for the rest of the year is below average your available forage will be ", forageList[3], "% of normal")),
+    p(paste0("If rainfall for the rest of the year is average your available forage will be ", forageList[1], "% of normal. In this case, 
+             you should buy $", adaptationCost[1], " of hay to get your herd in ideal shape for market.")),
+    p(paste0("If rainfall for the rest of the year is above average your available forage will be ", forageList[2], "% of normal.
+             In this case, you should buy $", adaptationCost[2], " of hay to get your herd in ideal shape for market.")),
+    p(paste0("If rainfall for the rest of the year is below average your available forage will be ", forageList[3], "% of normal.
+             In this case, you should buy $", adaptationCost[3], " of hay to get your herd in ideal shape for market.")),
     br(),
     sliderInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd",
                 min = 0, max = adaptMax, value = 0, step = 100, width = "600px"),
-    br(),
-    p(paste0("If rainfall over the next few months is normal, you should buy $", adaptationCost[1], 
-            " of hay to get your herd in ideal shape for market.")),
-    p(paste0("If rainfall over the next few months is above normal, you should buy $", adaptationCost[2], 
-            " of hay to get your herd in ideal shape for market.")),
-    p(paste0("If rainfall over the next few months is below normal, you should buy $", adaptationCost[3], 
-            " of hay to get your herd in ideal shape for market."))
+    h5("Remember, if you don't have enough cash on hand, you can borrow money to buy hay at an interest rate of 6.5%")
   )
 }
 
@@ -85,28 +86,30 @@ getCowSell <- function(forage, wean, currentYear){
   herd <- myOuts[currentYear, herd]
   
   
-  ## Calcuatle weaned Calves
-  calvesAvailable <- floor(herd * wean)
+  ## Calculate weaned Calves
+  calvesAvailable <- round(herd * wean)
   
   ## Calculate Standard Sales
-  standardCowSale <- floor(herd * simRuns$cull.num)
-  standardCalfSale <- floor(calvesAvailable * simRuns$calf.sell)
+  standardCowSale <- round(herd * simRuns$cull.num)
+  standardCalfSale <- round(calvesAvailable * simRuns$calf.sell)
   weanWeight <- round(calfDroughtWeight(simRuns$normal.wn.wt, forage), 0)
   
   ## Create UI elements
   tagList(
     br(),
     br(),
-    h4("Fall Cow and Calf Sales"),
+    h3(paste0("Year ", currentYear, ": Fall Cow and Calf Sales")),
+    p("It is the end of the season and it is time to take your calves to market.
+      Use the information below to decide how many cows and calves you want to sell this year."),
     br(),
     
-    h5(paste0("Your weaned calves weigh ", weanWeight , " pounds, on average.")),
+    h5(paste0("Your weaned calves weigh ", weanWeight , " pounds, on average.", " Your weaned calves weigh ", 600 - weanWeight, " pounds below average.")),
     tags$li("The normal target weight is 600lbs."), 
     tags$li("If you calves are lighter, it is because the mother cows
                    may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."),
     br(),
     
-    h5(paste0("You currently have ", myOuts[currentYear, herd], " cows and ", calvesAvailable, " calves.")),
+    h5(paste0("You currently have ", myOuts[currentYear, herd], " cows and ", calvesAvailable, " calves.", " At the normal target weight, each calf you sell would have brought in $", simRuns$p.wn[1]*600, " of cash.")),
     tags$li(paste0("With the current market price of $",simRuns$p.wn[1], "/pound, each calf you sell will bring in $", 
                    round(weanWeight * simRuns$p.wn[1], 0) , " of cash.")), 
     tags$li("For every cow you sell, you will bring in $850 of cash."),
@@ -186,7 +189,7 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
                                       myOuts[currentYear, cap.taxes]]
   myOuts[currentYear, net.wrth := myOuts[currentYear, assets.cash] + myOuts[currentYear, assets.cow]]
   myOuts[currentYear, wn.succ := wean]
-  myOuts[currentYear, forage.potential := forage]
+  myOuts[currentYear, forage.production := forage]
   myOuts[currentYear, herd := round(newHerd, 0)]
   myOuts[currentYear, calves.sold := calfSale / floor(currentHerd * wean)]
   myOuts[currentYear, cows.culled := cowSales / currentHerd]
@@ -198,6 +201,7 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
                                                                                  current_herd = currentHerd, 
                                                                                  intens.adj = adaptInten),  
                                     1 - forage)]
+  myOuts[currentYear, forage.potential := sum(zones)]
 }
 
 createNewYr <- function(year){
@@ -319,4 +323,13 @@ inputToDF <- function(inputList){
   }
   
   return(returnTable)
+}
+
+createOutputs <- function(practiceRuns, simRuns, indem){
+  practiceOuts <- createResultsFrame(practiceRuns)
+  practiceOuts[1, cost.ins := indem[[1]]$producer_prem]
+  myOuts <- createResultsFrame(simRuns)
+  myOuts[1, cost.ins := indem[[1]]$producer_prem]
+  practiceOuts <<- practiceOuts
+  myOuts <<- myOuts
 }

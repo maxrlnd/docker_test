@@ -1,6 +1,6 @@
 # Calf Weight Functions ---------------------------------------------------
 
-AdjWeanSuccess <- function(forage.potential, noadpt = FALSE, normal.wn.succ, t) {
+AdjWeanSuccess <- function(forage.production, noadpt = FALSE, normal.wn.succ, t) {
   # Description: Adusts weaning success downward for the year of the drought and the following year
   # NOTE: This equation is based on what I consider to be "reasonable" estimates
   #  of weaning success based on forage potential. We need to find a source
@@ -8,28 +8,28 @@ AdjWeanSuccess <- function(forage.potential, noadpt = FALSE, normal.wn.succ, t) 
   
   wn.succ <- NULL
   
-  if(noadpt == FALSE | forage.potential >= 1) {
+  if(noadpt == FALSE | forage.production >= 1) {
     wn.succ <- rep(normal.wn.succ, t)
   }
-  if(noadpt == TRUE & forage.potential < 1) {
+  if(noadpt == TRUE & forage.production < 1) {
     if(t > 1){
-      wn.succ[1] <- normal.wn.succ * (1 / (1 + exp(-(1 + forage.potential)*2))) 
-      wn.succ[2] <- normal.wn.succ * (1 / (1 + exp(-(1 + forage.potential))))
+      wn.succ[1] <- normal.wn.succ * (1 / (1 + exp(-(1 + forage.production)*2))) 
+      wn.succ[2] <- normal.wn.succ * (1 / (1 + exp(-(1 + forage.production))))
       wn.succ[3:t] <- normal.wn.succ                                
     }else{
-      wn.succ <- normal.wn.succ * (1 / (1 + exp(-(1 + forage.potential)*2))) 
+      wn.succ <- normal.wn.succ * (1 / (1 + exp(-(1 + forage.production)*2))) 
     }
   }
   return(wn.succ)
 }  
 
-calfDroughtWeight<-function(normal.wn.wt, forage.potential){
+calfDroughtWeight<-function(normal.wn.wt, forage.production){
   "
   Description: If forage potential is less than 1, then the calf weight is less
   #****Is this method of reducing weight back up by the literature?
   "
-  if(forage.potential < 1) {
-    wn.wt <- normal.wn.wt * (1 - (1 - forage.potential)/3)
+  if(forage.production < 1) {
+    wn.wt <- normal.wn.wt * (1 - (1 - forage.production)/3)
   }
   else{
     wn.wt <- normal.wn.wt
@@ -116,22 +116,22 @@ getHerdSize <- function(results_1ya, results_2ya, deathRate){
 }
 
 
-shinyHerd <- function(herd1, cull1, herd2, calves2, deathRate){
+shinyHerd <- function(herd_1, cull_1, herd_2, calves_2, deathRate){
   "
   Function: shinyHerd
-  Description: function to calculae size of herd for shiny app
+  Description: function to calculate size of herd for shiny app
   
   Inputs:
-  herd1 = herd size 1 year ago
-  cull1 = number (not %) of cows culled in the previous year
-  herd2 = herd size 2 years ago
-  calves2 = number (not %) of claves sold two years ago
+  herd_1 = herd size 1 year ago
+  cull_1 = number (not %) of cows culled in the previous year
+  herd_2 = herd size 2 years ago
+  calves_2 = number (not %) of claves KEPT two years ago
   deathRate = percent of cows dying each year
   
   Outputs:
   currentHerd = size of the current herd
   "
-  currentHerd <- (herd1 * (1 - deathRate) - cull1 + 
-                    calves2 * (1 - deathRate))
+  currentHerd <- (herd_1 * (1 - deathRate) - cull_1 + 
+                    calves_2 * (1 - deathRate))
   return(ifelse(currentHerd < 0, 0, currentHerd))
 }

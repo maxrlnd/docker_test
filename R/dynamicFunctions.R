@@ -187,17 +187,17 @@ sim_run_single <- function(pars,
   sim_results[, net.wrth := assets.cash + assets.cow]
   sim_results[, wn.succ := wn.succ.current]
   sim_results[, herd := currentHerd]
-  sim_results[, forage.potential := fp.current]
+  sim_results[, forage.production := fp.current]
   sim_results[, adapt_choice := adpt_choice]
   sim_results[, cows.culled := currentCull]
   sim_results[, calves.sold := calf.sell]
   sim_results[, zone.change :=  sum(station.gauge$zonewt)]
   
   #### This is going to need some work once we start incorporating user adaptation choices
-  sim_results[, Gt := ifelse(forage.potential < 1 & adapt_choice == "noAdpt", 
-                                        1 - forage.potential + forage.potential * (1 - rainForage)/rainForage,  # the .5 should be the "adaptation deficit"
+  sim_results[, Gt := ifelse(forage.production < 1 & adapt_choice == "noAdpt", 
+                                        1 - forage.production + forage.production * (1 - rainForage)/rainForage,  # the .5 should be the "adaptation deficit"
                                         # 0)]
-                                        1 - max(forage.potential, .9))]
+                                        1 - max(forage.production, .9))]
 }
 
 

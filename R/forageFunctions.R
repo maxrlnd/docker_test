@@ -6,7 +6,7 @@ foragePWt <- function(station.gauge, styear, herd, carryingCap,
   
   "
   Returns a weight representing
-  annual forage potential for a
+  annual forage production for a
   given gridcell or station
   gauge's annual precip record.
   
@@ -56,10 +56,10 @@ foragePWt <- function(station.gauge, styear, herd, carryingCap,
   
   yprecip <- station.gauge$stgg[Year %in% (styear-1):styear, ]  # monthly precip amounts for start year
   zonewt <- station.gauge$zonewt
-  yprecip <- cbind((yprecip[Year == styear - 1, c("NOV", "DEC")]), 
+  yprecip <- cbind((yprecip[Year == styear - 1, c("NOV", "DEC")]),  # adding Nov and Dec from previous year to rainfall
                    (yprecip[Year == styear, -c("NOV", "DEC", "Year")]))
-  ave <- station.gauge$avg
-  yearAvg <- rbindlist(list(yprecip, ave), use.names = T)
+  monthly.averages <- station.gauge$avg  # monthly average rainfall for each of the 12 months
+  yearAvg <- rbindlist(list(yprecip, monthly.averages), use.names = T)
   
   
   
@@ -83,23 +83,23 @@ foragePWt <- function(station.gauge, styear, herd, carryingCap,
     
     # Replace Months forage in unknown months with the average
     
-    yearAvg[1, (names(ave)[decisionMonth:(farmYearStart -1)]) := ave[,decisionMonth:(farmYearStart -1)]] 
+    yearAvg[1, (names(monthly.averages)[decisionMonth:(farmYearStart -1)]) := monthly.averages[,decisionMonth:(farmYearStart -1)]] 
   }
   
   # Monthly precip "index"
-  pidx  <- yearAvg[1,] / yearAvg[2,] 
+  precip.index  <- yearAvg[1,] / yearAvg[2,] 
   
   #Compute Forage Weight Potentials
-  foragewt = zonewt * pidx[, names(ave), with = F]
+  foragewt = zonewt * precip.index[, names(monthly.averages), with = F]
     
   
-  # Compute annual forage potential weight for zone
-  forage.potential <- sum(foragewt)
+  # Compute annual forage for zone
+  forage.production <- sum(foragewt)
   
   ## Adjust for carying Capacity
-  forage.potential <-forage.potential/carryingCap
+  forage.production <-forage.production/carryingCap
   
-  return(forage.potential)
+  return(forage.production)
   
 }
 
@@ -107,7 +107,7 @@ whatIfForage <- function(station.gauge, zonewt, styear, herd, carryingCap,
                          currentMonth, farmYearStart = 11, expectedFuture){
   "
   Function: whatIfForage
-  Description: calcualte uncertain forage based given broad scenarios
+  Description: calculate uncertain forage based given broad scenarios
   
   Inputs:
   station.gauge = list of station gague info from simRuns/pars``
@@ -121,43 +121,41 @@ whatIfForage <- function(station.gauge, zonewt, styear, herd, carryingCap,
   expectedFuture = scenario selection either, 'normal', 'low', or 'high'
   
   Outputs:
-  forage.potential = the predicted amount of forage available based on 
+  forage.production = the predicted amount of forage available based on 
     scenario selection
   "
   
   yprecip <- station.gauge$stgg[Year %in% (styear-1):styear, ]  # monthly precip amounts for start year
   yprecip <- cbind((yprecip[Year == styear - 1, c("NOV", "DEC")]), 
                    (yprecip[Year == styear, -c("NOV", "DEC", "Year")]))
-  ave <- station.gauge$avg
-  yearAvg <- rbindlist(list(yprecip, ave), use.names = T)
+  monthly.averages <- station.gauge$avg
+  yearAvg <- rbindlist(list(yprecip, monthly.averages), use.names = T)
   
   if(expectedFuture == "normal"){
-    yearAvg[1, (names(ave)[currentMonth:(farmYearStart -1)]) := ave[,currentMonth:(farmYearStart -1)]]
+    yearAvg[1, (names(monthly.averages)[currentMonth:(farmYearStart -1)]) := monthly.averages[,currentMonth:(farmYearStart -1)]]
   }
   if(expectedFuture == "low"){
-    yearAvg[1, (names(ave)[currentMonth:(farmYearStart -1)]) := ave[,currentMonth:(farmYearStart -1)] * .5]
+    yearAvg[1, (names(monthly.averages)[currentMonth:(farmYearStart -1)]) := monthly.averages[,currentMonth:(farmYearStart -1)] * .5]
   }
   if(expectedFuture == "high"){
-    yearAvg[1, (names(ave)[currentMonth:(farmYearStart -1)]) := ave[,currentMonth:(farmYearStart -1)] * 1.5]
+    yearAvg[1, (names(monthly.averages)[currentMonth:(farmYearStart -1)]) := monthly.averages[,currentMonth:(farmYearStart -1)] * 1.5]
   }
   
   # Monthly precip "index"
-  pidx  <- yearAvg[1,] / yearAvg[2,] 
+  precip.index  <- yearAvg[1,] / yearAvg[2,] 
   
   #Compute Forage Weight Potentials
-  foragewt = zonewt * pidx[, names(ave), with = F]
+  foragewt = zonewt * precip.index[, names(monthly.averages), with = F]
   
   
   # Compute annual forage potential weight for zone
-  forage.potential <- sum(foragewt)
-  
+  forage.production <- sum(foragewt)
   ## Adjust for carying Capacity
   if(herd != 0){
     carryingCap <- herd/carryingCap
-    forage.potential <-forage.potential/carryingCap  
+    forage.production <- forage.production/carryingCap  
   }
-  
-  return(forage.potential)
+  return(forage.production)
   
   
 }

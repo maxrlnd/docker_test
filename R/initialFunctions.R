@@ -128,7 +128,7 @@ getSimVars = function(station.gauge,
   if(autoSelect.insurance == TRUE){
     assign("insp", insAlloc(fpwt = zonewt, niv = 2), envir = simvars) # automatic selection
   }else{
-    assign("insp", rbind(c(3, 0.5), c(5, 0.5)), envir = simvars) # insurance purchase
+    assign("insp", rbind(c(5, 0.5), c(7, 0.5)), envir = simvars) # insurance purchase
   }
   detach(station.gauge)
   
@@ -213,7 +213,7 @@ getStationGauge<-function(target.loc="CPER"){
     ## Zone Weights
     stzone <- 1 # state forage zone
     
-    zonewt <- matrix(c(0.01, 0.01, 0.05, 0.08,0.17,0.21,0.17,0.13,0.11,0.05,0.01,0.01), 
+    zonewt <- matrix(c(0.0, 0.0, 0.02, 0.08,0.20,0.28,0.15,0.12,0.10,0.05,0.0,0.0), 
                      nrow = 1, ncol = 12)
     colnames(zonewt) <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", 
                           "Aug", "Sep", "Oct", "Nov", "Dec")
@@ -265,9 +265,9 @@ getStationGauge<-function(target.loc="CPER"){
 createResultsFrame <- function(pars = NULL){
   "
   Function: createResultsFrame
-  Description: This function creates a theoretical previous result from the year before the simultaion begins
+  Description: This function creates a theoretical previous result from the year before the simulation begins
     right now this assumes that there was no drought the year before the simulation and 
-    revenues were 0. These assumptions are likely unrealistic and can be adjusted to accomidated different
+    revenues were 0. These assumptions are likely unrealistic and can be adjusted to accomodate different
     scenarios.
   
   Inputs:
@@ -280,8 +280,9 @@ createResultsFrame <- function(pars = NULL){
                    "rev.tot", "cost.op", "cost.ins", "cost.adpt",
                    "cost.int", "cost.tot", "profit", "taxes", "aftax.inc", 
                    "cap.sales", "cap.purch", "cap.taxes", "assets.cow", 
-                   "assets.cash", "net.wrth", "wn.succ", "forage.potential", 
-                   "herd", "calves.sold", "cows.culled", "zone.change", "Gt")
+                   "assets.cash", "net.wrth", "wn.succ", "forage.production", 
+                   "herd", "calves.sold", "cows.culled", "zone.change", "Gt",
+                   "forage.potential")
   ## fills in rows using initial variables from pars
   if(!is.null(pars)){
     sim_results <- data.table(matrix(0, pars$sim_length + 1, length(resultNames)))
@@ -291,12 +292,13 @@ createResultsFrame <- function(pars = NULL){
     sim_results[1, net.wrth := assets.cow + assets.cash]
     sim_results[, adapt_choice := as.character(adapt_choice)]
     sim_results[1, adapt_choice := "noadpt"]
-    sim_results[1, forage.potential := 1]
+    sim_results[1, forage.production := 1]
     sim_results[1, wn.succ := pars$normal.wn.succ]
     sim_results[1, calves.sold := pars$calf.sell]
     sim_results[1, cows.culled := pars$cull.num]
     sim_results[1, zone.change := 1]
     sim_results[1, Gt := 0]
+    sim_results[1, forage.potential := 1]
     
   ## if pars isn't prsent fills in everything with 0's 
   }else{

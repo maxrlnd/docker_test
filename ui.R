@@ -9,6 +9,7 @@ tagList(
   useShinyjs(),
   extendShinyjs(text = jscode, functions = "init"),
   extendShinyjs(text = "shinyjs.closewindow = function() { window.close(); }"),
+  extendShinyjs(text = jsResetCode),
   tags$style(css),
   tags$head(
     tags$style(HTML("
@@ -37,7 +38,7 @@ tagList(
       Shiny.addCustomMessageHandler("scrollCallbackIns",
       function(msg) {
       console.log(msg)
-      window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().bottom + 250);
+      window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().bottom + 680);
       }
       );'
   ),
@@ -46,7 +47,16 @@ tagList(
     Shiny.addCustomMessageHandler("scrollCallbackCow",
     function(msg) {
     console.log(msg)
-    window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().bottom + 600);
+    window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().bottom + 915);
+    }
+    );'
+  ),
+  tags$script(
+    '
+    Shiny.addCustomMessageHandler("scrollCallbackTop",
+    function(msg) {
+    console.log(msg)
+    window.scrollTo(0, document.body.top);
     }
     );'
   ),
@@ -55,7 +65,7 @@ tagList(
       Shiny.addCustomMessageHandler("scrollCallbackRain",
       function(msg) {
       console.log(msg)
-      window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().top - 100);
+      window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().top + 200);
       }
       );'
   )),
@@ -73,7 +83,8 @@ tabsetPanel(id = "mainPanels",
             textInput("code", "Enter Code to be Run"),
             actionButton("runCode", "Run Code"),
             textInput("insChange", "Enter True or False to use insurance or not"),
-            actionButton("applyInsChange", "Change Insurance")
+            actionButton("applyInsChange", "Change Insurance"),
+            actionButton("reset_button", "Reset Page")
             # actionButton("saveInputs", "Save all Input")
           )),
  # tabPanel("Input",

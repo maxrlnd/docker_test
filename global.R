@@ -19,6 +19,9 @@ return false;
 });
 }
 '
+## js code to reset
+jsResetCode <- "shinyjs.reset = function() {history.go(0)}"
+
 ## Css for disabled tabs
 css <- '
 .disabled {
@@ -79,10 +82,7 @@ indem <- lapply(startYear:(startYear + simLength - 1), function(x){
 })
 
 ## Create results frames for practice and simulation
-practiceOuts <- createResultsFrame(practiceRuns)
-practiceOuts[1, cost.ins := indem[[1]]$producer_prem]
-myOuts <- createResultsFrame(simRuns)
-myOuts[1, cost.ins := indem[[1]]$producer_prem]
+createOutputs(practiceRuns, simRuns, indem)
 
 ## Is insurance purchased?
 # purchaseInsurance <- sample(c(T, F), 1)
@@ -106,3 +106,5 @@ yearHandler <- paste0('if(typeMessage == ', 1:simLength, '){
 
 NUM_PAGES <- 5
 currentPage <- 1
+
+debugMode <- F
