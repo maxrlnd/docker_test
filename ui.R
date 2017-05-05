@@ -38,7 +38,7 @@ tagList(
       Shiny.addCustomMessageHandler("scrollCallbackIns",
       function(msg) {
       console.log(msg)
-      window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().bottom + 250);
+      window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().bottom + 750);
       }
       );'
   ),
@@ -47,7 +47,16 @@ tagList(
     Shiny.addCustomMessageHandler("scrollCallbackCow",
     function(msg) {
     console.log(msg)
-    window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().bottom + 600);
+    window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().bottom + 915);
+    }
+    );'
+  ),
+  tags$script(
+    '
+    Shiny.addCustomMessageHandler("scrollCallbackTop",
+    function(msg) {
+    console.log(msg)
+    window.scrollTo(0, document.body.top);
     }
     );'
   ),
@@ -56,7 +65,7 @@ tagList(
       Shiny.addCustomMessageHandler("scrollCallbackRain",
       function(msg) {
       console.log(msg)
-      window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().top - 100);
+      window.scrollTo(0, document.getElementById(msg).getBoundingClientRect().top + 200);
       }
       );'
   )),
