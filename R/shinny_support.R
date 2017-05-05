@@ -61,7 +61,7 @@ getJulyInfo <- function(currentYear){
     p(paste0("If rainfall for the rest of the year is below average your available forage will be ", forageList[3], "% of normal.
              In this case, you should buy $", adaptationCost[3], " of hay to get your herd in ideal shape for market.")),
     br(),
-    sliderInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd",
+    sliderInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd?",
                 min = 0, max = adaptMax, value = 0, step = 100, width = "600px"),
     h5("Remember, if you don't have enough cash on hand, you can borrow money to buy hay at an interest rate of 6.5%")
   )
@@ -103,15 +103,18 @@ getCowSell <- function(forage, wean, currentYear){
       Use the information below to decide how many cows and calves you want to sell this year."),
     br(),
     
-    h5(paste0("Your weaned calves weigh ", weanWeight , " pounds, on average.", " Your weaned calves weigh ", 600 - weanWeight, " pounds below average.")),
-    tags$li("The normal target weight is 600lbs."), 
-    tags$li("If you calves are lighter, it is because the mother cows
+    h5(paste0("Your weaned calves weigh ", weanWeight , " pounds, on average.", 
+              " Your weaned calves weigh ", 600 - weanWeight, " pounds below their target weight.
+              This means that you're losing out on ")),
+    tags$li("The normal target weight is 600 lbs."), 
+    tags$li("If your calves are lighter than 600 lbs, it is because the mother cows
                    may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."),
     br(),
     
-    h5(paste0("You currently have ", myOuts[currentYear, herd], " cows and ", calvesAvailable, " calves.", " At the normal target weight, each calf you sell would have brought in $", simRuns$p.wn[1]*600, " of cash.")),
+    h5(paste0("You currently have ", myOuts[currentYear, herd], " cows and ", calvesAvailable, " calves.")),
     tags$li(paste0("With the current market price of $",simRuns$p.wn[1], "/pound, each calf you sell will bring in $", 
                    round(weanWeight * simRuns$p.wn[1], 0) , " of cash.")), 
+    tags$li(paste0("At the normal target weight, each calf you sell would bring in $", simRuns$p.wn[1]*600, " of cash.")),
     tags$li("For every cow you sell, you will bring in $850 of cash."),
     br(),
     
