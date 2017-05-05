@@ -40,10 +40,21 @@ function(input, output, session) {
         tags$li(p("Your herd has ", 
                  span(prettyNum(myOuts[i, herd], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large"), 
                  " cows, not including calves or yearlings (cows that are weaned, but not yet reproducing).")),
+        if(prettyNum(myOuts[i, assets.cash], digits = 0)<0){
         tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
-                                                     big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large"))),
+                                                     big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:red")))
+        }else{
+          tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
+                                                             big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:green")))
+          }
+        ,
+        if((prettyNum(myOuts[i, net.wrth], digits = 0)>0)){
         tags$li(p("Your current net worth, including cows and your bank balance, is $", 
-                 span(prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large"), ".")),
+                 span(prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:green"), "."))
+          }else{
+            tags$li(p("Your current net worth, including cows and your bank balance, is $", 
+                      span(prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:red"), "."))
+          },
         br(),
         h4("Range Condition"),
         p("Your range is currently at ", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="font-weight:bold;font-size:large"), "%"),
