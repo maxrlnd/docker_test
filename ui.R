@@ -514,7 +514,19 @@ tabsetPanel(id = "mainPanels",
                                     "))),
           
           
-    uiOutput("pageOut")
+          fluidPage(uiOutput("pageOut"), 
+                    fixedPanel(
+                      draggable = FALSE, top = 100, left = "auto", right = 20, bottom = "auto",
+                      width = 200, height = "auto",
+                      wellPanel(
+                        p(h5("Ranch Overview")), 
+                        br(), 
+                        p(paste0("You have : ")))
+                    )
+                    
+          )
+          
+          
  )
  
   
