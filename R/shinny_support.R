@@ -61,8 +61,8 @@ getJulyInfo <- function(currentYear){
     p("If rainfall for the rest of the year is below average your available forage will be ", span((forageList[3]),style="font-weight:bold;font-size:medium"), "% of normal.
              In this case, you should buy $", span((adaptationCost[3]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
     br(),
-    sliderInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd?",
-                min = 0, max = adaptMax, value = 0, step = 100, width = "600px"),
+    numericInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd?",
+                min = 0, max = adaptMax, value = 0, step = 100),
     h5("Remember, if you don't have enough cash on hand, you can borrow money to buy hay at an interest rate of 6.5%")
   )
 }
@@ -199,8 +199,8 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
   myOuts[currentYear, wn.succ := wean]
   myOuts[currentYear, forage.production := forage]
   myOuts[currentYear, herd := round(newHerd, 0)]
-  myOuts[currentYear, calves.sold := calfSale / floor(currentHerd * wean)]
-  myOuts[currentYear, cows.culled := cowSales / currentHerd]
+  myOuts[currentYear, calves.sold := ifelse(floor(currentHerd * wean) == 0, 0, calfSale / floor(currentHerd * wean))]
+  myOuts[currentYear, cows.culled := ifelse(currentHerd == 0, 0, cowSales / currentHerd)]
   myOuts[currentYear, zone.change := sum(zones)]
   myOuts[currentYear, Gt := ifelse(forage < 1, 
                                     1 - forage + forage * adaptCost/getAdaptCost(adpt_choice = "feed", 
