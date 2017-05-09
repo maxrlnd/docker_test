@@ -516,17 +516,7 @@ tabsetPanel(id = "mainPanels",
           
           
           fluidPage(uiOutput("pageOut"), 
-                    fixedPanel(
-                      draggable = FALSE, top = 100, left = "auto", right = 20, bottom = "auto",
-                      width = 200, height = "auto",
-                      wellPanel(
-                        p(h5("Ranch Overview")), 
-                        br(), 
-                        p(prettyNum(myOuts[1, herd], digits = 0, big.mark=",", scientific=FALSE)," cows"), 
-                        p("Bank balance: $",prettyNum(myOuts[1, assets.cash], digits = 0,big.mark=",", scientific=FALSE)), 
-                        p("Net worth: $", prettyNum(myOuts[1, net.wrth], digits = 0, big.mark=",", scientific=FALSE))
-                      )
-                    )
+                    uiOutput("infoPane")
                     
           )
           
