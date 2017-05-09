@@ -590,6 +590,20 @@ function(input, output, session) {
     rv$page <- rv$page + direction
   }
   
+  output$infoPane <- renderUI({
+    fixedPanel(
+      draggable = FALSE, top = 100, left = "auto", right = 20, bottom = "auto",
+      width = 200, height = "auto",
+      wellPanel(
+        p(h5("Ranch Overview")), 
+        br(), 
+        p(prettyNum(myOuts[rv$page, herd], digits = 0, big.mark=",", scientific=FALSE)," cows"), 
+        p("Bank balance: $",prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE)), 
+        p("Net worth: $", prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE))
+      )
+    )
+  })
+  
   output$pageOut <- renderUI({
   
   if(rv$page <= simLength){  
