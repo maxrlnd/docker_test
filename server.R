@@ -595,11 +595,33 @@ function(input, output, session) {
       draggable = FALSE, top = 100, left = "auto", right = 20, bottom = "auto",
       width = 200, height = "auto",
       wellPanel(
-        p(h5("Ranch Overview")), 
+        p(h3("Ranch Overview")), 
         br(), 
+        # if(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0))<100){
+        #   p("Your range is currently at", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:red"), "%")
+
+        p(h4("Cattle Status:")), 
         p(prettyNum(myOuts[rv$page, herd], digits = 0, big.mark=",", scientific=FALSE)," cows"), 
-        p("Bank balance: $",prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE)), 
-        p("Net worth: $", prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE))
+        br(),
+        if(ifelse(round(sum(myOuts[rv$page, forage.potential])* 100, 0) > 100, 100, 
+                  round(sum(myOuts[rv$page, forage.potential])* 100, 0)) >= 100){
+        p("Range health:", span(round(sum(myOuts[rv$page, forage.potential])* 100, 0), style="color:green" ), "%")
+        }else{
+          p("Range health:", span(round(myOuts[ forage.potential]* 100, 0), style="color:red" ), "%")
+      }
+        , 
+          
+        p(h4("Ranch Finances")),
+        if((prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE))>0){
+        p("Bank balance: $",span(prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE), style="color:green"))
+        }else{p("Bank balance: $",span(prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE), style="color:red"))
+          }
+        , 
+        if((prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE))>0){
+        p("Net worth: $", span(prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE), style="color:green"))
+        }else{p("Net worth: $", span(prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE), style="color:red"))
+          
+        }
       )
     )
   })
