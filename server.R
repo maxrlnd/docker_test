@@ -603,11 +603,10 @@ function(input, output, session) {
         p(h4("Cattle Status:")), 
         p(prettyNum(myOuts[rv$page, herd], digits = 0, big.mark=",", scientific=FALSE)," cows"), 
         br(),
-        if(ifelse(round(sum(myOuts[rv$page, forage.potential])* 100, 0) > 100, 100, 
-                  round(sum(myOuts[rv$page, forage.potential])* 100, 0)) >= 100){
+        if(round(sum(myOuts[rv$page, forage.potential])* 100, 0) >= 100){ 
         p("Range health:", span(round(sum(myOuts[rv$page, forage.potential])* 100, 0), style="color:green" ), "%")
         }else{
-          p("Range health:", span(round(myOuts[ forage.potential]* 100, 0), style="color:red" ), "%")
+          p("Range health:", span(round(myOuts[ rv$page, forage.potential]* 100, 0), style="color:red" ), "%")
       }
         , 
           
