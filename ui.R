@@ -515,7 +515,7 @@ tabsetPanel(id = "mainPanels",
           
           
           
-          fluidPage(uiOutput("pageOut"), 
+          fluidPage(uiOutput("pageOut"),
                     uiOutput("infoPane")
                     
           )
