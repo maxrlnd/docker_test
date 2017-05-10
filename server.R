@@ -610,7 +610,16 @@ function(input, output, session) {
                   trigger = "hover", 
                   options = list(container = "body")
         ),
+        p("Calves in herd:","some number", 
+          bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
+        bsPopover(id = "infocalves", title = "Calves in herd",
+                  content = paste0("differences between cows and calves"),
+                  placement = "bottom", 
+                  trigger = "hover", 
+                  options = list(container = "body")
+          ),
         br(),
+        p(h4("Ranch Status:")),
         if(round(sum(myOuts[rv$page, forage.potential])* 100, 0) >= 100){ 
         p("Range health:", span(round(sum(myOuts[rv$page, forage.potential])* 100, 0), style="color:green" ), "%", 
           bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
@@ -624,8 +633,6 @@ function(input, output, session) {
                   trigger = "hover", 
                   options = list(container = "body"))
         , 
-          
-        p(h4("Ranch Finances")),
         if((prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE))>0){
         p("Bank balance: $",span(prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE), style="color:green"), 
           bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
