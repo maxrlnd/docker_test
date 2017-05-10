@@ -508,9 +508,9 @@ tabsetPanel(id = "mainPanels",
                                     background-color: rgb(255,255,255)
                                     color: rgb(255,255,255);
                                     font-weight: bold;
-                                }
-                      # CSS formating for the question buttons
-                                .quest{
+                                }",
+                      # CSS formating for the rollover buttons
+                                ".quest{
                                     color:rgb(0, 0, 0);
                                     text-align: left;
                                     border-color: rgb(245,245,245);
