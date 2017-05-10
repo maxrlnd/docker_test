@@ -4,7 +4,7 @@ library(markdown)
 library(leaflet)
 library(RColorBrewer)
 library(shinyjs)
-
+library(shinyBS)
 source("R/load.R")
 source("R/dynamicFunctions.R")
 source("R/shinny_support.R")

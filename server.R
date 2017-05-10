@@ -590,7 +590,10 @@ function(input, output, session) {
   navPage <- function(direction) {
     rv$page <- rv$page + direction
   }
+
   
+  
+  # Create an output for the sidebar widget on overall ranch status
   output$infoPane <- renderUI({
     fixedPanel(
       draggable = FALSE, top = 100, left = "auto", right = 20, bottom = "auto",
@@ -602,7 +605,17 @@ function(input, output, session) {
         #   p("Your range is currently at", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:red"), "%")
 
         p(h4("Cattle Status:")), 
-        p(prettyNum(myOuts[rv$page, herd], digits = 0, big.mark=",", scientific=FALSE)," cows"), 
+        p("You have:",prettyNum(myOuts[rv$page, herd], digits = 0, big.mark=",", scientific=FALSE)), 
+        bsButton("cows", label = "", icon = icon("questions"), style = "info", size = "extra-small"),
+        bsPopover(id = "cows", title = "Tidy data",
+                  content = paste0("You should read the ", 
+                                   a("tidy data paper", 
+                                     href = "http://vita.had.co.nz/papers/tidy-data.pdf",
+                                     target="_blank")),
+                  placement = "left", 
+                  trigger = "hover", 
+                  options = list(container = "body")
+        ),
         br(),
         if(round(sum(myOuts[rv$page, forage.potential])* 100, 0) >= 100){ 
         p("Range health:", span(round(sum(myOuts[rv$page, forage.potential])* 100, 0), style="color:green" ), "%")
@@ -625,6 +638,9 @@ function(input, output, session) {
       )
     )
   })
+  
+  # Create rollover tooltip for sidebar widget items
+  addTooltip(session = session, id = "infoPane", title="test tooltip for sidebar widget", placement = "left", trigger = "hover")
   
   output$pageOut <- renderUI({
   
