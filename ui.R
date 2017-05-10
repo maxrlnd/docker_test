@@ -509,7 +509,7 @@ tabsetPanel(id = "mainPanels",
                                     color: rgb(255,255,255);
                                     font-weight: bold;
                                 }
-                      
+                      # CSS formating for the question buttons
                                 .quest{
                                     color:rgb(0, 0, 0);
                                     text-align: left;
