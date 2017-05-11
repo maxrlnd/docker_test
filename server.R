@@ -484,7 +484,6 @@ function(input, output, session) {
                             forage = get(paste0("effectiveForage", i))(), calfSale = input[[paste0("calves", i, "Sale")]],
                             indem = indem[[i]], adaptCost = input[[paste0("d", i, "AdaptSpent")]], cowSales = input[[paste0("cow", i, "Sale")]], 
                             newHerd = get(paste0("herdSize", i))(), zones = get(paste0("currentZones", i))(), 
-                            adaptInten = CalculateAdaptationIntensity(get(paste0("effectiveForage", i))()),
                             currentYear = i)
       values$currentYear <- values$currentYear + 1
     })

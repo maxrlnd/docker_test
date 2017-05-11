@@ -171,6 +171,9 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
   pastYear <- currentYear
   currentYear <- currentYear + 1
   myOuts[currentYear, yr := startYear + pastYear - 1]
+  adaptInten <- 
+    CalculateAdaptationIntensity(whatIfForage(station.gauge, zones, myOuts[currentYear, yr], currentHerd, carryingCapacity, 10, 11, "normal"))
+  
   myOuts[currentYear, rev.calf := CalculateExpSales(herd = NA, wn.succ = NA, 
                                                      wn.wt = calfDroughtWeight(simRuns$normal.wn.wt, forage), 
                                                      calf.sell = calfSale, p.wn = simRuns$p.wn[pastYear])]
@@ -201,14 +204,24 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
   myOuts[currentYear, herd := round(newHerd, 0)]
   myOuts[currentYear, calves.sold := ifelse(floor(currentHerd * wean) == 0, 0, calfSale / floor(currentHerd * wean))]
   myOuts[currentYear, cows.culled := ifelse(currentHerd == 0, 0, cowSales / currentHerd)]
+  print(paste("zone.change", sum(zones)))
   myOuts[currentYear, zone.change := sum(zones)]
+  print(paste("adapt cost", adaptCost))
+  print(paste("adapt inten", adaptInten))
+  print(paste("adapt needed", getAdaptCost(adpt_choice = "feed", 
+                                                     pars = simRuns, 
+                                                     days.act = 180, 
+                                                     current_herd = currentHerd, 
+                                                     intens.adj = adaptInten)))
+  print(paste("forage", forage))
   myOuts[currentYear, Gt := ifelse(forage < 1, 
-                                    1 - forage + forage * adaptCost/getAdaptCost(adpt_choice = "feed", 
+                                    1 - forage + forage * (1 - adaptCost/getAdaptCost(adpt_choice = "feed", 
                                                                                  pars = simRuns, 
                                                                                  days.act = 180, 
                                                                                  current_herd = currentHerd, 
-                                                                                 intens.adj = adaptInten),  
+                                                                                 intens.adj = adaptInten)),  
                                     1 - forage)]
+  print(paste("Gt", myOuts[currentYear, Gt]))
   myOuts[currentYear, forage.potential := sum(zones)]
 }
 
