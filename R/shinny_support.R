@@ -215,7 +215,7 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
                                                      intens.adj = adaptInten)))
   print(paste("forage", forage))
   myOuts[currentYear, Gt := ifelse(forage < 1, 
-                                    1 - forage + forage * (1 - adaptCost/getAdaptCost(adpt_choice = "feed", 
+                                    (1 - forage) * (1 - adaptCost/getAdaptCost(adpt_choice = "feed", 
                                                                                  pars = simRuns, 
                                                                                  days.act = 180, 
                                                                                  current_herd = currentHerd, 
