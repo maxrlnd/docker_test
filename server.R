@@ -113,13 +113,13 @@ function(input, output, session) {
                         trigger = "hover", 
                         options = list(container = "body"))
               , 
-              if(i >= 2){
+              
               if((prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE))>0){
                 p("Bank balance: $",span(prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE), style="color:green"), 
                   bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
               }else{p("Bank balance: $",span(prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE), style="color:red"), 
                       bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
-              }}else{},
+              },
               bsPopover(id = "infocash", title = "Cash Assets",
                         content = paste0("this is cash in hand not total net worth"),
                         placement = "bottom", 
