@@ -71,6 +71,85 @@ function(input, output, session) {
                   width = "100%"),
         uiOutput(paste0("premCheck", i)),
         tags$hr(style="border-color: darkgray;")
+        , 
+        
+        
+        # Create an output for the sidebar widget on overall ranch status
+        output$infoPane <- renderUI({
+          fixedPanel(
+            draggable = FALSE, top = 100, left = "auto", right = 20, bottom = "auto",
+            width = 220, height = "auto",
+            wellPanel(
+              p(h3("Ranch Overview")), 
+              br(), 
+              p(h4("Cattle Status:")), 
+              p("Cattle in herd:",prettyNum(myOuts[rv$page, herd], digits = 0, big.mark=",", scientific=FALSE), 
+                # Tooltip creation, a button with an icon and the popover for the "tip"
+                bsButton("infocows", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
+              bsPopover(id = "infocows", title = "Cattle in herd",
+                        content = paste0("add in some tips into why you should have 600 cows on the range"),
+                        placement = "bottom", 
+                        trigger = "hover", 
+                        options = list(container = "body")
+              ),
+              p("Calves in herd:","some number", 
+                bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
+              bsPopover(id = "infocalves", title = "Calves in herd",
+                        content = paste0("differences between cows and calves"),
+                        placement = "bottom", 
+                        trigger = "hover", 
+                        options = list(container = "body")
+              ),
+              br(),
+              p(h4("Ranch Status:")),
+              if(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0))<100){
+                p("Range productvity:", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:red"), "%")
+              }else{
+                p("Range productvity:", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:green"), "%")
+              },
+              bsPopover(id = "infohealth", title = "Range Health",
+                        content = paste0("if you dont have the right ratio of cows to rain to hay you will fail"),
+                        placement = "bottom", 
+                        trigger = "hover", 
+                        options = list(container = "body"))
+              , 
+              if((prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE))>0){
+                p("Bank balance: $",span(prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE), style="color:green"), 
+                  bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+              }else{p("Bank balance: $",span(prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE), style="color:red"), 
+                      bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+              },
+              bsPopover(id = "infocash", title = "Cash Assets",
+                        content = paste0("this is cash in hand not total net worth"),
+                        placement = "bottom", 
+                        trigger = "hover", 
+                        options = list(container = "body")),
+              
+              if((prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE))>0){
+                p("Net worth: $", span(prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE), style="color:green"), 
+                  bsButton("infonet", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+              }else{p("Net worth: $", span(prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE), style="color:red"), 
+                      bsButton("infonet", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")
+              )
+                
+              },
+              bsPopover(id = "infonet", title = "Net Assets",
+                        content = paste0("this is cash + cow value"),
+                        placement = "bottom", 
+                        trigger = "hover", 
+                        options = list(container = "body"))
+            )
+            #      , 
+            #      wellPanel(
+            #        uiOutput(paste0("start", rv$page)),
+            #        uiOutput(paste0("continue", rv$page)),
+            #        uiOutput(paste0("insSpace", rv$page)),
+            #        uiOutput(paste0("sellButton", rv$page)),
+            #        uiOutput(paste0("nextButton", rv$page))
+            # )
+          )
+        })
+        
       )
     }))
     
@@ -592,83 +671,6 @@ function(input, output, session) {
 
   
   
-  # Create an output for the sidebar widget on overall ranch status
-  output$infoPane <- renderUI({
-    fixedPanel(
-      draggable = FALSE, top = 100, left = "auto", right = 20, bottom = "auto",
-      width = 200, height = "auto",
-      wellPanel(
-        p(h3("Ranch Overview")), 
-        br(), 
-        p(h4("Cattle Status:")), 
-        p("Cattle in herd:",prettyNum(myOuts[rv$page, herd], digits = 0, big.mark=",", scientific=FALSE), 
-          # Tooltip creation, a button with an icon and the popover for the "tip"
-        bsButton("infocows", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
-        bsPopover(id = "infocows", title = "Cattle in herd",
-                  content = paste0("add in some tips into why you should have 600 cows on the range"),
-                  placement = "bottom", 
-                  trigger = "hover", 
-                  options = list(container = "body")
-        ),
-        p("Calves in herd:","some number", 
-          bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
-        bsPopover(id = "infocalves", title = "Calves in herd",
-                  content = paste0("differences between cows and calves"),
-                  placement = "bottom", 
-                  trigger = "hover", 
-                  options = list(container = "body")
-          ),
-        br(),
-        p(h4("Ranch Status:")),
-        if(round(sum(myOuts[rv$page, forage.potential])* 100, 0) >= 100){ 
-        p("Range health:", span(round(sum(myOuts[rv$page, forage.potential])* 100, 0), style="color:green" ), "%", 
-          bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
-        }else{
-          p("Range health:", span(round(myOuts[ rv$page, forage.potential]* 100, 0), style="color:red" ), "%", 
-            bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
-        },
-        bsPopover(id = "infohealth", title = "Range Health",
-                  content = paste0("if you dont have the right ratio of cows to rain to hay you will fail"),
-                  placement = "bottom", 
-                  trigger = "hover", 
-                  options = list(container = "body"))
-        , 
-        if((prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE))>0){
-        p("Bank balance: $",span(prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE), style="color:green"), 
-          bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
-        }else{p("Bank balance: $",span(prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE), style="color:red"), 
-                bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
-          },
-        bsPopover(id = "infocash", title = "Cash Assets",
-                  content = paste0("this is cash in hand not total net worth"),
-                  placement = "bottom", 
-                  trigger = "hover", 
-                  options = list(container = "body")),
-        
-        if((prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE))>0){
-        p("Net worth: $", span(prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE), style="color:green"), 
-          bsButton("infonet", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
-        }else{p("Net worth: $", span(prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE), style="color:red"), 
-                bsButton("infonet", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")
-                )
-          
-        },
-        bsPopover(id = "infonet", title = "Net Assets",
-                  content = paste0("this is cash + cow value"),
-                  placement = "bottom", 
-                  trigger = "hover", 
-                  options = list(container = "body"))
-      )
- #      , 
- #      wellPanel(
- #        uiOutput(paste0("start", rv$page)),
- #        uiOutput(paste0("continue", rv$page)),
- #        uiOutput(paste0("insSpace", rv$page)),
- #        uiOutput(paste0("sellButton", rv$page)),
- #        uiOutput(paste0("nextButton", rv$page))
- # )
-    )
-  })
 
   
   output$pageOut <- renderUI({
