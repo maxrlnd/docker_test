@@ -659,11 +659,17 @@ function(input, output, session) {
                   trigger = "hover", 
                   options = list(container = "body"))
       )
+ #      , 
+ #      wellPanel(
+ #        uiOutput(paste0("start", rv$page)),
+ #        uiOutput(paste0("continue", rv$page)),
+ #        uiOutput(paste0("insSpace", rv$page)),
+ #        uiOutput(paste0("sellButton", rv$page)),
+ #        uiOutput(paste0("nextButton", rv$page))
+ # )
     )
   })
-  
-  # Create rollover tooltip for sidebar widget items
-  addTooltip(session = session, id = "infoPane", title="test tooltip for sidebar widget", placement = "left", trigger = "hover")
+
   
   output$pageOut <- renderUI({
   
@@ -677,7 +683,8 @@ function(input, output, session) {
               uiOutput(paste0("cowSell", rv$page))
        ),
        column(2,
-              fluidRow(column(12, style = "background-color:white;", div(style = "height:1000px;"))),
+              fluidRow(column(12, style = "background-color:white;", div(style = "height:1000px;")))
+              ,
               uiOutput(paste0("start", rv$page)),
               uiOutput(paste0("continue", rv$page)),
               uiOutput(paste0("insSpace", rv$page)),
