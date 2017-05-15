@@ -140,14 +140,6 @@ function(input, output, session) {
                         trigger = "hover", 
                         options = list(container = "body"))
             )
-            #      , 
-            #      wellPanel(
-            #        uiOutput(paste0("start", rv$page)),
-            #        uiOutput(paste0("continue", rv$page)),
-            #        uiOutput(paste0("insSpace", rv$page)),
-            #        uiOutput(paste0("sellButton", rv$page)),
-            #        uiOutput(paste0("nextButton", rv$page))
-            # )
           )
         })
         
