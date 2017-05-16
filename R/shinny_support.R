@@ -48,8 +48,8 @@ getJulyInfo <- function(currentYear){
   adaptationCost <- prettyNum(round(adaptationCost, -2), big.mark=",",scientific=FALSE)
   
   hayadvice <- matrix(c(forageList[1],forageList[2], forageList[3], adaptationCost[1], adaptationCost[2], adaptationCost[3]),ncol = 3, byrow = TRUE)
-  colnames(hayadvice) <- c("Normal", "Above", "Below")
-  rownames(hayadvice) <- c("Forage", "Cost")
+  # colnames(hayadvice) <- c("Normal", "Above", "Below")
+  # rownames(hayadvice) <- c("Forage", "Cost")
   ## Create taglist showing all adpatation
   tagList(
     h3(paste0("Year ", currentYear, ": Summer Adaptation Investment Decision")),
@@ -60,7 +60,7 @@ getJulyInfo <- function(currentYear){
     br(),
     plotOutput(paste0("rainGraph", currentYear)),
     tableOutput(paste0("julyRain", currentYear)),
-    View(hayadvice),
+
     
     
     

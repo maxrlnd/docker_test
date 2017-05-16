@@ -77,7 +77,7 @@ function(input, output, session) {
         # Create an output for the sidebar widget on overall ranch status
         output$infoPane <- renderUI({
           fixedPanel(
-            draggable = FALSE, top = 100, left = "auto", right = 20, bottom = "auto",
+            draggable = FALSE, top = 80, left = "auto", right = 20, bottom = "auto",
             width = 220, height = "auto",
             wellPanel(
               p(h3("Ranch Overview")), 
