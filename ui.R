@@ -17,6 +17,7 @@ tagList(
     color: red;
     }
     ")),
+    
     tags$script(paste0('Shiny.addCustomMessageHandler("myCallbackHandler",
                   function(typeMessage) {console.log(typeMessage)
                   if(typeMessage == 6){
