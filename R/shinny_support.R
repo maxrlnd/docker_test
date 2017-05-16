@@ -32,6 +32,9 @@ getJulyInfo <- function(currentYear){
   forageList[1] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "normal")
   forageList[2] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "high")
   forageList[3] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "low")
+
+  #colnames(forageList) <- c("Rain", "Forage", "Cost")
+  #rownames(forageList) <- c("Above average", "Average", "Below average")
   
   
   ## Calculate cost of Adaptaiton
@@ -44,6 +47,9 @@ getJulyInfo <- function(currentYear){
   forageList <- round(forageList, 2) * 100
   adaptationCost <- prettyNum(round(adaptationCost, -2), big.mark=",",scientific=FALSE)
   
+  hayadvice <- matrix(c(forageList[1],forageList[2], forageList[3], adaptationCost[1], adaptationCost[2], adaptationCost[3]),ncol = 3, byrow = TRUE)
+  colnames(hayadvice) <- c("Normal", "Above", "Below")
+  rownames(hayadvice) <- c("Forage", "Cost")
   ## Create taglist showing all adpatation
   tagList(
     h3(paste0("Year ", currentYear, ": Summer Adaptation Investment Decision")),
@@ -54,12 +60,22 @@ getJulyInfo <- function(currentYear){
     br(),
     plotOutput(paste0("rainGraph", currentYear)),
     tableOutput(paste0("julyRain", currentYear)),
-    p("If rainfall for the rest of the year is average your available forage will be ", span((forageList[1]),style="font-weight:bold;font-size:medium"), "% of normal. In this case, 
+    View(hayadvice),
+    
+    
+    
+    
+    
+    
+    
+    p("If rainfall for the rest of the year is average your available forage will be ", span((forageList[1]),style="font-weight:bold;font-size:medium"), "% of normal. In this case,
              you should buy $", span((adaptationCost[1]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
     p("If rainfall for the rest of the year is above average your available forage will be ", span((forageList[2]),style="font-weight:bold;font-size:medium"), "% of normal.
              In this case, you should buy $", span((adaptationCost[2]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
     p("If rainfall for the rest of the year is below average your available forage will be ", span((forageList[3]),style="font-weight:bold;font-size:medium"), "% of normal.
-             In this case, you should buy $", span((adaptationCost[3]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
+             In this case, you should buy $", span((adaptationCost[3]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market.")
+
+    ,
     br(),
     numericInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd?",
                 min = 0, max = adaptMax, value = 0, step = 100),

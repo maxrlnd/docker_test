@@ -366,6 +366,7 @@ function(input, output, session) {
       # julyRain <- station.gauge$stgg[Year == (startYear + i - 1),-1]/station.gauge$avg * 100
       # julyRain[, 7:12 := "?"]
     })
+
     
     ## Bar graphs for herd size
     output[[paste0("cowPlot", i)]] <- renderPlot({
