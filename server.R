@@ -87,7 +87,7 @@ function(input, output, session) {
                 # Tooltip creation, a button with an icon and the popover for the "tip"
                 bsButton("infocows", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
               bsPopover(id = "infocows", title = "Cattle in herd",
-                        content = paste0("add in some tips into why you should have 600 cows on the range"),
+                        content = paste0("Here we should add in some tips into why you should have 600 cows on the range"),
                         placement = "bottom", 
                         trigger = "hover", 
                         options = list(container = "body")
