@@ -25,6 +25,7 @@ function(input, output, session) {
     # lapply(c("p", "r"), function(j){})
     ## Reactive taglist for the first set of winter info at the start of each year, updates when
     ## myOuts updates
+    
     assign(paste0("reactiveWinter", i), reactive({
       input[[paste0("sell", i-1)]]
       if(myOuts[i, herd] == 0){
@@ -46,7 +47,8 @@ function(input, output, session) {
         }else{
           tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
                                                              big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:green")))
-          }
+        }
+        
         ,
         if((prettyNum(myOuts[i, net.wrth], digits = 0)>0)){
         tags$li(p("Your current net worth, including cows and your bank balance, is $", 
@@ -72,7 +74,8 @@ function(input, output, session) {
         uiOutput(paste0("premCheck", i)),
         tags$hr(style="border-color: darkgray;")
         , 
-        
+        ## Run range health function in shinny_support to predict forage based on rain
+
         
         # Create an output for the sidebar widget on overall ranch status
         output$infoPane <- renderUI({
@@ -138,7 +141,17 @@ function(input, output, session) {
                         content = paste0("this is cash + cow value"),
                         placement = "bottom", 
                         trigger = "hover", 
-                        options = list(container = "body"))
+                        options = list(container = "body")), 
+              rangeHealth(i),
+              rangeCost(forageList, i),
+              adaptationCost[1],
+              adaptationCost[2],
+              adaptationCost[3], 
+              br(), 
+              forageList[1], 
+              forageList[2],
+              forageList[3]
+
             )
           )
         })

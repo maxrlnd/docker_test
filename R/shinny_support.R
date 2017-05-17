@@ -387,22 +387,18 @@ rangeHealth <- function(currentYear){
   
   ## Round outputs for display
   forageList <<- round(forageList, 2) * 100
-  
-  
-  #hayadvice <- matrix(c(forageList[1],forageList[2], forageList[3], adaptationCost[1], adaptationCost[2], adaptationCost[3]),ncol = 3, byrow = TRUE)
-  # colnames(hayadvice) <- c("Normal", "Above", "Below")
-  # rownames(hayadvice) <- c("Forage", "Cost")
-return(forageList)
 }
 
-rangeCost <- function(forageList){
+rangeCost <- function(forageList, currentYear){
+  herd <- myOuts[currentYear, herd]
+  zones <- station.gauge$zonewt
   ## Calculate cost of Adaptaiton
   adaptationInten <- sapply(forageList, CalculateAdaptationIntensity)
   adaptationInten <- c(adaptationInten, 1)
   adaptationCost <- sapply(adaptationInten, getAdaptCost, adpt_choice = "feed", pars = simRuns, 
                            days.act = 180, current_herd = herd)
   adaptMax <- max(adaptationCost)
-  adaptationCost <- prettyNum(round(adaptationCost, -2), big.mark=",",scientific=FALSE)
+  adaptationCost <<- prettyNum(round(adaptationCost, -2), big.mark=",",scientific=FALSE)
   
 return(adaptationCost)
 }
