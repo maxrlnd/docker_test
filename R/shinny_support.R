@@ -32,10 +32,6 @@ getJulyInfo <- function(currentYear){
   forageList[1] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "normal")
   forageList[2] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "high")
   forageList[3] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "low")
-
-  #colnames(forageList) <- c("Rain", "Forage", "Cost")
-  #rownames(forageList) <- c("Above average", "Average", "Below average")
-  
   
   ## Calculate cost of Adaptaiton
   adaptationInten <- sapply(forageList, CalculateAdaptationIntensity)
@@ -46,10 +42,8 @@ getJulyInfo <- function(currentYear){
   ## Round outputs for display
   forageList <- round(forageList, 2) * 100
   adaptationCost <- prettyNum(round(adaptationCost, -2), big.mark=",",scientific=FALSE)
-  
-  hayadvice <- matrix(c(forageList[1],forageList[2], forageList[3], adaptationCost[1], adaptationCost[2], adaptationCost[3]),ncol = 3, byrow = TRUE)
-  # colnames(hayadvice) <- c("Normal", "Above", "Below")
-  # rownames(hayadvice) <- c("Forage", "Cost")
+  ## Run fuction for forage range health
+
   ## Create taglist showing all adpatation
   tagList(
     h3(paste0("Year ", currentYear, ": Summer Adaptation Investment Decision")),
@@ -369,4 +363,46 @@ createOutputs <- function(practiceRuns, simRuns, indem){
   myOuts[1, cost.ins := indem[[1]]$producer_prem]
   practiceOuts <<- practiceOuts
   myOuts <<- myOuts
+}
+
+rangeHealth <- function(currentYear){
+  myYear <- startYear + currentYear - 1
+  herd <- myOuts[currentYear, herd]
+  zones <- station.gauge$zonewt
+  
+  ## Calcualte available forage for normal, high, and low precip over remaining months
+  forargeList <- vector("numeric", 3)
+  if(currentYear == 1){
+    zones <- zones * (1 - (0)/simRuns$forage.constant)
+  }else{
+    zones <- myOuts[currentYear - 1, zone.change] * zones * 
+      (1 - (myOuts[currentYear - 1, Gt])/simRuns$forage.constant)
+  }
+  
+  forageList <- vector("numeric", 3)
+  forageList[1] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "normal")
+  forageList[2] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "high")
+  forageList[3] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "low") 
+  
+  
+  ## Round outputs for display
+  forageList <<- round(forageList, 2) * 100
+  
+  
+  #hayadvice <- matrix(c(forageList[1],forageList[2], forageList[3], adaptationCost[1], adaptationCost[2], adaptationCost[3]),ncol = 3, byrow = TRUE)
+  # colnames(hayadvice) <- c("Normal", "Above", "Below")
+  # rownames(hayadvice) <- c("Forage", "Cost")
+return(forageList)
+}
+
+rangeCost <- function(forageList){
+  ## Calculate cost of Adaptaiton
+  adaptationInten <- sapply(forageList, CalculateAdaptationIntensity)
+  adaptationInten <- c(adaptationInten, 1)
+  adaptationCost <- sapply(adaptationInten, getAdaptCost, adpt_choice = "feed", pars = simRuns, 
+                           days.act = 180, current_herd = herd)
+  adaptMax <- max(adaptationCost)
+  adaptationCost <- prettyNum(round(adaptationCost, -2), big.mark=",",scientific=FALSE)
+  
+return(adaptationCost)
 }
