@@ -63,6 +63,7 @@ function(input, output, session) {
             p("Your range is currently at ", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="font-weight:bold;font-size:large;color:green"), "%")
           },
         br(),
+        plotOutput(paste0("Rangehealth", i)),
         h4("Bills Due"),
         p(p("Your rainfall-index insurance premium is due. You owe $", 
                  span(prettyNum(myOuts[i, cost.ins], digits = 0, big.mark=",",scientific=FALSE),style="font-weight:bold;font-size:large;color:red"), ". Please enter this amount below to pay your insurance bill.")),
@@ -487,13 +488,26 @@ function(input, output, session) {
         ggtitle("Net Worth") + theme(legend.title = element_blank()) +
         scale_y_continuous(labels = comma) +
         #geom_text(aes(label = dollar(`Value in $`),), size = 5, position = position_stack(vjust = 0.3), angle = 90) +
-        geom_text(aes(label = dollar(`Value in $`)), size = 5, position = position_stack(vjust = 0.3), angle = 90) +
+        geom_text(data = subset(plotOuts, `Value in $` != 0), aes(label = dollar(`Value in $`)), size = 5, position = position_stack(vjust = 0.3), angle = 90) +
         theme(text = element_text(size = 20)) +
         scale_fill_manual(values = c("#f4a460", "#85bb65"))
       #change default color schemes
       #Green for cash, light peach for cows
       #X AXis - Year 1, Year2, Year 3, etc. 
       #X Label, Character Vector
+    })
+    
+    output[[paste0("Rangehealth", i)]] <- renderPlot({
+      #myOuts$Mforage = myOuts$forage.potential * 100
+      #Rangeouts = data.frame(Fp = myOuts$Mforage, Yr = c("Year 0" , "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6", "Year 7", "Year 8", "Year 9", "Year 10"))
+      test2 = ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0))
+      #save(test2, file = 'Testdata.csv')
+      Rangeouts = data.frame(Fp = test2, Yr = c("Year 0" , "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6", "Year 7", "Year 8", "Year 9", "Year 10"))
+      Rangeouts$Yr <- factor(Rangeouts$Yr, levels = c("Year 0" , "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6", "Year 7", "Year 8", "Year 9", "Year 10"))
+      ggplot(Rangeouts, aes(Yr, Fp)) +
+        geom_col() +
+        geom_text(aes(label = Rangeouts$Fp), size = 5)
+      #scale_y_continuous(limits = c(50,100))
     })
     
     ## Bar graph to display rainfall
