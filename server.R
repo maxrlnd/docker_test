@@ -87,7 +87,7 @@ function(input, output, session) {
                 # Tooltip creation, a button with an icon and the popover for the "tip"
                 bsButton("infocows", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
               bsPopover(id = "infocows", title = "Cattle in herd",
-                        content = paste0("Here we should add in some tips into why you should have 600 cows on the range"),
+                        content = paste0("The carrying capacity of your range is about 600 cows. This number may be adjusted up or down during the fall sale step, but be careful; too many may reduce range productivity and too few will incur opportunity costs."),
                         placement = "bottom", 
                         trigger = "hover", 
                         options = list(container = "body")
@@ -95,7 +95,7 @@ function(input, output, session) {
               p("Calves in herd:","some number", 
                 bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
               bsPopover(id = "infocalves", title = "Calves in herd",
-                        content = paste0("differences between cows and calves"),
+                        content = paste0("Calves do not feed on forage directly, but do affect consumption rates of the mother cows (is this true in the model?). Calves represent most of your sales (keep this number high?)."),
                         placement = "bottom", 
                         trigger = "hover", 
                         options = list(container = "body")
@@ -103,12 +103,19 @@ function(input, output, session) {
               br(),
               p(h4("Ranch Status:")),
               if(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0))<100){
-                p("Range productvity:", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:red"), "%")
-              }else{
-                p("Range productvity:", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:green"), "%")
+                p("Range productvity:", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:red"), "%",
+                      bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+              }else{p("Range productvity:", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:green"), "%",
+                      bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
               },
               bsPopover(id = "infohealth", title = "Range Health",
-                        content = paste0("if you dont have the right ratio of cows to rain to hay you will fail"),
+                        content = paste0("There is a delicate balance between the size of a ranch and the ",
+                                          "number of cattle that graze it. Overgrazing will reduce the amount of edible grass as well recovery time ",
+                                          "by stunting the growth of young plants, which cows favor. Exposed soil and trampling will lead to erosion and loss of ",
+                                          "organic matter. Additionally, less edible grasses and weeds can take hold ",
+                                          "of the range further reducing long term productivity. Without a healthy rangeland,you will incur increasingly higher hay costs and see lower cattle weights at sale. ",  
+                                          "Also, these problems are all exacerbated under dry conditions and drought, ",
+                                          "so be especially careful when this occurs and adjust your herd size with the weather."),
                         placement = "bottom", 
                         trigger = "hover", 
                         options = list(container = "body"))
@@ -121,10 +128,10 @@ function(input, output, session) {
                       bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
               },
               bsPopover(id = "infocash", title = "Cash Assets",
-                        content = paste0("this is cash in hand not total net worth"),
+                        content = paste0("This is what you have available to spend. Keep in mind your yearly insurance premium bill and the likelihood of necessary feed costs should a dry growing season occur. "),
                         placement = "bottom", 
                         trigger = "hover", 
-                        options = list(container = "body")),
+                        options = list(container = "body")),# add a different message for non insured players.
               
               if((prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE))>0){
                 p("Net worth: $", span(prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE), style="color:green"), 
@@ -135,7 +142,7 @@ function(input, output, session) {
                 
               },
               bsPopover(id = "infonet", title = "Net Assets",
-                        content = paste0("this is cash + cow value"),
+                        content = paste0("This is the current market value of your stock combined with your bank balance."),
                         placement = "bottom", 
                         trigger = "hover", 
                         options = list(container = "body"))
