@@ -32,7 +32,6 @@ function(input, output, session) {
         myOuts[i, cost.ins := 0]
       }
       rangeHealth(i)
-      #sidecalves(AdjWeanSuccess(get(paste0("effectiveForage", i))(), TRUE, simRuns$normal.wn.succ), i)
       delay(10,session$sendCustomMessage(type = "scrollCallbackTop", 0))
       tagList(
         br(),
@@ -76,9 +75,6 @@ function(input, output, session) {
         uiOutput(paste0("premCheck", i)),
         tags$hr(style="border-color: darkgray;")
         , 
-        ## Run range health function in shinny_support to predict forage based on rain
-
-        
         # Create an output for the sidebar widget on overall ranch status
         output$infoPane <- renderUI({
           fixedPanel(
@@ -97,7 +93,7 @@ function(input, output, session) {
                         trigger = "hover", 
                         options = list(container = "body")
               ),
-              p("Calves in herd:",sidebarcalves, 
+              p("Calves in herd:","some fricken garbage number", 
                 bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
               bsPopover(id = "infocalves", title = "Calves in herd",
                         content = paste0("differences between cows and calves"),
@@ -108,9 +104,11 @@ function(input, output, session) {
               br(),
               p(h4("Ranch Status:")),
               if(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0))<100){
-                p("Range productvity:", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:red"), "%")
+                p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:red"), 
+                bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
               }else{
-                p("Range productvity:", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:green"), "%")
+                p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:green"),
+                bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
               },
               bsPopover(id = "infohealth", title = "Range Health",
                         content = paste0("if you dont have the right ratio of cows to rain to hay you will fail"),

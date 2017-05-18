@@ -405,15 +405,6 @@ rangeHealth <- function(currentYear, wean){
   expectCost <<- adaptationCost
   precipexpec <<- forageList
   
-  # herd <- myOuts[currentYear, herd]
-  # calves <- round(herd * wean)
-  # sidecalves <- calves
 }
-sidecalves <- function(wean, currentYear){
-  ## Establish current state variables
-  herd <- myOuts[currentYear, herd]
 
-  ## Calculate weaned Calves
-  calvesAvailable <- round(herd * wean)
 
-}
