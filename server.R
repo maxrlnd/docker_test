@@ -32,7 +32,6 @@ function(input, output, session) {
         myOuts[i, cost.ins := 0]
       }
       rangeHealth(i)
-      rangeCost(i, precipexpec)
       delay(10,session$sendCustomMessage(type = "scrollCallbackTop", 0))
       tagList(
         br(),
