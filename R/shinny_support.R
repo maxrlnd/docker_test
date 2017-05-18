@@ -45,14 +45,14 @@ getJulyInfo <- function(currentYear){
   
   
   #Adding $ sign to Adaptation Cost/Hay Cost
-  adaptationCost1 = paste("You Should Buy $",sep="", adaptationCost, " Worth of Hay" )
+  fullAdaptCost1 = paste("You Should Buy $",sep="", fullAdaptCost, " Worth of Hay" )
   forageList1 = paste("Your Available Forage is ", forageList, sep="", "% of normal")
   #code for rainplot
-  Rain1 <- c(forageList1[1], adaptationCost1[1])
-  Rain2 <- c(forageList1[2], adaptationCost1[2])
-  Rain3 <- c(forageList1[3], adaptationCost1[3])
+  Rain1 <- c(forageList1[1], fullAdaptCost1[1])
+  Rain2 <- c(forageList1[2], fullAdaptCost1[2])
+  Rain3 <- c(forageList1[3], fullAdaptCost1[3])
   RainfallL <- data.table(Rain1, Rain2, Rain3)
-  colnames(RainfallL) <- c("If Normal Rainfall", "If Above Average Rainfall", "If Below Average Rainfall")
+  colnames(RainfallL) <- c("If you expect Jul-Oct rainfall to be normal", "If Above Average Rainfall", "If Below Average Rainfall")
   
   
   ## Create taglist showing all adpatation
@@ -71,11 +71,11 @@ getJulyInfo <- function(currentYear){
     tableOutput('tbl'),
 
     # p("If rainfall for the rest of the year is average your available forage will be ", span((forageList[1]),style="font-weight:bold;font-size:medium"), "% of normal. In this case,
-    #          you should buy $", span((adaptationCost[1]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
+    #          you should buy $", span((fullAdaptCost[1]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
     # p("If rainfall for the rest of the year is above average your available forage will be ", span((forageList[2]),style="font-weight:bold;font-size:medium"), "% of normal.
-    #          In this case, you should buy $", span((adaptationCost[2]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
+    #          In this case, you should buy $", span((fullAdaptCost[2]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
     # p("If rainfall for the rest of the year is below average your available forage will be ", span((forageList[3]),style="font-weight:bold;font-size:medium"), "% of normal.
-    #          In this case, you should buy $", span((adaptationCost[3]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market.")
+    #          In this case, you should buy $", span((fullAdaptCost[3]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market.")
     # 
     # ,
     br(),
@@ -393,13 +393,13 @@ rangeHealth <- function(currentYear, wean){
   ## Calculate cost of Adaptaiton
   adaptationInten <- sapply(forageList, CalculateAdaptationIntensity)
   adaptationInten <- c(adaptationInten, 1)
-  adaptationCost <- sapply(adaptationInten, getAdaptCost, adpt_choice = "feed", pars = simRuns, 
+  fullAdaptCost <- sapply(adaptationInten, getAdaptCost, adpt_choice = "feed", pars = simRuns, 
                            days.act = 180, current_herd = herd)
-  adaptMax <- max(adaptationCost)
+  adaptMax <- max(fullAdaptCost)
   ## Round outputs for display
   forageList <- round(forageList, 2) * 100
-  adaptationCost <- prettyNum(round(adaptationCost, -2), big.mark=",",scientific=FALSE)
-  expectCost <<- adaptationCost
+  fullAdaptCost <- prettyNum(round(fullAdaptCost, -2), big.mark=",",scientific=FALSE)
+  expectCost <<- fullAdaptCost
   precipexpec <<- forageList
   
 
