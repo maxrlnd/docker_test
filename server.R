@@ -142,15 +142,7 @@ function(input, output, session) {
                         content = paste0("this is cash + cow value"),
                         placement = "bottom", 
                         trigger = "hover", 
-                        options = list(container = "body")), 
-              precipexpec[1],
-              precipexpec[2],
-              precipexpec[3], 
-              br(), 
-              expectCost[1], 
-              expectCost[2],
-              expectCost[3]
-
+                        options = list(container = "body"))
             )
           )
         })
