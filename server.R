@@ -101,6 +101,7 @@ function(input, output, session) {
       ## Calculate available forage produced on the land using Nov-Nov as a year
       ## forageProduction = 1 is full feed for a cow-calf pair
       forage.production <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
+      print(paste("forage production", forage.production))
      
       ## Calculate adaptation intensity based on forage production
       adaptInten <- CalculateAdaptationIntensity(forage.production)
@@ -111,9 +112,10 @@ function(input, output, session) {
       
       ## Calculate how much of the needed adaptation is being done
       adaptPercent <- ifelse(fullAdaptCost == 0, 0, input[[paste0("d", i, "adaptExpend")]]/fullAdaptCost * (1 - forage.production))
+      print(paste("adaptPercent", adaptPercent))
       
       ## Output new forage that includes forage and adaptation feed
-      totalForage <- 1 - (forage.production + adaptPercent)
+      totalForage <- forage.production + adaptPercent
     }))
     
     ## Reactive to track herd size for each year
