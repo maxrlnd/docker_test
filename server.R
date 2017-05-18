@@ -32,6 +32,7 @@ function(input, output, session) {
         myOuts[i, cost.ins := 0]
       }
       rangeHealth(i)
+      #sidecalves(AdjWeanSuccess(get(paste0("effectiveForage", i))(), TRUE, simRuns$normal.wn.succ), i)
       delay(10,session$sendCustomMessage(type = "scrollCallbackTop", 0))
       tagList(
         br(),
@@ -96,7 +97,7 @@ function(input, output, session) {
                         trigger = "hover", 
                         options = list(container = "body")
               ),
-              p("Calves in herd:","some number", 
+              p("Calves in herd:",sidebarcalves, 
                 bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
               bsPopover(id = "infocalves", title = "Calves in herd",
                         content = paste0("differences between cows and calves"),

@@ -64,25 +64,19 @@ getJulyInfo <- function(currentYear){
       you decide how much, if any, to invest in hay."),
     br(),
     plotOutput(paste0("rainGraph", currentYear)),
-    tableOutput(paste0("julyRain", currentYear)),
+    #tableOutput(paste0("julyRain", currentYear)),
     #rendering table
     tbl <- renderTable({ head( RainfallL, n =  )},width = '100%', colnames = TRUE),
     tableOutput('tbl'),
-    
 
-    
-    
-    
-    
-    
-    p("If rainfall for the rest of the year is average your available forage will be ", span((forageList[1]),style="font-weight:bold;font-size:medium"), "% of normal. In this case,
-             you should buy $", span((adaptationCost[1]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
-    p("If rainfall for the rest of the year is above average your available forage will be ", span((forageList[2]),style="font-weight:bold;font-size:medium"), "% of normal.
-             In this case, you should buy $", span((adaptationCost[2]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
-    p("If rainfall for the rest of the year is below average your available forage will be ", span((forageList[3]),style="font-weight:bold;font-size:medium"), "% of normal.
-             In this case, you should buy $", span((adaptationCost[3]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market.")
-
-    ,
+    # p("If rainfall for the rest of the year is average your available forage will be ", span((forageList[1]),style="font-weight:bold;font-size:medium"), "% of normal. In this case,
+    #          you should buy $", span((adaptationCost[1]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
+    # p("If rainfall for the rest of the year is above average your available forage will be ", span((forageList[2]),style="font-weight:bold;font-size:medium"), "% of normal.
+    #          In this case, you should buy $", span((adaptationCost[2]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
+    # p("If rainfall for the rest of the year is below average your available forage will be ", span((forageList[3]),style="font-weight:bold;font-size:medium"), "% of normal.
+    #          In this case, you should buy $", span((adaptationCost[3]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market.")
+    # 
+    # ,
     br(),
     numericInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd?",
                 min = 0, max = adaptMax, value = 0, step = 100),
@@ -111,7 +105,7 @@ getCowSell <- function(forage, wean, currentYear){
   
   ## Calculate weaned Calves
   calvesAvailable <- round(herd * wean)
-  
+
   ## Calculate Standard Sales
   standardCowSale <- round(herd * simRuns$cull.num)
   standardCalfSale <- round(calvesAvailable * simRuns$calf.sell)
@@ -378,7 +372,7 @@ createOutputs <- function(practiceRuns, simRuns, indem){
   myOuts <<- myOuts
 }
 
-rangeHealth <- function(currentYear){
+rangeHealth <- function(currentYear, wean){
   ## Calcualte available forage for normal, high, and low precip over remaining months
   ## Establish current state variables 
   myYear <- startYear + currentYear - 1
@@ -410,6 +404,16 @@ rangeHealth <- function(currentYear){
   adaptationCost <- prettyNum(round(adaptationCost, -2), big.mark=",",scientific=FALSE)
   expectCost <<- adaptationCost
   precipexpec <<- forageList
+  
+  # herd <- myOuts[currentYear, herd]
+  # calves <- round(herd * wean)
+  # sidecalves <- calves
+}
+sidecalves <- function(wean, currentYear){
+  ## Establish current state variables
+  herd <- myOuts[currentYear, herd]
+
+  ## Calculate weaned Calves
+  calvesAvailable <- round(herd * wean)
 
 }
-
