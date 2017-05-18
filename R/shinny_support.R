@@ -4,7 +4,7 @@ getJulyInfo <- function(currentYear){
   
   "
   Function: getJulyInfo
-  Description: Calculate available and predited forage in july, create a
+  Description: Calculate available and predicted forage in july, create a
     ui to display info and allow user to select adaptation level
   
   Inputs:
@@ -34,14 +34,14 @@ getJulyInfo <- function(currentYear){
   forageList[3] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "low")
   
   ## Calculate cost of Adaptaiton
-  adaptationInten <- sapply(forageList, CalculateAdaptationIntensity)
-  adaptationInten <- c(adaptationInten, 1)
-  adaptationCost <- sapply(adaptationInten, getAdaptCost, adpt_choice = "feed", pars = simRuns, 
+  adaptInten <- sapply(forageList, CalculateAdaptationIntensity)
+  adaptInten <- c(adaptInten, 1)
+  fullAdaptCost <- sapply(adaptInten, getAdaptCost, adpt_choice = "feed", pars = simRuns, 
                            days.act = 180, current_herd = herd)
-  adaptMax <- max(adaptationCost)
+  adaptMax <- max(fullAdaptCost)
   ## Round outputs for display
   forageList <- round(forageList, 2) * 100
-  adaptationCost <- prettyNum(round(adaptationCost, -2), big.mark=",",scientific=FALSE)
+  fullAdaptCost <- prettyNum(round(fullAdaptCost, -2), big.mark=",",scientific=FALSE)
   
   
   #Adding $ sign to Adaptation Cost/Hay Cost
@@ -64,6 +64,7 @@ getJulyInfo <- function(currentYear){
       you decide how much, if any, to invest in hay."),
     br(),
     plotOutput(paste0("rainGraph", currentYear)),
+<<<<<<< HEAD
     #tableOutput(paste0("julyRain", currentYear)),
     #rendering table
     tbl <- renderTable({ head( RainfallL, n =  )},width = '100%', colnames = TRUE),
@@ -80,17 +81,29 @@ getJulyInfo <- function(currentYear){
     br(),
     numericInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd?",
                 min = 0, max = adaptMax, value = 0, step = 100, width = "100%"),
+=======
+    tableOutput(paste0("julyRain", currentYear)),
+    p("If rainfall for the rest of the year is average your available forage will be ", span((forageList[1]),style="font-weight:bold;font-size:medium"), "% of normal. In this case, 
+             you should buy $", span((fullAdaptCost[1]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
+    p("If rainfall for the rest of the year is above average your available forage will be ", span((forageList[2]),style="font-weight:bold;font-size:medium"), "% of normal.
+             In this case, you should buy $", span((fullAdaptCost[2]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
+    p("If rainfall for the rest of the year is below average your available forage will be ", span((forageList[3]),style="font-weight:bold;font-size:medium"), "% of normal.
+             In this case, you should buy $", span((fullAdaptCost[3]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
+    br(),
+    numericInput(paste0("d", currentYear, "adaptExpend"), "How much hay, if any, do you want to purchase for your herd?",
+                min = 0, max = adaptMax, value = 0, step = 100),
+>>>>>>> master
     h5("Remember, if you don't have enough cash on hand, you can borrow money to buy hay at an interest rate of 6.5%")
   )
 }
 
-getCowSell <- function(forage, wean, currentYear){
+getCowSell <- function(totalForage, wean, currentYear){
   "
   Function: getCowSell
   Description: create ui for a user to select how many cow and calves to sell
   
   Inputs:
-  forage = the available forage after adaptation has been applied
+  totalForage = the available forage after adaptation has been applied
   wean = wean success
   currentYear = the current year 
   
@@ -109,7 +122,7 @@ getCowSell <- function(forage, wean, currentYear){
   ## Calculate Standard Sales
   standardCowSale <- round(herd * simRuns$cull.num)
   standardCalfSale <- round(calvesAvailable * simRuns$calf.sell)
-  weanWeight <- round(calfDroughtWeight(simRuns$normal.wn.wt, forage), 0)
+  weanWeight <- round(calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 0)
   
   ## Create UI elements
   tagList(
@@ -139,8 +152,9 @@ getCowSell <- function(forage, wean, currentYear){
     tags$li("For every cow you sell, you will bring in $850 of cash."),
     br(),
     
-    h5(paste("If you sell", standardCalfSale, "calves and",  standardCowSale,  "cows, your herd will stay approximately the 
-            same size as it is now. If you sell more, then your herd size will decrease. 
+    h5(paste("If your herd is at full health (normal weight calves, full reproductive potential), your herd will stay
+            the same size as it is now if you sell", standardCalfSale, "calves and",  standardCowSale,  "cows.
+            If you sell more, then your herd size will decrease. 
             If you sell fewer, then your herd size will grow.")),
     tags$li("Selling a cow now means that you get more revenue this year, 
             but you will produce fewer calves next year."),
@@ -161,17 +175,17 @@ getCowSell <- function(forage, wean, currentYear){
 }
 
 
-updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHerd, zones, adaptInten, currentYear){
+updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales, newHerd, zones, adaptInten, currentYear){
   "
   Function: updateOuts
   Description: Function to update myOuts after a year of the simulation has been completed
   
   Inputs:
   wean = weaning success of calves
-  forage = percent of forage avaialble after adaption has been applied
+  totalForage = percent of forage available after adaption has been applied
   calfSale = number of calves being sold
   indem = data.table containing premimum and indemnity info
-  adaptCost = amount spent on adaptation
+  adaptExpend = amount spent on adaptation
   cowSales = number of cows being sold
   newHerd = size of next year's herd based on cowsales and calf sales from 2ya
   zones = zone information based on precip/adaptation/over grazing from previous year
@@ -191,14 +205,14 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
     CalculateAdaptationIntensity(whatIfForage(station.gauge, zones, myOuts[currentYear, yr], currentHerd, carryingCapacity, 10, 11, "normal"))
   
   myOuts[currentYear, rev.calf := CalculateExpSales(herd = NA, wn.succ = NA, 
-                                                     wn.wt = calfDroughtWeight(simRuns$normal.wn.wt, forage), 
+                                                     wn.wt = calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 
                                                      calf.sell = calfSale, p.wn = simRuns$p.wn[pastYear])]
   myOuts[currentYear, rev.ins := indem$indemnity]
   myOuts[currentYear, rev.int := myOuts[pastYear, assets.cash] * simRuns$invst.int]
   myOuts[currentYear, rev.tot := myOuts[currentYear, rev.ins] + myOuts[currentYear, rev.int] + myOuts[currentYear, rev.calf]]
   myOuts[currentYear, cost.op := CalculateBaseOpCosts(herd = currentHerd, cow.cost = simRuns$cow.cost)]
   myOuts[currentYear, cost.ins := indem$producer_prem]
-  myOuts[currentYear, cost.adpt := adaptCost]
+  myOuts[currentYear, cost.adptexpend := adaptExpend]
   myOuts[currentYear, cost.int := ifelse(myOuts[pastYear, assets.cash] < 0,
                                           myOuts[pastYear, assets.cash] * -1 * simRuns$loan.int,
                                           0)]
@@ -216,27 +230,22 @@ updateOuts <- function(wean, forage, calfSale, indem, adaptCost, cowSales, newHe
                                       myOuts[currentYear, cap.taxes]]
   myOuts[currentYear, net.wrth := myOuts[currentYear, assets.cash] + myOuts[currentYear, assets.cow]]
   myOuts[currentYear, wn.succ := wean]
-  myOuts[currentYear, forage.production := forage]
+  myOuts[currentYear, total.forage := totalForage]
   myOuts[currentYear, herd := round(newHerd, 0)]
   myOuts[currentYear, calves.sold := ifelse(floor(currentHerd * wean) == 0, 0, calfSale / floor(currentHerd * wean))]
   myOuts[currentYear, cows.culled := ifelse(currentHerd == 0, 0, cowSales / currentHerd)]
   print(paste("zone.change", sum(zones)))
   myOuts[currentYear, zone.change := sum(zones)]
-  print(paste("adapt cost", adaptCost))
+  print(paste("forage production", whatIfForage(station.gauge, zones, myOuts[currentYear, yr], currentHerd, carryingCapacity, 10, 11, "normal")))
+  print(paste("adapt expend", adaptExpend))
   print(paste("adapt inten", adaptInten))
   print(paste("adapt needed", getAdaptCost(adpt_choice = "feed", 
                                                      pars = simRuns, 
                                                      days.act = 180, 
                                                      current_herd = currentHerd, 
                                                      intens.adj = adaptInten)))
-  print(paste("forage", forage))
-  myOuts[currentYear, Gt := ifelse(forage < 1, 
-                                    (1 - forage) * (1 - adaptCost/getAdaptCost(adpt_choice = "feed", 
-                                                                                 pars = simRuns, 
-                                                                                 days.act = 180, 
-                                                                                 current_herd = currentHerd, 
-                                                                                 intens.adj = adaptInten)),  
-                                    1 - forage)]
+  print(paste("total forage", totalForage))
+  myOuts[currentYear, Gt := 1 - (totalForage)]
   print(paste("Gt", myOuts[currentYear, Gt]))
   myOuts[currentYear, forage.potential := sum(zones)]
 }

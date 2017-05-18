@@ -75,10 +75,19 @@ function(input, output, session) {
         uiOutput(paste0("premCheck", i)),
         tags$hr(style="border-color: darkgray;")
         , 
+<<<<<<< HEAD
         # Create an output for the sidebar widget on overall ranch status
         output$infoPane <- renderUI({
           fixedPanel(
             draggable = FALSE, top = 70, left = "auto", right = 20, bottom = "auto",
+=======
+        
+        
+        # Create an output for the sidebar widget on overall ranch status
+        output$infoPane <- renderUI({
+          fixedPanel(
+            draggable = FALSE, top = 100, left = "auto", right = 20, bottom = "auto",
+>>>>>>> master
             width = 220, height = "auto",
             wellPanel(
               p(h3("Ranch Overview")), 
@@ -93,7 +102,11 @@ function(input, output, session) {
                         trigger = "hover", 
                         options = list(container = "body")
               ),
+<<<<<<< HEAD
               p("Calves in herd:","so much hate", 
+=======
+              p("Calves in herd:","some number", 
+>>>>>>> master
                 bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
               bsPopover(id = "infocalves", title = "Calves in herd",
                         content = paste0("differences between cows and calves"),
@@ -104,11 +117,17 @@ function(input, output, session) {
               br(),
               p(h4("Ranch Status:")),
               if(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0))<100){
+<<<<<<< HEAD
                 p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:red"), 
                 bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
               }else{
                 p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:green"),
                 bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+=======
+                p("Range productvity:", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:red"), "%")
+              }else{
+                p("Range productvity:", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:green"), "%")
+>>>>>>> master
               },
               bsPopover(id = "infohealth", title = "Range Health",
                         content = paste0("if you dont have the right ratio of cows to rain to hay you will fail"),
@@ -166,28 +185,31 @@ function(input, output, session) {
     }))
     
     ## Reactive to track forage for each year
-    assign(paste0("effectiveForage", i), reactive({
+    assign(paste0("totalForage", i), reactive({
       
       ## Establish current state
       myYear <- startYear + i - 1
       herd <- myOuts[i, herd]
       zones <- get(paste0("currentZones", i))()
       
-      ## Calculate available forage using Nov-Nov as a year
-      forage <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
+      ## Calculate available forage produced on the land using Nov-Nov as a year
+      ## forageProduction = 1 is full feed for a cow-calf pair
+      forage.production <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
+      print(paste("forage production", forage.production))
      
-      ## Calculate adaptation intensity based on forage
-      adaptationInten <- CalculateAdaptationIntensity(forage)
+      ## Calculate adaptation intensity based on forage production
+      adaptInten <- CalculateAdaptationIntensity(forage.production)
       
       ## Calculate adaptation cost
-      adaptationCost <-getAdaptCost(adpt_choice = "feed", pars = simRuns, 
-                                    days.act = 180, current_herd = herd, intens.adj = adaptationInten)
+      fullAdaptCost <-getAdaptCost(adpt_choice = "feed", pars = simRuns, 
+                                    days.act = 180, current_herd = herd, intens.adj = adaptInten)
       
       ## Calculate how much of the needed adaptation is being done
-      adaptationPercent <- ifelse(adaptationCost == 0, 0, input[[paste0("d", i, "AdaptSpent")]]/adaptationCost)
+      adaptPercent <- ifelse(fullAdaptCost == 0, 0, input[[paste0("d", i, "adaptExpend")]]/fullAdaptCost * (1 - forage.production))
+      print(paste("adaptPercent", adaptPercent))
       
-      ## Output new forage
-      forage <- (1 - forage) * adaptationPercent + forage 
+      ## Output new forage that includes forage and adaptation feed
+      totalForage <- forage.production + adaptPercent
     }))
     
     ## Reactive to track herd size for each year
@@ -300,7 +322,7 @@ function(input, output, session) {
                 p("Because rainfall was close to or above normal levels, you did not recieve a check for your rain insurance policy"),
                 h4(paste0("After your expenditures on hay and insurance, your new bank balance is: $", 
                           prettyNum(myOuts[i, assets.cash] - 
-                                      indem[[i]]$producer_prem - input[[paste0("d", i, "AdaptSpent")]], 
+                                      indem[[i]]$producer_prem - input[[paste0("d", i, "adaptExpend")]], 
                                     digits = 0, big.mark=",",scientific=FALSE))),
                 actionButton(paste0("insCont", i), "Next")
               )
@@ -316,13 +338,13 @@ function(input, output, session) {
       # if(!is.null(input[[paste0("year", i, "Summer")]])){
       #   if(input[[paste0("year", i, "Summer")]] == 1){
       req(input[[paste0("insCont", i)]])
-      # print(get(paste0("effectiveForage", i))())
-      # print( AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1))
+      # print(get(paste0("totalForage", i))())
+      # print( AdjWeanSuccess(get(paste0("totalForage", i))(), T, simRuns$normal.wn.succ, 1))
           tagList(
-            getCowSell(get(paste0("effectiveForage", i))(), AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1), i),
+            getCowSell(get(paste0("totalForage", i))(), AdjWeanSuccess(get(paste0("totalForage", i))(), T, simRuns$normal.wn.succ, 1), i),
             plotOutput(paste0("cowPlot", i)),
             p("Keep in mind that yearlings (weaned calves that are not yet producing calves) 
-              aren't counted in these herd size numbers. You also do not have the option to sell them in this game.")
+              aren't counted in these herd size numbers. You do not have the option to sell yearlings in this game.")
           )
       #   }
       # }
@@ -380,16 +402,16 @@ function(input, output, session) {
         fluidRow(
           
           if(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
-             indem[[i]]$producer_prem - input[[paste0("d", i, "AdaptSpent")]] > 0){
+             indem[[i]]$producer_prem - input[[paste0("d", i, "adaptExpend")]] > 0){
             h4(p("After your expenditures on hay and your insurance check, your new bank balance is: $", 
                       span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
-                                  indem[[i]]$producer_prem - input[[paste0("d", i, "AdaptSpent")]], 
+                                  indem[[i]]$producer_prem - input[[paste0("d", i, "adaptExpend")]], 
                                 digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:green")))
           }
           else{
             h4(p("After your expenditures on hay and your insurance check, your new bank balance is: $", 
                  span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
-                                  indem[[i]]$producer_prem - input[[paste0("d", i, "AdaptSpent")]], 
+                                  indem[[i]]$producer_prem - input[[paste0("d", i, "adaptExpend")]], 
                                 digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:red")))
             
           }
@@ -460,7 +482,7 @@ function(input, output, session) {
           herdy2 <- shinyHerd(herd_1 = herdy1,  # t-1 for year 2 is next years herd size
                               cull_1 = myOuts[1, cows.culled] * herdy1,  # we don't know how many cows they will cull next year. assume stability/default of 16% (draw from )
                               herd_2 = herdy0,  # t-2 for year 2 is this year
-                              calves_2 = (floor(herdy0 * AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1)) - calves),  # Calves in the herd this year minus those that are sold via the slider input
+                              calves_2 = (floor(herdy0 * AdjWeanSuccess(get(paste0("totalForage", i))(), T, simRuns$normal.wn.succ, 1)) - calves),  # Calves in the herd this year minus those that are sold via the slider input
                               deathRate = simRuns$death.rate)  
           
           years <- c("This Year","Next Year","In Two Years")
@@ -556,9 +578,9 @@ function(input, output, session) {
       disable(paste0("sell", i))
       disable(paste0("calves", i, "Sale"))
       disable(paste0("cow", i, "Sale"))
-      myOuts <<- updateOuts(wean = AdjWeanSuccess(get(paste0("effectiveForage", i))(), T, simRuns$normal.wn.succ, 1), 
-                            forage = get(paste0("effectiveForage", i))(), calfSale = input[[paste0("calves", i, "Sale")]],
-                            indem = indem[[i]], adaptCost = input[[paste0("d", i, "AdaptSpent")]], cowSales = input[[paste0("cow", i, "Sale")]], 
+      myOuts <<- updateOuts(wean = AdjWeanSuccess(get(paste0("totalForage", i))(), T, simRuns$normal.wn.succ, 1), 
+                            totalForage = get(paste0("totalForage", i))(), calfSale = input[[paste0("calves", i, "Sale")]],
+                            indem = indem[[i]], adaptExpend = input[[paste0("d", i, "adaptExpend")]], cowSales = input[[paste0("cow", i, "Sale")]], 
                             newHerd = get(paste0("herdSize", i))(), zones = get(paste0("currentZones", i))(), 
                             currentYear = i)
       values$currentYear <- values$currentYear + 1
@@ -568,7 +590,8 @@ function(input, output, session) {
     # Disable continue button and adaptation slider after clicking
     observeEvent(input[[paste0("year", i, "Summer")]], {
       shinyjs::disable(paste0("year", i, "Summer"))
-      shinyjs::disable(paste0("d", i, "AdaptSpent"))
+      shinyjs::disable(paste0("d", i, "
+                              "))
       delay(100,session$sendCustomMessage(type = "scrollCallbackIns", paste0("rainGraphSep", i)))
     })
     
