@@ -43,6 +43,18 @@ getJulyInfo <- function(currentYear){
   forageList <- round(forageList, 2) * 100
   adaptationCost <- prettyNum(round(adaptationCost, -2), big.mark=",",scientific=FALSE)
   
+  
+  #Adding $ sign to Adaptation Cost/Hay Cost
+  adaptationCost1 = paste("You Should Buy $",sep="", adaptationCost, " Worth of Hay" )
+  forageList1 = paste("Your Available Forage is ", forageList, sep="", "% of normal")
+  #code for rainplot
+  Rain1 <- c(forageList1[1], adaptationCost1[1])
+  Rain2 <- c(forageList1[2], adaptationCost1[2])
+  Rain3 <- c(forageList1[3], adaptationCost1[3])
+  RainfallL <- data.table(Rain1, Rain2, Rain3)
+  colnames(RainfallL) <- c("If Normal Rainfall", "If Above Average Rainfall", "If Below Average Rainfall")
+  
+  
   ## Create taglist showing all adpatation
   tagList(
     h3(paste0("Year ", currentYear, ": Summer Adaptation Investment Decision")),
@@ -53,9 +65,11 @@ getJulyInfo <- function(currentYear){
     br(),
     plotOutput(paste0("rainGraph", currentYear)),
     tableOutput(paste0("julyRain", currentYear)),
+    #rendering table
+    tbl <- renderTable({ head( RainfallL, n =  )},width = '100%', colnames = TRUE),
+    tableOutput('tbl'),
+    
 
-    
-    
     
     
     
