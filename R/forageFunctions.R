@@ -110,8 +110,8 @@ whatIfForage <- function(station.gauge, zonewt, styear, herd, carryingCap,
   Description: calculate uncertain forage based given broad scenarios
   
   Inputs:
-  station.gauge = list of station gague info from simRuns/pars``
-  zonewt = zone weights adjusted baed on previous decision and use
+  station.gauge = list of station gauge info from simRuns/pars``
+  zonewt = zone weights adjusted based on previous decision and use
   styear = year the simulation started
   herd = current size of herd
   carryingCap = carrying capacity of range in number of calf/cow paris
