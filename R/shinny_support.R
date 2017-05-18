@@ -33,7 +33,6 @@ getJulyInfo <- function(currentYear){
   forageList[2] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "high")
   forageList[3] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "low")
   
-  
   ## Calculate cost of Adaptaiton
   adaptInten <- sapply(forageList, CalculateAdaptationIntensity)
   adaptInten <- c(adaptInten, 1)
@@ -44,6 +43,18 @@ getJulyInfo <- function(currentYear){
   forageList <- round(forageList, 2) * 100
   fullAdaptCost <- prettyNum(round(fullAdaptCost, -2), big.mark=",",scientific=FALSE)
   
+  
+  #Adding $ sign to Adaptation Cost/Hay Cost
+  fullAdaptCost1 = paste("You Should Buy $",sep="", fullAdaptCost, " Worth of Hay" )
+  forageList1 = paste("Your Available Forage is ", forageList, sep="", "% of normal")
+  #code for rainplot
+  Rain1 <- c(forageList1[1], fullAdaptCost1[1])
+  Rain2 <- c(forageList1[2], fullAdaptCost1[2])
+  Rain3 <- c(forageList1[3], fullAdaptCost1[3])
+  RainfallL <- data.table(Rain1, Rain2, Rain3)
+  colnames(RainfallL) <- c("If you expect Jul-Oct rainfall to be normal", "If Above Average Rainfall", "If Below Average Rainfall")
+  
+  
   ## Create taglist showing all adpatation
   tagList(
     h3(paste0("Year ", currentYear, ": Summer Adaptation Investment Decision")),
@@ -53,16 +64,24 @@ getJulyInfo <- function(currentYear){
       you decide how much, if any, to invest in hay."),
     br(),
     plotOutput(paste0("rainGraph", currentYear)),
-    tableOutput(paste0("julyRain", currentYear)),
-    p("If rainfall for the rest of the year is average your available forage will be ", span((forageList[1]),style="font-weight:bold;font-size:medium"), "% of normal. In this case, 
-             you should buy $", span((fullAdaptCost[1]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
-    p("If rainfall for the rest of the year is above average your available forage will be ", span((forageList[2]),style="font-weight:bold;font-size:medium"), "% of normal.
-             In this case, you should buy $", span((fullAdaptCost[2]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
-    p("If rainfall for the rest of the year is below average your available forage will be ", span((forageList[3]),style="font-weight:bold;font-size:medium"), "% of normal.
-             In this case, you should buy $", span((fullAdaptCost[3]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
+
+    #tableOutput(paste0("julyRain", currentYear)),
+    #rendering table
+    tbl <- renderTable({ head( RainfallL, n =  )},width = '100%', colnames = TRUE),
+    tableOutput('tbl'),
+
+    # p("If rainfall for the rest of the year is average your available forage will be ", span((forageList[1]),style="font-weight:bold;font-size:medium"), "% of normal. In this case,
+    #          you should buy $", span((fullAdaptCost[1]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
+    # p("If rainfall for the rest of the year is above average your available forage will be ", span((forageList[2]),style="font-weight:bold;font-size:medium"), "% of normal.
+    #          In this case, you should buy $", span((fullAdaptCost[2]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
+    # p("If rainfall for the rest of the year is below average your available forage will be ", span((forageList[3]),style="font-weight:bold;font-size:medium"), "% of normal.
+    #          In this case, you should buy $", span((fullAdaptCost[3]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market.")
+    # 
+    # ,
     br(),
     numericInput(paste0("d", currentYear, "adaptExpend"), "How much hay, if any, do you want to purchase for your herd?",
-                min = 0, max = adaptMax, value = 0, step = 100),
+                min = 0, max = adaptMax, value = 0, step = 100, width = "100%"),
+
     h5("Remember, if you don't have enough cash on hand, you can borrow money to buy hay at an interest rate of 6.5%")
   )
 }
@@ -88,7 +107,7 @@ getCowSell <- function(totalForage, wean, currentYear){
   
   ## Calculate weaned Calves
   calvesAvailable <- round(herd * wean)
-  
+  calvesAvailable <<- calvesAvailable
   ## Calculate Standard Sales
   standardCowSale <- round(herd * simRuns$cull.num)
   standardCalfSale <- round(calvesAvailable * simRuns$calf.sell)
@@ -115,7 +134,6 @@ getCowSell <- function(totalForage, wean, currentYear){
     tags$li("If your calves are lighter than 600 lbs, it is because the mother cows
                    may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."),
     br(),
-    
     h5(paste0("You currently have ", myOuts[currentYear, herd], " cows and ", calvesAvailable, " calves.")),
     tags$li(paste0("With the current market price of $",simRuns$p.wn[1], "/pound, each calf you sell will bring in $", 
                    round(weanWeight * simRuns$p.wn[1], 0) , " of cash.")), 
@@ -350,3 +368,52 @@ createOutputs <- function(practiceRuns, simRuns, indem){
   practiceOuts <<- practiceOuts
   myOuts <<- myOuts
 }
+
+rangeHealth <- function(currentYear){
+  ## Calcualte available forage for normal, high, and low precip over remaining months
+  ## Establish current state variables 
+  myYear <- startYear + currentYear - 1
+  herd <- myOuts[currentYear, herd]
+  zones <- station.gauge$zonewt
+  
+  ## Calcualte available forage for normal, high, and low precip over remaining months
+  forargeList <- vector("numeric", 3)
+  if(currentYear == 1){
+    zones <- zones * (1 - (0)/simRuns$forage.constant)
+  }else{
+    zones <- myOuts[currentYear - 1, zone.change] * zones * 
+      (1 - (myOuts[currentYear - 1, Gt])/simRuns$forage.constant)
+  }
+  
+  forageList <- vector("numeric", 3)
+  forageList[1] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "normal")
+  forageList[2] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "high")
+  forageList[3] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "low")
+  
+  ## Calculate cost of Adaptaiton
+  adaptInten <- sapply(forageList, CalculateAdaptationIntensity)
+  adaptInten <- c(adaptInten, 1)
+  fullAdaptCost <- sapply(adaptInten, getAdaptCost, adpt_choice = "feed", pars = simRuns, 
+                           days.act = 180, current_herd = herd)
+  adaptMax <- max(fullAdaptCost)
+  ## Round outputs for display
+  forageList <- round(forageList, 2) * 100
+  fullAdaptCost <- prettyNum(round(fullAdaptCost, -2), big.mark=",",scientific=FALSE)
+  expectCost <<- fullAdaptCost
+  precipexpec <<- forageList
+  
+
+  
+  
+  # ## Establish current state variables
+  # herd <- myOuts[currentYear, herd]
+  # wean <- myOuts[currentYear, wn.succ]
+  # 
+  # ## Calculate weaned Calves
+  # calvesAvailable <- round(herd * wean)
+  # 
+  # sidecalves <<- calvesAvailable
+  
+}
+
+
