@@ -369,7 +369,7 @@ createOutputs <- function(practiceRuns, simRuns, indem){
   myOuts <<- myOuts
 }
 
-rangeHealth <- function(currentYear, wean){
+rangeHealth <- function(currentYear){
   ## Calcualte available forage for normal, high, and low precip over remaining months
   ## Establish current state variables 
   myYear <- startYear + currentYear - 1
@@ -391,9 +391,9 @@ rangeHealth <- function(currentYear, wean){
   forageList[3] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "low")
   
   ## Calculate cost of Adaptaiton
-  adaptationInten <- sapply(forageList, CalculateAdaptationIntensity)
-  adaptationInten <- c(adaptationInten, 1)
-  fullAdaptCost <- sapply(adaptationInten, getAdaptCost, adpt_choice = "feed", pars = simRuns, 
+  adaptInten <- sapply(forageList, CalculateAdaptationIntensity)
+  adaptInten <- c(adaptInten, 1)
+  fullAdaptCost <- sapply(adaptInten, getAdaptCost, adpt_choice = "feed", pars = simRuns, 
                            days.act = 180, current_herd = herd)
   adaptMax <- max(fullAdaptCost)
   ## Round outputs for display
