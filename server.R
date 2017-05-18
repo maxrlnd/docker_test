@@ -93,7 +93,7 @@ function(input, output, session) {
                         trigger = "hover", 
                         options = list(container = "body")
               ),
-              p("Calves in herd:","some fricken garbage number", 
+              p("Calves in herd:",calvesAvailable, 
                 bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
               bsPopover(id = "infocalves", title = "Calves in herd",
                         content = paste0("differences between cows and calves"),

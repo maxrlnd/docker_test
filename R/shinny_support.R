@@ -79,7 +79,7 @@ getJulyInfo <- function(currentYear){
     # ,
     br(),
     numericInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd?",
-                min = 0, max = adaptMax, value = 0, step = 100),
+                min = 0, max = adaptMax, value = 0, step = 100, width = "100%"),
     h5("Remember, if you don't have enough cash on hand, you can borrow money to buy hay at an interest rate of 6.5%")
   )
 }
@@ -105,7 +105,7 @@ getCowSell <- function(forage, wean, currentYear){
   
   ## Calculate weaned Calves
   calvesAvailable <- round(herd * wean)
-
+  calvesAvailable <<- calvesAvailable
   ## Calculate Standard Sales
   standardCowSale <- round(herd * simRuns$cull.num)
   standardCalfSale <- round(calvesAvailable * simRuns$calf.sell)
@@ -132,7 +132,6 @@ getCowSell <- function(forage, wean, currentYear){
     tags$li("If your calves are lighter than 600 lbs, it is because the mother cows
                    may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."),
     br(),
-    
     h5(paste0("You currently have ", myOuts[currentYear, herd], " cows and ", calvesAvailable, " calves.")),
     tags$li(paste0("With the current market price of $",simRuns$p.wn[1], "/pound, each calf you sell will bring in $", 
                    round(weanWeight * simRuns$p.wn[1], 0) , " of cash.")), 
@@ -404,6 +403,18 @@ rangeHealth <- function(currentYear, wean){
   adaptationCost <- prettyNum(round(adaptationCost, -2), big.mark=",",scientific=FALSE)
   expectCost <<- adaptationCost
   precipexpec <<- forageList
+  
+
+  
+  
+  # ## Establish current state variables
+  # herd <- myOuts[currentYear, herd]
+  # wean <- myOuts[currentYear, wn.succ]
+  # 
+  # ## Calculate weaned Calves
+  # calvesAvailable <- round(herd * wean)
+  # 
+  # sidecalves <<- calvesAvailable
   
 }
 
