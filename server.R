@@ -31,6 +31,7 @@ function(input, output, session) {
       if(myOuts[i, herd] == 0){
         myOuts[i, cost.ins := 0]
       }
+      rangeHealth(i)
       delay(10,session$sendCustomMessage(type = "scrollCallbackTop", 0))
       tagList(
         br(),
@@ -142,15 +143,13 @@ function(input, output, session) {
                         placement = "bottom", 
                         trigger = "hover", 
                         options = list(container = "body")), 
-              rangeHealth(i),
-              rangeCost(forageList, i),
-              adaptationCost[1],
-              adaptationCost[2],
-              adaptationCost[3], 
+              precipexpec[1],
+              precipexpec[2],
+              precipexpec[3], 
               br(), 
-              forageList[1], 
-              forageList[2],
-              forageList[3]
+              expecCost[1], 
+              expecCost[2],
+              expecCost[3]
 
             )
           )
