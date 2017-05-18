@@ -64,7 +64,7 @@ getJulyInfo <- function(currentYear){
       you decide how much, if any, to invest in hay."),
     br(),
     plotOutput(paste0("rainGraph", currentYear)),
-<<<<<<< HEAD
+
     #tableOutput(paste0("julyRain", currentYear)),
     #rendering table
     tbl <- renderTable({ head( RainfallL, n =  )},width = '100%', colnames = TRUE),
@@ -81,18 +81,7 @@ getJulyInfo <- function(currentYear){
     br(),
     numericInput(paste0("d", currentYear, "AdaptSpent"), "How much hay, if any, do you want to purchase for your herd?",
                 min = 0, max = adaptMax, value = 0, step = 100, width = "100%"),
-=======
-    tableOutput(paste0("julyRain", currentYear)),
-    p("If rainfall for the rest of the year is average your available forage will be ", span((forageList[1]),style="font-weight:bold;font-size:medium"), "% of normal. In this case, 
-             you should buy $", span((fullAdaptCost[1]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
-    p("If rainfall for the rest of the year is above average your available forage will be ", span((forageList[2]),style="font-weight:bold;font-size:medium"), "% of normal.
-             In this case, you should buy $", span((fullAdaptCost[2]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
-    p("If rainfall for the rest of the year is below average your available forage will be ", span((forageList[3]),style="font-weight:bold;font-size:medium"), "% of normal.
-             In this case, you should buy $", span((fullAdaptCost[3]),style="font-weight:bold;font-size:medium"), " of hay to get your herd in ideal shape for market."),
-    br(),
-    numericInput(paste0("d", currentYear, "adaptExpend"), "How much hay, if any, do you want to purchase for your herd?",
-                min = 0, max = adaptMax, value = 0, step = 100),
->>>>>>> master
+
     h5("Remember, if you don't have enough cash on hand, you can borrow money to buy hay at an interest rate of 6.5%")
   )
 }

@@ -75,19 +75,12 @@ function(input, output, session) {
         uiOutput(paste0("premCheck", i)),
         tags$hr(style="border-color: darkgray;")
         , 
-<<<<<<< HEAD
+
         # Create an output for the sidebar widget on overall ranch status
         output$infoPane <- renderUI({
           fixedPanel(
             draggable = FALSE, top = 70, left = "auto", right = 20, bottom = "auto",
-=======
-        
-        
-        # Create an output for the sidebar widget on overall ranch status
-        output$infoPane <- renderUI({
-          fixedPanel(
-            draggable = FALSE, top = 100, left = "auto", right = 20, bottom = "auto",
->>>>>>> master
+
             width = 220, height = "auto",
             wellPanel(
               p(h3("Ranch Overview")), 
@@ -102,11 +95,9 @@ function(input, output, session) {
                         trigger = "hover", 
                         options = list(container = "body")
               ),
-<<<<<<< HEAD
+
               p("Calves in herd:","so much hate", 
-=======
-              p("Calves in herd:","some number", 
->>>>>>> master
+
                 bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
               bsPopover(id = "infocalves", title = "Calves in herd",
                         content = paste0("differences between cows and calves"),
@@ -117,17 +108,13 @@ function(input, output, session) {
               br(),
               p(h4("Ranch Status:")),
               if(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0))<100){
-<<<<<<< HEAD
+
                 p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:red"), 
                 bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
               }else{
                 p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:green"),
                 bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
-=======
-                p("Range productvity:", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:red"), "%")
-              }else{
-                p("Range productvity:", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:green"), "%")
->>>>>>> master
+
               },
               bsPopover(id = "infohealth", title = "Range Health",
                         content = paste0("if you dont have the right ratio of cows to rain to hay you will fail"),
