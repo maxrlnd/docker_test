@@ -107,7 +107,6 @@ getCowSell <- function(totalForage, wean, currentYear){
   
   ## Calculate weaned Calves
   calvesAvailable <- round(herd * wean)
-  calvesAvailable <<- calvesAvailable
   ## Calculate Standard Sales
   standardCowSale <- round(herd * simRuns$cull.num)
   standardCalfSale <- round(calvesAvailable * simRuns$calf.sell)
