@@ -56,7 +56,7 @@ sim_run_single <- function(pars,
   wn.succ.current <- AdjWeanSuccess(fp.current, 
                             noadpt = ifelse(adpt_choice == "noAdpt", T, F), 
                             pars$normal.wn.succ, t = 1)
-  weansucc<<- wn.succ.current
+  weansucc<- wn.succ.current
   # Calculate base operating cost
   base.op.cost <- CalculateBaseOpCosts(herd = currentHerd, cow.cost = pars$cow.cost)
   
