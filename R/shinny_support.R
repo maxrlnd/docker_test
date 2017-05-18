@@ -123,8 +123,9 @@ getCowSell <- function(forage, wean, currentYear){
     tags$li("For every cow you sell, you will bring in $850 of cash."),
     br(),
     
-    h5(paste("If you sell", standardCalfSale, "calves and",  standardCowSale,  "cows, your herd will stay approximately the 
-            same size as it is now. If you sell more, then your herd size will decrease. 
+    h5(paste("If your herd is at full health (normal weight calves, full reproductive potential), your herd will stay
+            the same size as it is now if you sell", standardCalfSale, "calves and",  standardCowSale,  "cows.
+            If you sell more, then your herd size will decrease. 
             If you sell fewer, then your herd size will grow.")),
     tags$li("Selling a cow now means that you get more revenue this year, 
             but you will produce fewer calves next year."),
