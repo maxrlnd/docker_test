@@ -134,7 +134,7 @@ getCowSell <- function(totalForage, wean, currentYear){
                    may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."),
     br(),
     h5(paste0("You currently have ", myOuts[currentYear, herd], " cows and ", calvesAvailable, " calves.")),
-    tags$li(paste0("With the current market price of $",simRuns$p.wn[1], "/pound, each calf you sell will bring in $", 
+    tags$li(paste0("With the current market price of $",paste0(simRuns$p.wn[1], '0'), "/pound, each calf you sell will bring in $", 
                    round(weanWeight * simRuns$p.wn[1], 0) , " of cash.")), 
     tags$li(paste0("At the normal target weight, each calf you sell would bring in $", simRuns$p.wn[1]*600, " of cash.")),
     tags$li("For every cow you sell, you will bring in $850 of cash."),
