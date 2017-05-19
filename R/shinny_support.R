@@ -58,10 +58,7 @@ getJulyInfo <- function(currentYear){
   ## Create taglist showing all adpatation
   tagList(
     h3(paste0("Year ", currentYear, ": Summer Adaptation Investment Decision")),
-    p("It is now the end of June and you are mostly through the most important growing season for forage on your range.
-      While good rainfall levels for July and August will still help increase the grass avaialble for your herd, you
-      have to decide now how much hay to buy to supplement the grass on your range. Look to the advice below to help
-      you decide how much, if any, to invest in hay."),
+    p("It is now the end of June, and you are almost past the most important part of the growing season for forage on your rangeland. Good rainfall levels in July and August can further increase the forage for your herd. However, low rainfall levels will provide limited forage levels for your herd. It is your choice to decide how much hay to supplement in order to compensate the possible low amounts of grass on your range. Below indicates three options if you choose to invest in hay."),
     br(),
     plotOutput(paste0("rainGraph", currentYear)),
 

@@ -41,12 +41,12 @@ function(input, output, session) {
       tagList(
         br(),
         h3(paste0("Year ", i,": Winter Finance Assessment")),
-        p("Before calving season begins, it is time to take account of your herd, range, and financial health."),
+        p("The Information/Graphs below shows the your herd worth, range health, and your financial balance."),
         br(),
         plotOutput(paste0("worthPlot", i)),
         tags$li(p("Your herd has ", 
                  span(prettyNum(myOuts[i, herd], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large"), 
-                 " cows, not including calves or yearlings (cows that are weaned, but not yet reproducing).")),
+                 " cows, not including calves or yearlings.")),
         if(prettyNum(myOuts[i, assets.cash], digits = 0)<0){
         tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
                                                      big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:red")))
@@ -123,7 +123,7 @@ function(input, output, session) {
               },
               bsPopover(id = "infohealth", title = "Range Health",
                         content = paste0("There is a delicate balance between the size of a ranch and the number of cattle that graze it. Overgrazing will lead to many problems that reduce the health and productivity of your rangeland. Without a healthy rangeland, you will incur increasingly higher hay costs and see lower cattle weights at sale. Also, these problems are exacerbated under dry conditions and drought, so be especially careful when this occurs and adjust your herd size with the weather."),
-                        placement = "bottom", 
+                        placement = "left", 
                         trigger = "hover", 
                         options = list(container = "body")),
               
@@ -302,8 +302,7 @@ function(input, output, session) {
             h3(paste0("Year ", i, ": End of Growing Season")),
             if(currentIndem > 0){
               tagList(
-                p("You didn't get much rain this summer! In the graph below you can see how much
-                  it has rained since you decided whether or not to purchase hay (July and August)."),
+                p("This summer, it rained much less than your average rainfall. The graph below shows how much it has rained in July and August, following your decision to buy hay or not."),
                 plotOutput(paste0("rainGraphSep", i)),
                 p("Since you have rainfall insurance, 
                   you get a check to help cover your losses and extra expenses.
