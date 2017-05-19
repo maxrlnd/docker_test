@@ -238,13 +238,11 @@ function(input, output, session) {
       ## Get cows being sold based on slide position
       cows <- input[[paste0("cow", i, "Sale")]]
       calves <- input[[paste0("calves", i, "Sale")]]
-      herd <- myOuts[i, herd]
-      
-      ## Calculate operating costs for the current year (already fixed)
-      operatingCosts <- herd * simRuns$cow.cost
+      totalForage <- get(paste0("totalForage", i))()
+      weanWeight <- round(calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 0)
       
       ## Calculate revenues for the current year based on slider position
-      revenues <- cows * simRuns$p.cow + calves * weanWeight * simRuns$p.wn[1]
+      revenues <- cows * simRuns$p.cow + calves *  weanWeight * simRuns$p.wn[1]
       
     }))
     
@@ -354,6 +352,13 @@ function(input, output, session) {
             plotOutput(paste0("cowPlot", i)),
             p("Keep in mind that yearlings (weaned calves that are not yet producing calves) 
               aren't counted in these herd size numbers. You do not have the option to sell yearlings in this game.")
+            #br(),
+            
+            #h4(get(paste0("revenues", i))()),  # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
+            #h4(p("Your operating costs this year were: $", 
+            #     span(prettyNum(myOuts[i, herd] * simRuns$cow.cost, 
+            #                    digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:red"))),  # Costs of operatiting
+            #h4(p("Based on your current sales choices, your total profits for the year are: $"))
           )
       #   }
       # }
