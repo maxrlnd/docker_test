@@ -256,7 +256,8 @@ createNewYr <- function(year){
                     fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
                     uiOutput(paste0("decision", year)),
                     uiOutput(paste0("insuranceUpdate", year)),
-                    uiOutput(paste0("cowSell", year))
+                    uiOutput(paste0("cowSell", year)),
+                    uiOutput(paste0("profits", year))
              ),
              column(2,
                     fluidRow(column(12, style = "background-color:white;", div(style = "height:600px;"))),
