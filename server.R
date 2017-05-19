@@ -33,7 +33,9 @@ function(input, output, session) {
       if(myOuts[i, herd] == 0){
         myOuts[i, cost.ins := 0]
       }
-
+      # Append range health value to a list 
+      {appendRangeHealth(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)), rangeHealthList)}
+      # Compute health info for sidebar display
       rangeHealth(i)
       delay(10,session$sendCustomMessage(type = "scrollCallbackTop", 0))
       tagList(
@@ -61,7 +63,7 @@ function(input, output, session) {
             tags$li(p("Your current net worth, including cows and your bank balance, is $", 
                       span(prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:red"), "."))
           },
-        appendRangeHealth(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)), rangeHealthList),
+
         br(),
         h4("Range Condition"),
         if(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0))<100){

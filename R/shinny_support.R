@@ -408,6 +408,6 @@ appendRangeHealth <- function(healthValue, rangeHealthList){
   rangeProd <- healthValue
   rangeHealthList <<- c(rangeHealthList, rangeProd)
   # rangeHealthlist <<- rangeHealthlist
-  return(rangeHealthList)
+
 }
 
