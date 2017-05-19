@@ -217,6 +217,22 @@ function(input, output, session) {
       }
     }))
     
+    ## Reactive to track revenues for calf and cow sales
+    assign(paste0("revenues", i), reactive({
+      
+      ## Get cows being sold based on slide position
+      cows <- input[[paste0("cow", i, "Sale")]]
+      calves <- input[[paste0("calves", i, "Sale")]]
+      herd <- myOuts[i, herd]
+      
+      ## Calculate operating costs for the current year (already fixed)
+      operatingCosts <- herd * simRuns$cow.cost
+      
+      ## Calculate revenues for the current year based on slider position
+      revenues <- cows * simRuns$p.cow + calves * weanWeight * simRuns$p.wn[1]
+      
+    }))
+    
     #################UI Functions of Year Tabs###################
     
     ## UI for winter Info
