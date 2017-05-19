@@ -96,7 +96,7 @@ function(input, output, session) {
                 # Tooltip creation, a button with an icon and the popover for the "tip"
                 bsButton("infocows", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
               bsPopover(id = "infocows", title = "Cattle in herd",
-                        content = paste0("add in some tips into why you should have 600 cows on the range"),
+                        content = paste0("The carrying capacity of your range is about 600 cows. Your herd can grow or shrink depending on how many calves your cows produce and how many cows and calves you sell in the fall. But be careful: if your herd is too large, you will have less grass per cow and you may reduce your range health. If your herd is too small, you may lose out on profits."),
                         placement = "bottom", 
                         trigger = "hover", 
                         options = list(container = "body")
@@ -106,11 +106,10 @@ function(input, output, session) {
 
                 bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
               bsPopover(id = "infocalves", title = "Calves in herd",
-                        content = paste0("differences between cows and calves"),
+                        content = paste0("Your revenues will primarily depend on how many calves you sell and how much each calf weighs."),
                         placement = "bottom", 
                         trigger = "hover", 
-                        options = list(container = "body")
-              ),
+                        options = list(container = "body")),
               br(),
               p(h4("Ranch Status:")),
               if(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0))<100){
@@ -123,7 +122,7 @@ function(input, output, session) {
 
               },
               bsPopover(id = "infohealth", title = "Range Health",
-                        content = paste0("if you dont have the right ratio of cows to rain to hay you will fail"),
+                        content = paste0("There is a delicate balance between the size of a ranch and the number of cattle that graze it. Overgrazing will lead to many problems that reduce the health and productivity of your rangeland. Without a healthy rangeland, you will incur increasingly higher hay costs and see lower cattle weights at sale. Also, these problems are exacerbated under dry conditions and drought, so be especially careful when this occurs and adjust your herd size with the weather."),
                         placement = "bottom", 
                         trigger = "hover", 
                         options = list(container = "body")),
@@ -135,10 +134,11 @@ function(input, output, session) {
                       bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
               },
               bsPopover(id = "infocash", title = "Cash Assets",
-                        content = paste0("this is cash in hand not total net worth"),
+                        content = paste0("If your balance falls below zero, you will automatically borrow money at 6.5% interest."),
                         placement = "bottom", 
                         trigger = "hover", 
                         options = list(container = "body")),
+              p("Value of herd: $"),
               
               if((prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE))>0){
                 p("Net worth: $", span(prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE), style="color:green"), 
@@ -149,10 +149,11 @@ function(input, output, session) {
                 
               },
               bsPopover(id = "infonet", title = "Net Assets",
-                        content = paste0("this is cash + cow value"),
+                        content = paste0("This is the current market value of your herd combined with your bank balance."),
                         placement = "bottom", 
                         trigger = "hover", 
-                        options = list(container = "body"))
+                        options = list(container = "body")) 
+              
             )
           )
         })
