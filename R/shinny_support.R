@@ -369,6 +369,7 @@ createOutputs <- function(practiceRuns, simRuns, indem){
 }
 
 rangeHealth <- function(currentYear){
+  #source("R/shinny_support.R")
   ## Calcualte available forage for normal, high, and low precip over remaining months
   ## Establish current state variables 
   myYear <- startYear + currentYear - 1
@@ -400,19 +401,13 @@ rangeHealth <- function(currentYear){
   fullAdaptCost <- prettyNum(round(fullAdaptCost, -2), big.mark=",",scientific=FALSE)
   expectCost <<- fullAdaptCost
   precipexpec <<- forageList
-  
 
-  
-  
-  # ## Establish current state variables
-  # herd <- myOuts[currentYear, herd]
-  # wean <- myOuts[currentYear, wn.succ]
-  # 
-  # ## Calculate weaned Calves
-  # calvesAvailable <- round(herd * wean)
-  # 
-  # sidecalves <<- calvesAvailable
-  
 }
 
+appendRangeHealth <- function(healthValue, rangeHealthList){
+  rangeProd <- healthValue
+  rangeHealthList <<- c(rangeHealthList, rangeProd)
+  # rangeHealthlist <<- rangeHealthlist
+  return(rangeHealthList)
+}
 
