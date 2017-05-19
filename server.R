@@ -774,6 +774,11 @@ function(input, output, session) {
     gs_new(title =  paste0("input", lastFile + 1), 
            input = saveData, trim = TRUE, verbose = TRUE)
     incProgress(1/3)
+    
+    output <- gs_title("tester")
+    gs_add_row(output, ws=1, input = myOuts)
+    red <- output %>% gs_read(ws = "Sheet1")
+    
     gs_new(title =  paste0("output", lastFile + 1), 
            input = myOuts, trim = TRUE, verbose = TRUE)
     })
