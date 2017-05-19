@@ -138,7 +138,18 @@ function(input, output, session) {
                         placement = "bottom", 
                         trigger = "hover", 
                         options = list(container = "body")),
-              p("Value of herd: $"),
+              if((prettyNum((myOuts[rv$page, net.wrth] - myOuts[rv$page, assets.cash]), digits = 0,big.mark=",", scientific=FALSE)) > 0){
+                p("Value of herd: $", span(prettyNum((myOuts[rv$page, net.wrth] - myOuts[rv$page, assets.cash]), digits = 0,big.mark=",", scientific=FALSE), style="color:green"), 
+                bsButton("herdval", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+              }else{
+                p("Value of herd: $", span(prettyNum((myOuts[rv$page, net.wrth] - myOuts[rv$page, assets.cash]), digits = 0,big.mark=",", scientific=FALSE), style="color:red"), 
+                bsButton("herdval", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+              },
+              bsPopover(id = "herdval", title = "Value of herd",
+                        content = paste0("This is the estimated value of your breeding cows at current market prices."),
+                        placement = "bottom", 
+                        trigger = "hover", 
+                        options = list(container = "body")),
               
               if((prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE))>0){
                 p("Net worth: $", span(prettyNum(myOuts[rv$page, net.wrth], digits = 0, big.mark=",", scientific=FALSE), style="color:green"), 
