@@ -407,8 +407,8 @@ rangeHealth <- function(currentYear){
 
 appendRangeHealth <- function(healthValue, rangeHealthList){
   rangeProd <- healthValue
-  rangeHealthList <<- c(rangeHealthList, rangeProd)
-  # rangeHealthlist <<- rangeHealthlist
-
+  
+  first_na <- which(is.na(rangeHealthList))[1]
+  rangeHealthList[first_na] <<- rangeProd
 }
 
