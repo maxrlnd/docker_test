@@ -17,9 +17,9 @@ function(input, output, session) {
   }
   # Creates empty numeric that will track range health over length of run
   {
-    rangeHealthList <<- numeric()}
+    rangeHealthList <<- rep(NA, 11)
   
-  
+  }
   #####Year Tab Functions#####################
   
   ## This loop Creates the necessary output functions for each year tab
@@ -71,6 +71,7 @@ function(input, output, session) {
           }else{
             p("Your range is currently at ", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="font-weight:bold;font-size:large;color:green"), "%")
           },
+        plotOutput(paste0("RangeHealthPlot", i)),
         br(),
         h4("Bills Due"),
         p(p("Your rainfall-index insurance premium is due. You owe $", 
@@ -520,20 +521,36 @@ function(input, output, session) {
       plotOuts <- melt(plotOuts, id.vars = "Year")
       setnames(plotOuts, c("Year", "Area", "Value in $"))
       plotOuts$Area <- factor(plotOuts$Area)
-      #Rounding PlotOut dataframe table
-      
-      
+
+    
       ggplot(plotOuts, aes(x = Year, y = `Value in $`, fill = Area)) + geom_bar(stat = "identity") + 
-        ggtitle("Net Worth") + theme(legend.title = element_blank()) +
+        ggtitle("Net Worth") + 
+        theme(legend.title = element_blank()) +
         scale_y_continuous(labels = comma) +
-        #geom_text(aes(label = dollar(`Value in $`),), size = 5, position = position_stack(vjust = 0.3), angle = 90) +
-        geom_text(aes(label = dollar(`Value in $`)), size = 5, position = position_stack(vjust = 0.3), angle = 90) +
-        theme(text = element_text(size = 20)) +
+        geom_text(data = subset(plotOuts, `Value in $` !=0), aes(label = dollar(`Value in $`)), size = 5, position = position_stack(vjust = 0.3), angle = 90) +
+        theme(axis.title = element_text(size = 20)) +
         scale_fill_manual(values = c("#f4a460", "#85bb65"))
-      #change default color schemes
-      #Green for cash, light peach for cows
-      #X AXis - Year 1, Year2, Year 3, etc. 
-      #X Label, Character Vector
+  
+      
+    })
+    
+    output[[paste0("RangeHealthPlot", i)]] <- renderPlot({
+      PlotYear <- myOuts[, "yr", with = F]
+      setnames(PlotYear, c("Year"))
+      PlotYear[, Year := startYear:(startYear + nrow(PlotYear) - 1)]
+      PlotYear <- melt(PlotYear, id.vars = "Year")
+      PlotYear$rangeHealthList <- rangeHealthList
+
+      
+      ggplot(PlotYear, aes(x = Year, y = rangeHealthList)) + 
+        geom_bar(stat = "identity", fill = "olivedrab") + 
+        ggtitle("Range Health") + 
+        labs(x = "Year" ,y = "Range Condition") +
+        scale_x_continuous(limits = c(2001,2014)) +
+        theme(text = element_text(size = 20))
+
+
+      
     })
     
     ## Bar graph to display rainfall
@@ -572,11 +589,26 @@ function(input, output, session) {
       yearAvg[, "id" := c("Actual Rain", "Average Rain")]
       yearAvg <- melt(yearAvg, id.vars = "id")
       setnames(yearAvg, c("id", "Month", "Rainfall"))
-      ggplot(yearAvg, aes(x = Month, y = Rainfall, fill = id)) + 
-        geom_bar(width = .9, stat = "identity", position = 'dodge') + 
+      
+      #Setting output to only highlight July and August
+      yprecip1 = yprecip[, (1:12)[-seq(9,10)] :=0]
+      ave1 <- station.gauge$avg
+      yearAvg1 <- rbindlist(list(yprecip1, ave1), use.names = T)
+      yearAvg1[, "id" := c("Actual Rain", "Average Rain")]
+      yearAvg1 <- melt(yearAvg1, id.vars = "id")
+      setnames(yearAvg1, c("id", "Month", "Rainfall"))
+      
+      #ggplot for July and August
+      ggplot(yearAvg, aes(x = Month, y = Rainfall, area = id)) + 
+        geom_bar(width = .9, stat = "identity", position = 'dodge', alpha = .5) + 
         theme(legend.title = element_blank(), text = element_text(size = 15)) + ggtitle("Rainfall") +
         scale_fill_manual(values = c("#00008b", "#1e90ff")) +
-        ylab("Rainfall (Inches)")
+        scale_color_manual(values = c("grey50", "grey50")) +
+        ylab("Rainfall (Inches)") +
+        xlab("Months") + 
+        #Geom__bar only highlighting July and August
+        geom_bar(data = yearAvg1, aes(x = Month, y = Rainfall, fill = id), stat = "identity", position = 'dodge')
+
     })
     
     # Reactive to disable start simulation button after they're clicked
