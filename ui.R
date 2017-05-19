@@ -86,7 +86,7 @@ tabsetPanel(id = "mainPanels",
             actionButton("applyInsChange", "Change Insurance"),
             actionButton("reset_button", "Reset Page"),
             br(),
-            textInput("name", "Enter your name or alias"),
+            textInput("user.ID", "Enter your mTurk code"),
             actionButton("simStart", "Begin Ranch Game")
             # actionButton("saveInputs", "Save all Input")
           )),

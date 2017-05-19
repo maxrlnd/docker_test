@@ -18,7 +18,8 @@ function(input, output, session) {
   # Creates empty numeric that will track range health over length of run
   {
     rangeHealthList <<- numeric()}
-  
+  # Capture UserID from start page
+  output$user.ID <<- renderText({input$user.ID})
   
   #####Year Tab Functions#####################
   
@@ -596,7 +597,7 @@ function(input, output, session) {
                             totalForage = get(paste0("totalForage", i))(), calfSale = input[[paste0("calves", i, "Sale")]],
                             indem = indem[[i]], adaptExpend = input[[paste0("d", i, "adaptExpend")]], cowSales = input[[paste0("cow", i, "Sale")]], 
                             newHerd = get(paste0("herdSize", i))(), zones = get(paste0("currentZones", i))(), 
-                            currentYear = i)
+                            currentYear = i, user.ID = ID)
       values$currentYear <- values$currentYear + 1
     })
     
@@ -630,6 +631,8 @@ function(input, output, session) {
       showModal(exitModal())
     }
   })
+
+  
   
   observeEvent(input$Exit, {
     js$closewindow();
