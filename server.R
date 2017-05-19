@@ -15,7 +15,9 @@ function(input, output, session) {
     toggleClass(class = "disabled",
                  selector = "#navBar li a[data-value='Ranch Simulation']")
   }
-  
+  # Creates empty numeric that will track range health over length of run
+  {
+    rangeHealthList <<- numeric()}
   
   
   #####Year Tab Functions#####################
@@ -25,11 +27,16 @@ function(input, output, session) {
     # lapply(c("p", "r"), function(j){})
     ## Reactive taglist for the first set of winter info at the start of each year, updates when
     ## myOuts updates
+    
     assign(paste0("reactiveWinter", i), reactive({
       input[[paste0("sell", i-1)]]
       if(myOuts[i, herd] == 0){
         myOuts[i, cost.ins := 0]
       }
+      # Append range health value to a list 
+      {appendRangeHealth(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)), rangeHealthList)}
+      # Compute health info for sidebar display
+      rangeHealth(i)
       delay(10,session$sendCustomMessage(type = "scrollCallbackTop", 0))
       tagList(
         br(),
@@ -46,7 +53,8 @@ function(input, output, session) {
         }else{
           tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
                                                              big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:green")))
-          }
+        }
+        
         ,
         if((prettyNum(myOuts[i, net.wrth], digits = 0)>0)){
         tags$li(p("Your current net worth, including cows and your bank balance, is $", 
@@ -55,6 +63,7 @@ function(input, output, session) {
             tags$li(p("Your current net worth, including cows and your bank balance, is $", 
                       span(prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:red"), "."))
           },
+
         br(),
         h4("Range Condition"),
         if(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0))<100){
@@ -72,12 +81,12 @@ function(input, output, session) {
         uiOutput(paste0("premCheck", i)),
         tags$hr(style="border-color: darkgray;")
         , 
-        
-        
+
         # Create an output for the sidebar widget on overall ranch status
         output$infoPane <- renderUI({
           fixedPanel(
-            draggable = FALSE, top = 100, left = "auto", right = 20, bottom = "auto",
+            draggable = FALSE, top = 70, left = "auto", right = 20, bottom = "auto",
+
             width = 220, height = "auto",
             wellPanel(
               p(h3("Ranch Overview")), 
@@ -92,7 +101,9 @@ function(input, output, session) {
                         trigger = "hover", 
                         options = list(container = "body")
               ),
-              p("Calves in herd:","some number", 
+
+              p("Calves in herd:","so much hate", 
+
                 bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
               bsPopover(id = "infocalves", title = "Calves in herd",
                         content = paste0("differences between cows and calves"),
@@ -103,16 +114,19 @@ function(input, output, session) {
               br(),
               p(h4("Ranch Status:")),
               if(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0))<100){
-                p("Range productvity:", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:red"), "%")
+
+                p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:red"), 
+                bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
               }else{
-                p("Range productvity:", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:green"), "%")
+                p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="color:green"),
+                bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+
               },
               bsPopover(id = "infohealth", title = "Range Health",
                         content = paste0("if you dont have the right ratio of cows to rain to hay you will fail"),
                         placement = "bottom", 
                         trigger = "hover", 
-                        options = list(container = "body"))
-              , 
+                        options = list(container = "body")),
               
               if((prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE))>0){
                 p("Bank balance: $",span(prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE), style="color:green"), 
@@ -159,6 +173,7 @@ function(input, output, session) {
         zones <- myOuts[i, zone.change] * zones * 
           (1 - (myOuts[i, Gt])/simRuns$forage.constant)
       }
+
       return(zones)
     }))
     
@@ -457,6 +472,7 @@ function(input, output, session) {
       # julyRain <- station.gauge$stgg[Year == (startYear + i - 1),-1]/station.gauge$avg * 100
       # julyRain[, 7:12 := "?"]
     })
+
     
     ## Bar graphs for herd size
     output[[paste0("cowPlot", i)]] <- renderPlot({
