@@ -15,7 +15,9 @@ function(input, output, session) {
     toggleClass(class = "disabled",
                  selector = "#navBar li a[data-value='Ranch Simulation']")
   }
-  
+  # Creates empty numeric that will track range health over length of run
+  {
+    rangeHealthList <<- numeric()}
   
   
   #####Year Tab Functions#####################
@@ -31,6 +33,9 @@ function(input, output, session) {
       if(myOuts[i, herd] == 0){
         myOuts[i, cost.ins := 0]
       }
+      # Append range health value to a list 
+      {appendRangeHealth(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)), rangeHealthList)}
+      # Compute health info for sidebar display
       rangeHealth(i)
       delay(10,session$sendCustomMessage(type = "scrollCallbackTop", 0))
       tagList(
@@ -58,6 +63,7 @@ function(input, output, session) {
             tags$li(p("Your current net worth, including cows and your bank balance, is $", 
                       span(prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:red"), "."))
           },
+
         br(),
         h4("Range Condition"),
         if(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0))<100){
@@ -120,8 +126,7 @@ function(input, output, session) {
                         content = paste0("if you dont have the right ratio of cows to rain to hay you will fail"),
                         placement = "bottom", 
                         trigger = "hover", 
-                        options = list(container = "body"))
-              , 
+                        options = list(container = "body")),
               
               if((prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE))>0){
                 p("Bank balance: $",span(prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE), style="color:green"), 
@@ -168,6 +173,7 @@ function(input, output, session) {
         zones <- myOuts[i, zone.change] * zones * 
           (1 - (myOuts[i, Gt])/simRuns$forage.constant)
       }
+
       return(zones)
     }))
     
