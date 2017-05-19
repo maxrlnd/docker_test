@@ -551,11 +551,26 @@ function(input, output, session) {
       yearAvg[, "id" := c("Actual Rain", "Average Rain")]
       yearAvg <- melt(yearAvg, id.vars = "id")
       setnames(yearAvg, c("id", "Month", "Rainfall"))
-      ggplot(yearAvg, aes(x = Month, y = Rainfall, fill = id)) + 
-        geom_bar(width = .9, stat = "identity", position = 'dodge') + 
+      
+      #Setting output to only highlight July and August
+      yprecip1 = yprecip[, (1:12)[-seq(9,10)] :=0]
+      ave1 <- station.gauge$avg
+      yearAvg1 <- rbindlist(list(yprecip1, ave1), use.names = T)
+      yearAvg1[, "id" := c("Actual Rain", "Average Rain")]
+      yearAvg1 <- melt(yearAvg1, id.vars = "id")
+      setnames(yearAvg1, c("id", "Month", "Rainfall"))
+      
+      #ggplot for July and August
+      ggplot(yearAvg, aes(x = Month, y = Rainfall, color = id)) + 
+        geom_bar(width = .9, stat = "identity", position = 'dodge', alpha = .1) + 
         theme(legend.title = element_blank(), text = element_text(size = 15)) + ggtitle("Rainfall") +
         scale_fill_manual(values = c("#00008b", "#1e90ff")) +
-        ylab("Rainfall (Inches)")
+        scale_color_manual(values = c("grey50", "grey50")) +
+        ylab("Rainfall (Inches)") +
+        xlab("Months") + 
+        #Geom__bar only highlighting July and August
+        geom_bar(data = yearAvg1, aes(x = Month, y = Rainfall, fill = id), stat = "identity", position = 'dodge')
+
     })
     
     # Reactive to disable start simulation button after they're clicked
