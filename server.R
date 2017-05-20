@@ -348,13 +348,30 @@ function(input, output, session) {
           tagList(
             getCowSell(get(paste0("totalForage", i))(), AdjWeanSuccess(get(paste0("totalForage", i))(), T, simRuns$normal.wn.succ, 1), i),
             plotOutput(paste0("cowPlot", i)),
-            p("Keep in mind that yearlings (weaned calves that are not yet producing calves) 
-              aren't counted in these herd size numbers. You do not have the option to sell yearlings in this game.")
+            br(),
+            p("Herd prediction details",bsButton("herdetails", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),bsPopover(id = "herdetails", title = "Herd Prediction",content = paste0("Keep in mind that yearlings (weaned calves that are not yet producing calves) are not counted in these herd size numbers. You do not have the option to sell yearlings in this game. These herd size predictions also assume that you go back to normal culling and calf sale rates next year. For these reasons, your herd may not go all the way to 0 if you sell off all of your cows and calves."), 
+                            placement = "auto", 
+                            trigger = "hover", 
+                            options = list(container = "body"))),
+            br()
+            # p("Keep in mind that yearlings (weaned calves that are not yet producing calves) 
+            #   aren't counted in these herd size numbers. You do not have the option to sell yearlings in this game.")
           )
+
       #   }
       # }
     })
+ 
     
+    
+             #  bsButton("herdetails", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),
+             #  bsPopover(id = "herdetails", title = "Cattle in herd", content = paste0("Keep in mind that yearlings (weaned calves that are not yet producing calves) aren't counted in these herd size numbers. You do not have the option to sell yearlings in this game. These herd size predictions also assume that you go back to 'normal' culling and calf sale rates next year. For these reasons, your herd may not go all the way to 0 if you sell off all of your cows and calves."),                        placement = "top", 
+             # trigger = "hover", 
+             # options = list(container = "body")))
+  
+  
+  
+  
     ## Create a button to continue after selecting adaptation level
     output[[paste0("continue", i)]] <- renderUI({
       if(!is.null(input[[paste0("year", i, "Start")]])){
