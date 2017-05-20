@@ -41,12 +41,12 @@ function(input, output, session) {
       tagList(
         br(),
         h3(paste0("Year ", i,": Winter Finance Assessment")),
-        p("The Information/Graphs below shows the your herd worth, range health, and your financial balance."),
+        p("Before calving season begins, it is time to take account of your herd, range, and financial health."),
         br(),
         plotOutput(paste0("worthPlot", i)),
         tags$li(p("Your herd has ", 
                  span(prettyNum(myOuts[i, herd], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large"), 
-                 " cows, not including calves or yearlings.")),
+                 " cows, not including calves ",bsButton("calfdesc", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),bsPopover(id = "calfdesc", title = "Calf Description",content = paste0("Calves are born in early spring and are raised on milk from their mother until they reach a weight of about 600 pounds.Once the calves stop taking milk from their mothers they arecalled weaned calves."))," or yearlings.",bsButton("yearlingdesc", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),bsPopover(id = "yearlingdesc", title = "Yearling Description",content = paste0("These are cows that are weaned, but not yet reproducing")),"")),
         if(prettyNum(myOuts[i, assets.cash], digits = 0)<0){
         tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
                                                      big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:red")))
@@ -302,7 +302,8 @@ function(input, output, session) {
             h3(paste0("Year ", i, ": End of Growing Season")),
             if(currentIndem > 0){
               tagList(
-                p("This summer, it rained much less than your average rainfall. The graph below shows how much it has rained in July and August, following your decision to buy hay or not."),
+                p("You didn't get much rain this summer! In the graph below you can see how much
+                  it has rained since you decided whether or not to purchase hay (July and August)."),
                 plotOutput(paste0("rainGraphSep", i)),
                 p("Since you have rainfall insurance, 
                   you get a check to help cover your losses and extra expenses.
