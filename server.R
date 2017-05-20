@@ -364,7 +364,7 @@ function(input, output, session) {
       req(input[[paste0("insCont", i)]])
         tagList(
             br(),
-            h4(p("Based on your current selections for market sales, your revenues and costs are as follows:")),
+            h4(p("Based on your current selections for market sales, your revenues and costs for this year are as follows:")),
             h5(p("Cow-calf revenues: $",
                  span(prettyNum(get(paste0("revenues", i))(), digits = 2, big.mark = ",", scientific = FALSE),
                       style = "font-weight:bold:font-size:Xlarge;color:green"))),   # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
