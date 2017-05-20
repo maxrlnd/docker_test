@@ -141,8 +141,7 @@ getCowSell <- function(totalForage, wean, currentYear){
             the same size as it is now if you sell", standardCalfSale, "calves and",  standardCowSale,  "cows.
             If you sell more, then your herd size will decrease. 
             If you sell fewer, then your herd size will grow.")),
-    tags$li(paste0("Selling a cow now means that you get more revenue this year, 
-            but you will produce fewer calves next year.",bsButton("herdchange", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),bsPopover(id = "herdchange", title = "Effects on Herd Size",content = paste0("Selling cows will affect your herd size for the next two years while selling or keeping calves will affect your herd size in two years, when those calves could become mother cows.")),"")),
+    tags$li(paste0("Changing this changes the model.",bsButton("herdchange", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),bsPopover(id = "herdchange", title = "Effects on Herd Size",content = paste0("Selling cows will affect your herd size for the next two years while selling or keeping calves will affect your herd size in two years, when those calves could become mother cows.")),"")),
     tags$li("Keeping a calf now means that you get less revenue this year, 
             but that calf will start producing calves the year after next."),
     br(),
