@@ -114,20 +114,17 @@ getCowSell <- function(totalForage, wean, currentYear){
     br(),
     br(),
     h3(paste0("Year ", currentYear, ": Fall Cow and Calf Sales")),
-    p("It is the end of the season and it is time to take your calves to market.
+    p("It is the end of the season and it is time to take your stock to market.
       Use the information below to decide how many cows and calves you want to sell this year."),
     br(),
     if((weanWeight)<600){
     h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:red") , " pounds, on average.", 
-              " Your weaned calves weigh ", span((600 - weanWeight), style="font-weight:bold;font-size:large;color:red"), " pounds below their target weight.
-              This means that you're losing out on "))
+              " They weigh ", span((600 - weanWeight), style="font-weight:bold;font-size:large;color:red"), " pounds below their target weight."))
     }else{
       h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:green") , " pounds, on average."))
-      
       }
     ,
-    tags$li("The normal target weight is 600 lbs."), 
-    tags$li("If your calves are lighter than 600 lbs, it is because the mother cows
+    p("If your calves are lighter than 600 lbs, it is because the mother cows
                    may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."),
     br(),
     h5(paste0("You currently have ", myOuts[currentYear, herd], " cows and ", calvesAvailable, " calves.")),
@@ -136,21 +133,17 @@ getCowSell <- function(totalForage, wean, currentYear){
     tags$li(paste0("At the normal target weight, each calf you sell would bring in $", simRuns$p.wn[1]*600, " of cash.")),
     tags$li("For every cow you sell, you will bring in $850 of cash."),
     br(),
-    
-    h5(paste("If your herd is at full health (normal weight calves, full reproductive potential), your herd will stay
+    h5("This decision will affect your herd size in future years."),
+    h5(tags$li(paste("If your herd is at full health (normal weight calves, full reproductive potential), your herd will stay
             the same size as it is now if you sell", standardCalfSale, "calves and",  standardCowSale,  "cows.
-            If you sell more, then your herd size will decrease. 
-            If you sell fewer, then your herd size will grow.")),
-    tags$li(paste0("Changing this changes the model.",bsButton("herdchange", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),bsPopover(id = "herdchange", title = "Effects on Herd Size",content = paste0("Selling cows will affect your herd size for the next two years while selling or keeping calves will affect your herd size in two years, when those calves could become mother cows.")),"")),
-    tags$li("Keeping a calf now means that you get less revenue this year, 
-            but that calf will start producing calves the year after next."),
-    br(),
-    
-    h5(paste0("Remember, the carrying capacity of your range is ",simRuns$carrying.cap * simRuns$acres, " cow-calf pairs. 
-              If your herd is larger than this you risk damaging your range and producing less grass for your herd.")),
+            If you sell more, then your herd size will decrease.If you sell fewer, then your herd size will grow."))),
+    h5(tags$li(p("Selling cows will affect your herd size starting next year, while selling or keeping calves will affect your herd size in two years when those calves could become mother cows."))),
+    h5(tags$li(paste0("Remember, the carrying capacity of your range is ",simRuns$carrying.cap * simRuns$acres, " cow-calf pairs. 
+              If your herd is larger than this you risk damaging your range and producing less grass for your herd."))),
     br(),
     sliderInput(paste0("calves", currentYear, "Sale"), "How many calves do you want to sell?",
                 min = 0, max = calvesAvailable, value =  standardCalfSale, step = 1, width = "600px"),
+    # p(bsButton("calfherd", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),bsPopover(id = "calfherd", title = "Calf Description",content = paste0("selling or keeping calves will affect your herd size in two years, when those calves could become mother cows.")),""),
     sliderInput(paste0("cow", currentYear, "Sale"), "How many cows do you want to sell?",
                 min = 0, max = myOuts[currentYear, herd], value = standardCowSale, step = 1, width = "600px"),
     br()
