@@ -485,9 +485,7 @@ function(input, output, session) {
           herd.projection$`Herd Size` = round(herd.projection$`Herd Size`, 0)
           ggplot(herd.projection, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity", width = .3, fill = "#8b4513") +
             geom_text(aes(label = `Herd Size`), size = 10, position = position_stack( vjust = .5), color = "#ffffff") +
-            theme(text = element_text(size = 20))
-          #Fix Font Size
-          #Fix Fatness of bar graphs
+            theme(text = element_text(size = 20), axis.title.x=element_blank())
           
         }
       }
