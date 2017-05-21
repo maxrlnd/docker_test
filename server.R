@@ -361,17 +361,53 @@ function(input, output, session) {
             getCowSell(get(paste0("totalForage", i))(), AdjWeanSuccess(get(paste0("totalForage", i))(), T, simRuns$normal.wn.succ, 1), i),
             plotOutput(paste0("cowPlot", i)),
             p("Keep in mind that yearlings (weaned calves that are not yet producing calves) 
-              aren't counted in these herd size numbers. You do not have the option to sell yearlings in this game.")
-            #br(),
-            
-            #h4(get(paste0("revenues", i))()),  # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
-            #h4(p("Your operating costs this year were: $", 
-            #     span(prettyNum(myOuts[i, herd] * simRuns$cow.cost, 
-            #                    digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:red"))),  # Costs of operatiting
-            #h4(p("Based on your current sales choices, your total profits for the year are: $"))
+              aren't counted in these herd size numbers. You do not have the option to sell yearlings in this game.
+              These herd size predictions also assume that you go back to 'normal' culling and calf sale rates 
+              next year.")
           )
       #   }
       # }
+    })
+    
+    output[[paste0("profits", i)]] <- renderUI({
+      req(input[[paste0("insCont", i)]])
+        tagList(
+            br(),
+            h4(p("Based on your current selections for market sales, your revenues and costs for this year are as follows:")),
+            h5(p("Cow-calf revenues: $",
+                 span(prettyNum(get(paste0("revenues", i))(), digits = 2, big.mark = ",", scientific = FALSE),
+                      style = "font-weight:bold:font-size:Xlarge;color:green"))),   # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
+            h5(p("Rain-index insurance payouts: $", 
+                 span(prettyNum(indem[[i]]$indemnity, digits = 2, big.mark = ",", scientific = FALSE),
+                      style = "font-weight:bold:font-size:Xlarge;color:green"))), 
+            br(),
+            h5(p("Base operating costs: $", 
+               span(prettyNum(myOuts[i, herd] * simRuns$cow.cost, 
+                              digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:red"))),  # Costs of operatiting
+            h5(p("Extra feed costs: $", 
+                 span(prettyNum(input[[paste0("d", i, "adaptExpend")]], digits = 2, big.mark = ",", scientific = FALSE),
+                      style = "font-weight:bold:font-size:Xlarge;color:red"))), 
+            h5(p("Rain-index insurance premium cost: $", 
+                 span(prettyNum(indem[[i]]$producer_prem, digits = 2, big.mark = ",", scientific = FALSE),
+                      style = "font-weight:bold:font-size:Xlarge;color:red"))),
+            br(),
+            if(get(paste0("revenues", i))() + indem[[i]]$indemnity 
+               - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", i, "adaptExpend")]] - indem[[i]]$producer_prem > 0){
+              h4(p("Total profits: $",
+                    span(prettyNum(get(paste0("revenues", i))() + indem[[i]]$indemnity 
+                                   - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", i, "adaptExpend")]] - indem[[i]]$producer_prem, 
+                                   digits = 2, big.mark = ",", scientific = FALSE),
+                        style = "font-weight:bold:font-size:Xlarge;color:green")))
+            }
+            else{
+              h4(p("Total profits: $",
+                   span(prettyNum(get(paste0("revenues", i))() + indem[[i]]$indemnity 
+                             - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", i, "adaptExpend")]] - indem[[i]]$producer_prem, 
+                             digits = 2, big.mark = ",", scientific = FALSE),
+                   style = "font-weight:bold:font-size:Xlarge;color:red")))
+            }
+            
+        )
     })
     
     ## Create a button to continue after selecting adaptation level
@@ -516,9 +552,7 @@ function(input, output, session) {
           herd.projection$`Herd Size` = round(herd.projection$`Herd Size`, 0)
           ggplot(herd.projection, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity", width = .3, fill = "#8b4513") +
             geom_text(aes(label = `Herd Size`), size = 10, position = position_stack( vjust = .5), color = "#ffffff") +
-            theme(text = element_text(size = 20))
-          #Fix Font Size
-          #Fix Fatness of bar graphs
+            theme(text = element_text(size = 20), axis.title.x=element_blank())
           
         }
       }
@@ -760,7 +794,8 @@ function(input, output, session) {
               fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
               uiOutput(paste0("decision", rv$page)),
               uiOutput(paste0("insuranceUpdate", rv$page)),
-              uiOutput(paste0("cowSell", rv$page))
+              uiOutput(paste0("cowSell", rv$page)),
+              uiOutput(paste0("profits", rv$page))
        ),
        column(2,
               fluidRow(column(12, style = "background-color:white;", div(style = "height:1000px;")))

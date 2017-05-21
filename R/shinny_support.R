@@ -123,7 +123,8 @@ getCowSell <- function(totalForage, wean, currentYear){
     if((weanWeight)<600){
     h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:red") , " pounds, on average.", 
               " Your weaned calves weigh ", span((600 - weanWeight), style="font-weight:bold;font-size:large;color:red"), " pounds below their target weight.
-              This means that you're losing out on "))
+              This means that you're losing out on $", 
+         span((simRuns$p.wn[1]*(600 - weanWeight)), style="font-weight:bold;font-size:large:color:red"), " for each calf you sell."))
     }else{
       h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:green") , " pounds, on average."))
       
@@ -257,7 +258,8 @@ createNewYr <- function(year){
                     fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
                     uiOutput(paste0("decision", year)),
                     uiOutput(paste0("insuranceUpdate", year)),
-                    uiOutput(paste0("cowSell", year))
+                    uiOutput(paste0("cowSell", year)),
+                    uiOutput(paste0("profits", year))
              ),
              column(2,
                     fluidRow(column(12, style = "background-color:white;", div(style = "height:600px;"))),
