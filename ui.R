@@ -520,9 +520,20 @@ tabsetPanel(id = "mainPanels",
                                     color:rgb(0, 0, 0);
                                     text-align: left;
                                     border-color: rgb(245,245,245);
-                                    background-color: rgb(245, 245, 245);
-                                    
-                                    "))),
+                                    background-color: rgb(245, 245, 245);",
+                      ".inquest{
+                                    color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(245,245,245);
+                      background-color: rgb(245, 245, 245);
+                      }
+                      .inquest:hover{
+                      color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(245,245,245);
+                      background-color: rgb(245, 245, 245);"
+                      
+                      ))),
           
           
           
