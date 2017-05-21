@@ -18,7 +18,7 @@ getJulyInfo <- function(currentYear){
   myYear <- startYear + currentYear - 1
   herd <- myOuts[currentYear, herd]
   zones <- station.gauge$zonewt
-  
+  myOuts[currentYear, mTurkID := ID]
   ## Calcualte available forage for normal, high, and low precip over remaining months
   forargeList <- vector("numeric", 3)
   if(currentYear == 1){
@@ -163,7 +163,7 @@ getCowSell <- function(totalForage, wean, currentYear){
 }
 
 
-updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales, newHerd, zones, adaptInten, currentYear, user.ID){
+updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales, newHerd, zones, adaptInten, currentYear, ID){
   "
   Function: updateOuts
   Description: Function to update myOuts after a year of the simulation has been completed
@@ -195,7 +195,7 @@ updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales
   myOuts[currentYear, rev.calf := CalculateExpSales(herd = NA, wn.succ = NA, 
                                                      wn.wt = calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 
                                                      calf.sell = calfSale, p.wn = simRuns$p.wn[pastYear])]
-  myOuts[currentYear, ID := user.ID]
+  myOuts[currentYear, mTurkID := ID]
   myOuts[currentYear, rev.ins := indem$indemnity]
   myOuts[currentYear, rev.int := myOuts[pastYear, assets.cash] * simRuns$invst.int]
   myOuts[currentYear, rev.tot := myOuts[currentYear, rev.ins] + myOuts[currentYear, rev.int] + myOuts[currentYear, rev.calf]]

@@ -15,10 +15,9 @@ function(input, output, session) {
     toggleClass(class = "disabled",
                  selector = "#navBar li a[data-value='Ranch Simulation']")
   }
+  
+  
   # Creates empty numeric that will track range health over length of run
-
-  # Capture UserID from start page
-  output$user.ID <<- renderText({input$user.ID})
 {
     rangeHealthList <<- rep(NA, 11)
 
@@ -37,10 +36,13 @@ function(input, output, session) {
       if(myOuts[i, herd] == 0){
         myOuts[i, cost.ins := 0]
       }
+      
+      ID<<- input$user.ID
+      myOuts[1, mTurkID := ID]
       # Append range health value to a list 
       {appendRangeHealth(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)), rangeHealthList)}
       # Compute health info for sidebar display
-      rangeHealth(i)
+      span(rangeHealth(i),style = "color:white")
       delay(10,session$sendCustomMessage(type = "scrollCallbackTop", 0))
       tagList(
         br(),
@@ -52,11 +54,13 @@ function(input, output, session) {
                  span(prettyNum(myOuts[i, herd], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large"), 
                  " cows, not including calves or yearlings (cows that are weaned, but not yet reproducing).")),
         if(prettyNum(myOuts[i, assets.cash], digits = 0)<0){
-        tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
-                                                     big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:red")))
+        tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+                                                             indem[[i]]$producer_prem - input[[paste0("d", i, "adaptExpend")]], 
+                                                           digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:green")))
         }else{
-          tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
-                                                             big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:green")))
+          tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+                                                               indem[[i]]$producer_prem - input[[paste0("d", i, "adaptExpend")]], 
+                                                             digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:green")))
         }
         
         ,
@@ -84,9 +88,10 @@ function(input, output, session) {
                   "Please type the amount of the insurance premium below and to pay your bill and continue.",
                   width = "100%"),
         uiOutput(paste0("premCheck", i)),
-        tags$hr(style="border-color: darkgray;")
+        tags$hr(style="border-color: darkgray;"),
+        span(rangeHealth(i),style = "color:white")
         , 
-rangeHealth(i),
+
         # Create an output for the sidebar widget on overall ranch status
         output$infoPane <- renderUI({
           fixedPanel(
@@ -632,7 +637,7 @@ rangeHealth(i),
                             totalForage = get(paste0("totalForage", i))(), calfSale = input[[paste0("calves", i, "Sale")]],
                             indem = indem[[i]], adaptExpend = input[[paste0("d", i, "adaptExpend")]], cowSales = input[[paste0("cow", i, "Sale")]], 
                             newHerd = get(paste0("herdSize", i))(), zones = get(paste0("currentZones", i))(), 
-                            currentYear = i, user.ID = ID)
+                            currentYear = i, ID = ID)
       values$currentYear <- values$currentYear + 1
     })
     
@@ -805,20 +810,20 @@ rangeHealth(i),
       lastFile <- regmatches(files, gregexpr('[0-9]+',files))
       lapply(lastFile, as.numeric) %>% unlist() %>% max() -> lastFile
     }
-    saveData <- reactiveValuesToList(input)
+    saveData <<- reactiveValuesToList(input)
     # save(saveData, file = "newSave.RData")
     saveData <- inputToDF(saveData)
     withProgress(message = "Saving Data", value = 1/3, {
-    gs_new(title =  paste0("input", lastFile + 1), 
+    gs_new(title =  ID, 
            input = saveData, trim = TRUE, verbose = TRUE)
     incProgress(1/3)
     
-    output <- gs_title("tester")
-    gs_add_row(output, ws=1, input = myOuts)
-    red <- output %>% gs_read(ws = "Sheet1")
+    outputSheet <- gs_title("cowGameInputs")
+    gs_add_row(outputSheet, ws=1, input = myOuts)
+    red <- outputSheet %>% gs_read(ws = "Sheet1")
     
-    gs_new(title =  paste0("output", lastFile + 1), 
-           input = myOuts, trim = TRUE, verbose = TRUE)
+    # gs_new(title =  paste0("output", lastFile + 1), 
+    #        input = myOuts, trim = TRUE, verbose = TRUE)
     })
     values$saveComplete <- TRUE
     # write.csv(saveData, file = paste0("results/input", lastFile + 1, ".csv"), row.names = F)
@@ -853,3 +858,5 @@ rangeHealth(i),
   })
   
 }
+
+#ID <- input$user.ID
