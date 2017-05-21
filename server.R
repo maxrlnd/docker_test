@@ -54,13 +54,11 @@ function(input, output, session) {
                  span(prettyNum(myOuts[i, herd], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large"), 
                  " cows, not including calves ",bsButton("calfdesc", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),bsPopover(id = "calfdesc", title = "Calf Description",content = paste0("Calves are born in early spring and are raised on milk from their mother until they reach a weight of about 600 pounds.Once the calves stop taking milk from their mothers they arecalled weaned calves."))," or yearlings.",bsButton("yearlingdesc", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),bsPopover(id = "yearlingdesc", title = "Yearling Description",content = paste0("These are cows that are weaned, but not yet reproducing")),"")),
         if(prettyNum(myOuts[i, assets.cash], digits = 0)<0){
-        tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
-                                                             indem[[i]]$producer_prem - input[[paste0("d", i, "adaptExpend")]], 
-                                                           digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:green")))
+          tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
+                                                             big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:red")))
         }else{
-          tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
-                                                               indem[[i]]$producer_prem - input[[paste0("d", i, "adaptExpend")]], 
-                                                             digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:green")))
+          tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
+                                                             big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:green")))
         }
         
         ,
