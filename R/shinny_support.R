@@ -57,9 +57,22 @@ getJulyInfo <- function(currentYear){
   
   ## Create taglist showing all adpatation
   tagList(
+    tags$head(tags$style(HTML(
+      # CSS formating for the rollover buttons
+      ".inTextTips{
+                      color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(255,255,255);
+                      background-color: rgb(255, 255, 255);
+                                  }
+                      .inTextTips:hover{
+                      color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(255,255,255);
+                      background-color: rgb(255, 255, 255);"))),
     h3(paste0("Year ", currentYear, ": Summer Adaptation Investment Decision")),
     p("It is now the end of June, and you are almost past the most important part of the growing season for forage on your rangeland. Good rainfall levels in July and August can further increase the forage for your herd. However, low rainfall levels will provide limited forage levels for your herd. It is your choice to decide how much hay to supplement in order to compensate the possible low amounts of grass on your range. Below indicates three options if you choose to invest in hay.",
-      bsButton("Precipitation", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),
+      bsButton("Precipitation", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
       bsPopover(id = "Precipitation", title = "Precipitation",content = paste0("The ranch operates by putting mother cows on rangeland to graze. In years with less precipitation the ranch must purchase extra hay because there is less grass available and calves are unable to reach their target weight. Thinner calves mean less revenue when they go to market. Feeding the mother cows more hay keeps them healthy and able to produce milk for the calves. Also, if the mother cows are not healthy, they will not produce as many calves next season."),
                 placement = "bottom", 
                 trigger = "hover", 
@@ -83,7 +96,7 @@ getJulyInfo <- function(currentYear){
     br(),
     numericInput(paste0("d", currentYear, "adaptExpend"), "How much hay, if any, do you want to purchase for your herd?",
                 min = 0, max = adaptMax, value = 0, step = 100, width = "100%"),
-    p(bsButton("loan", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),
+    p(bsButton("loan", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
       bsPopover(id = "loan", title = "Bank Loan",content = paste0("If you don’t have enough money in the bank you can borrow at 6.5% interest to buy hay."),placement = "auto", trigger = "hover",options = list(container = "body")))
   )
 }
