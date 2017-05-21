@@ -67,12 +67,16 @@ function(input, output, session) {
         plotOutput(paste0("worthPlot", i)),
         tags$li(p("Your herd has ", 
                  span(prettyNum(myOuts[i, herd], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large"), 
+<<<<<<< HEAD
                  " cows, not including calves ",
                  bsButton("calfdesc", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
                  bsPopover(id = "calfdesc", title = "Calf Description",content = paste0("Calves are born in early spring and are raised on milk from their mother until they reach a weight of about 600 pounds.Once the calves stop taking milk from their mothers they arecalled weaned calves.")),
                  " or yearlings.",
                  bsButton("yearlingdesc", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
                  bsPopover(id = "yearlingdesc", title = "Yearling Description",content = paste0("These are cows that are weaned, but not yet reproducing")),"")),
+=======
+                 " cows, not including calves ",bsButton("calfdesc", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "calfdesc", title = "Calf Description",content = paste0("Calves are born in early spring and are raised on milk from their mother until they reach a weight of about 600 pounds.Once the calves stop taking milk from their mothers they arecalled weaned calves."))," or yearlings.",bsButton("yearlingdesc", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "yearlingdesc", title = "Yearling Description",content = paste0("These are cows that are weaned, but not yet reproducing")),"")),
+>>>>>>> text_changes
         if(prettyNum(myOuts[i, assets.cash], digits = 0)<0){
           tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
                                                              big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:red")))
@@ -100,8 +104,15 @@ function(input, output, session) {
         plotOutput(paste0("RangeHealthPlot", i)),
         br(),
         h4("Bills Due"),
-        p(p("Your rainfall-index insurance premium is due. You owe $", 
-                 span(prettyNum(myOuts[i, cost.ins], digits = 0, big.mark=",",scientific=FALSE),style="font-weight:bold;font-size:large;color:red"), ". Please enter this amount below to pay your insurance bill.")),
+        p("Your rainfall-index insurance premium is due. You owe $", 
+                 span(prettyNum(myOuts[i, cost.ins], digits = 0, big.mark=",",scientific=FALSE),style="font-weight:bold;font-size:large;color:red"), ". Please
+                 enter this amount below to pay your insurance bill.",
+          bsButton("insurance", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
+          bsPopover(id = "insurance", title = "Insurance",
+                  content = paste0("The rainfall each year is unpredictable, but it can have a big impact on your bottom line. To help protect income, ranchers purchase insurance that will result in a payment if growing season rainfall is below normal. The only months that matter for your payout are May, June, July and August. The worse the drought, the bigger the check. Each year, any payouts are received at the end of August."),
+                                placement = "auto", 
+                                trigger = "hover", 
+                                options = list(container = "body"))),
         textInput(paste0("insurancePremium", i), 
                   "Please type the amount of the insurance premium below and to pay your bill and continue.",
                   width = "100%"),
@@ -364,6 +375,19 @@ function(input, output, session) {
               )
             }else{
               tagList(
+                tags$head(tags$style(HTML(
+                  # CSS formating for the rollover buttons
+                  ".inTextTips{
+                      color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(255,255,255);
+                      background-color: rgb(255, 255, 255);
+                                  }
+                      .inTextTips:hover{
+                      color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(255,255,255);
+                      background-color: rgb(255, 255, 255);"))),
                 p("You got sufficient rain this summer, so your grass should be in good shape for your cattle! 
                   In the graph below you can see how much
                   it has rained since you decided whether or not to purchase hay (July and August)."),
@@ -394,7 +418,7 @@ function(input, output, session) {
             plotOutput(paste0("cowPlot", i)),
 
             br(),
-            p("Herd prediction details",bsButton("herdetails", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),bsPopover(id = "herdetails", title = "Herd Prediction",content = paste0("Keep in mind that yearlings (weaned calves that are not yet producing calves) are not counted in these herd size numbers. You do not have the option to sell yearlings in this game. These herd size predictions also assume that you go back to normal culling and calf sale rates next year. For these reasons, your herd may not go all the way to 0 if you sell off all of your cows and calves."), 
+            p("Herd prediction details",bsButton("herdetails", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "herdetails", title = "Herd Prediction",content = paste0("Keep in mind that yearlings (weaned calves that are not yet producing calves) are not counted in these herd size numbers. You do not have the option to sell yearlings in this game. These herd size predictions also assume that you go back to normal culling and calf sale rates next year. For these reasons, your herd may not go all the way to 0 if you sell off all of your cows and calves."), 
                             placement = "auto", 
                             trigger = "hover", 
                             options = list(container = "body")))
