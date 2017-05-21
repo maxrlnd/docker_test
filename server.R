@@ -39,12 +39,27 @@ function(input, output, session) {
       
       ID<<- input$user.ID
       myOuts[1, mTurkID := ID]
+      
       # Append range health value to a list 
       {appendRangeHealth(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)), rangeHealthList)}
       # Compute health info for sidebar display
       span(rangeHealth(i),style = "color:white")
       delay(10,session$sendCustomMessage(type = "scrollCallbackTop", 0))
+      
       tagList(
+        tags$head(tags$style(HTML(
+          # CSS formating for the rollover buttons
+          ".inTextTips{
+                      color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(255,255,255);
+                      background-color: rgb(255, 255, 255);
+                                  }
+                      .inTextTips:hover{
+                      color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(255,255,255);
+                      background-color: rgb(255, 255, 255);"))),
         br(),
         h3(paste0("Year ", i,": Winter Finance Assessment")),
         p("Before calving season begins, it is time to take account of your herd, range, and financial health."),
@@ -52,7 +67,12 @@ function(input, output, session) {
         plotOutput(paste0("worthPlot", i)),
         tags$li(p("Your herd has ", 
                  span(prettyNum(myOuts[i, herd], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large"), 
-                 " cows, not including calves ",bsButton("calfdesc", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),bsPopover(id = "calfdesc", title = "Calf Description",content = paste0("Calves are born in early spring and are raised on milk from their mother until they reach a weight of about 600 pounds.Once the calves stop taking milk from their mothers they arecalled weaned calves."))," or yearlings.",bsButton("yearlingdesc", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),bsPopover(id = "yearlingdesc", title = "Yearling Description",content = paste0("These are cows that are weaned, but not yet reproducing")),"")),
+                 " cows, not including calves ",
+                 bsButton("calfdesc", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
+                 bsPopover(id = "calfdesc", title = "Calf Description",content = paste0("Calves are born in early spring and are raised on milk from their mother until they reach a weight of about 600 pounds.Once the calves stop taking milk from their mothers they arecalled weaned calves.")),
+                 " or yearlings.",
+                 bsButton("yearlingdesc", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
+                 bsPopover(id = "yearlingdesc", title = "Yearling Description",content = paste0("These are cows that are weaned, but not yet reproducing")),"")),
         if(prettyNum(myOuts[i, assets.cash], digits = 0)<0){
           tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
                                                              big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:red")))
@@ -110,7 +130,8 @@ function(input, output, session) {
                         options = list(container = "body")
               ),
 
-              p("Calves in herd:","so much hate", 
+              p("Calves in herd:", "still cant figure out",
+                #currCalves(i, myOuts[rv$page, herd]), 
 
                 bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
               bsPopover(id = "infocalves", title = "Calves in herd",
@@ -135,10 +156,11 @@ function(input, output, session) {
                         trigger = "hover", 
                         options = list(container = "body")),
               
-              if((prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE))>0){
-                p("Bank balance: $",span(prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE), style="color:green"), 
+              if((prettyNum(myOuts[i, assets.cash], digits = 0,
+                            big.mark=",", scientific=FALSE))>=0){
+                p("Bank balance: $", span(prettyNum((myOuts[rv$page, assets.cash]), digits = 0, big.mark=",", scientific=FALSE), style="color:green"),
                   bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
-              }else{p("Bank balance: $",span(prettyNum(myOuts[rv$page, assets.cash], digits = 0,big.mark=",", scientific=FALSE), style="color:red"), 
+              }else{p("Bank balance: $", networth, 
                       bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
               },
               bsPopover(id = "infocash", title = "Cash Assets",
@@ -869,14 +891,14 @@ function(input, output, session) {
     gs_new(title =  ID, 
            input = saveData, trim = TRUE, verbose = TRUE)
     ## These are used to check the output in testing
-    # inputsheet <- gs_title(ID)
-    # insheet <- gs_read(inputsheet)
+     inputsheet <- gs_title(ID)
+     insheet <- gs_read(inputsheet)
     incProgress(1/3)
     
     outputSheet <- gs_title("cowGameInputs")
     gs_add_row(outputSheet, ws=1, input = myOuts)
     ## This is used to validate in testing
-    # outsheet <- outputSheet %>% gs_read(ws = "Sheet1")
+     outsheet <- outputSheet %>% gs_read(ws = "Sheet1")
     
     # gs_new(title =  paste0("output", lastFile + 1), 
     #        input = myOuts, trim = TRUE, verbose = TRUE)
@@ -915,4 +937,4 @@ function(input, output, session) {
   
 }
 
-#ID <- input$user.ID
+
