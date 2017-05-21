@@ -16,14 +16,12 @@ function(input, output, session) {
                  selector = "#navBar li a[data-value='Ranch Simulation']")
   }
   # Creates empty numeric that will track range health over length of run
-  {
-<<<<<<< HEAD
-    rangeHealthList <<- numeric()}
+
   # Capture UserID from start page
   output$user.ID <<- renderText({input$user.ID})
-=======
+{
     rangeHealthList <<- rep(NA, 11)
->>>>>>> master
+
   
   }
   #####Year Tab Functions#####################
@@ -88,7 +86,7 @@ function(input, output, session) {
         uiOutput(paste0("premCheck", i)),
         tags$hr(style="border-color: darkgray;")
         , 
-
+rangeHealth(i),
         # Create an output for the sidebar widget on overall ranch status
         output$infoPane <- renderUI({
           fixedPanel(
