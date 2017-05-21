@@ -423,6 +423,7 @@ function(input, output, session) {
             need(userIns == round(indem[[i]]$indemnity, 0), genericWrong)
           )
         }
+
         fluidRow(
           
           if(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
@@ -816,11 +817,15 @@ function(input, output, session) {
     withProgress(message = "Saving Data", value = 1/3, {
     gs_new(title =  ID, 
            input = saveData, trim = TRUE, verbose = TRUE)
+    ## These are used to check the output in testing
+    # inputsheet <- gs_title(ID)
+    # insheet <- gs_read(inputsheet)
     incProgress(1/3)
     
     outputSheet <- gs_title("cowGameInputs")
     gs_add_row(outputSheet, ws=1, input = myOuts)
-    red <- outputSheet %>% gs_read(ws = "Sheet1")
+    ## This is used to validate in testing
+    # outsheet <- outputSheet %>% gs_read(ws = "Sheet1")
     
     # gs_new(title =  paste0("output", lastFile + 1), 
     #        input = myOuts, trim = TRUE, verbose = TRUE)

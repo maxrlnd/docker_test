@@ -411,4 +411,8 @@ appendRangeHealth <- function(healthValue, rangeHealthList){
   first_na <- which(is.na(rangeHealthList))[1]
   rangeHealthList[first_na] <<- rangeProd
 }
-
+updateworthvalues <- function(i){
+  networth <<- prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+              indem[[i]]$producer_prem - input[[paste0("d", i, "adaptExpend")]])
+ 
+}
