@@ -136,7 +136,7 @@ function(input, output, session) {
               ),
 
               p("Calves in herd:", "still cant figure out",
-                #currCalves(i, myOuts[rv$page, herd]), 
+ 
 
                 bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
               bsPopover(id = "infocalves", title = "Calves in herd",

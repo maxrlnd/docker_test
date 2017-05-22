@@ -425,14 +425,7 @@ appendRangeHealth <- function(healthValue, rangeHealthList){
   rangeHealthList[first_na] <<- rangeProd
 }
 
-currCalves <- function(i, herd){
-  if(i==1){
-    currCalves <- 510
-  }else{
-    currCalves <- herd * AdjWeanSuccess(get(paste0("totalForage", i))(), TRUE, simRuns$normal.wn.succ, 1)
-  }
-  return(currCalves)
-}
+
 
 
 
