@@ -86,7 +86,7 @@ tabsetPanel(id = "mainPanels",
             actionButton("applyInsChange", "Change Insurance"),
             actionButton("reset_button", "Reset Page"),
             br(),
-            textInput("name", "Enter your name or alias"),
+            textInput("user.ID", "Enter your mTurk code"),
             actionButton("simStart", "Begin Ranch Game")
             # actionButton("saveInputs", "Save all Input")
           )),
@@ -521,18 +521,18 @@ tabsetPanel(id = "mainPanels",
                                     text-align: left;
                                     border-color: rgb(245,245,245);
                                     background-color: rgb(245, 245, 245);",
-                      ".inquest{
+
+                                  ".inTextTips{
                                     color:rgb(0, 0, 0);
-                      text-align: left;
-                      border-color: rgb(245,245,245);
-                      background-color: rgb(245, 245, 245);
-                      }
-                      .inquest:hover{
-                      color:rgb(0, 0, 0);
-                      text-align: left;
-                      border-color: rgb(245,245,245);
-                      background-color: rgb(245, 245, 245);"
-                      
+                                    text-align: left;
+                                    border-color: rgb(245,245,245);
+                                    background-color: rgb(245, 245, 245);
+                                }
+                                  .inTextTips:hover{
+                                    color:rgb(0, 0, 0);
+                                    text-align: left;
+                                    border-color: rgb(245,245,245);
+                                    background-color: rgb(245, 245, 245);"
                       ))),
           
           
