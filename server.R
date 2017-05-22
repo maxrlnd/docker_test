@@ -940,9 +940,13 @@ function(input, output, session) {
       lastFile <- regmatches(files, gregexpr('[0-9]+',files))
       lapply(lastFile, as.numeric) %>% unlist() %>% max() -> lastFile
     }
-    saveData <<- reactiveValuesToList(input)
+    saveData <- reactiveValuesToList(input)
     # save(saveData, file = "newSave.RData")
-    saveData <- inputToDF(saveData)
+    saveData <<- inputToDF(saveData)
+    saveData$names <- NULL
+    # Pivot save data to horizontal
+    saveData <- t(saveData)
+    # Remove first row of variable names
     withProgress(message = "Saving Data", value = 1/3, {
     gs_new(title =  ID, 
            input = saveData, trim = TRUE, verbose = TRUE)
