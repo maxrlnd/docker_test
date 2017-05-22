@@ -15,13 +15,10 @@ function(input, output, session) {
     toggleClass(class = "disabled",
                  selector = "#navBar li a[data-value='Ranch Simulation']")
   }
-  
-  
-  # Creates empty numeric that will track range health over length of run
-{
-    rangeHealthList <<- rep(NA, 11)
 
-  
+  # Creates empty numeric that will track range health over length of run
+  {
+    rangeHealthList <<- rep(NA, 11)
   }
   #####Year Tab Functions#####################
   
@@ -431,6 +428,7 @@ function(input, output, session) {
             h4(p("Based on your current selections for market sales, your revenues and costs for this year are as follows:")),
             h5(p("Cow-calf revenues: $",
                  span(prettyNum(get(paste0("revenues", i))(), digits = 2, big.mark = ",", scientific = FALSE),
+
                       style = "font-weight:bold:font-size:Xlarge;color:green"), 
                  bsButton("cowRevenues", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"))),   # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
             bsPopover(id = "cowRevenues", title = "Cow-calf revenue",
@@ -476,6 +474,7 @@ function(input, output, session) {
                       placement = "auto", 
                       trigger = "hover", 
                       options = list(container = "body")),
+
             br(),
             if(get(paste0("revenues", i))() + indem[[i]]$indemnity 
                - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", i, "adaptExpend")]] - indem[[i]]$producer_prem > 0){
@@ -485,12 +484,14 @@ function(input, output, session) {
                                    digits = 2, big.mark = ",", scientific = FALSE),
                         style = "font-weight:bold:font-size:Xlarge;color:green"), 
                    bsButton("totalProfits", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small")))
+
             }
             else{
               h4(p("Total profits: $",
                    span(prettyNum(get(paste0("revenues", i))() + indem[[i]]$indemnity 
                              - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", i, "adaptExpend")]] - indem[[i]]$producer_prem, 
                              digits = 2, big.mark = ",", scientific = FALSE),
+
                    style = "font-weight:bold:font-size:Xlarge;color:red"), 
                    bsButton("totalProfits", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small")))
             },
@@ -499,6 +500,7 @@ function(input, output, session) {
                       placement = "auto", 
                       trigger = "hover", 
                       options = list(container = "body"))
+
             
         )
     })
