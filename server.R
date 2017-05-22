@@ -17,9 +17,9 @@ function(input, output, session) {
   }
   # Creates empty numeric that will track range health over length of run
   {
-    rangeHealthList <<- numeric()}
+    rangeHealthList <<- rep(NA, 11)
   
-  
+  }
   #####Year Tab Functions#####################
   
   ## This loop Creates the necessary output functions for each year tab
@@ -84,6 +84,7 @@ function(input, output, session) {
           }else{
             p("Your range is currently at ", span(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0)),style="font-weight:bold;font-size:large;color:green"), "%")
           },
+        plotOutput(paste0("RangeHealthPlot", i)),
         br(),
         h4("Bills Due"),
         p("Your rainfall-index insurance premium is due. You owe $", 
@@ -264,6 +265,20 @@ function(input, output, session) {
       }
     }))
     
+    ## Reactive to track revenues for calf and cow sales
+    assign(paste0("revenues", i), reactive({
+      
+      ## Get cows being sold based on slide position
+      cows <- input[[paste0("cow", i, "Sale")]]
+      calves <- input[[paste0("calves", i, "Sale")]]
+      totalForage <- get(paste0("totalForage", i))()
+      weanWeight <- round(calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 0)
+      
+      ## Calculate revenues for the current year based on slider position
+      revenues <- cows * simRuns$p.cow + calves *  weanWeight * simRuns$p.wn[1]
+      
+    }))
+    
     #################UI Functions of Year Tabs###################
     
     ## UI for winter Info
@@ -381,19 +396,71 @@ function(input, output, session) {
           tagList(
             getCowSell(get(paste0("totalForage", i))(), AdjWeanSuccess(get(paste0("totalForage", i))(), T, simRuns$normal.wn.succ, 1), i),
             plotOutput(paste0("cowPlot", i)),
+<<<<<<< HEAD
             br(),
             p("Herd prediction details",bsButton("herdetails", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "herdetails", title = "Herd Prediction",content = paste0("Keep in mind that yearlings (weaned calves that are not yet producing calves) are not counted in these herd size numbers. You do not have the option to sell yearlings in this game. These herd size predictions also assume that you go back to normal culling and calf sale rates next year. For these reasons, your herd may not go all the way to 0 if you sell off all of your cows and calves."), 
                             placement = "auto", 
                             trigger = "hover", 
                             options = list(container = "body")))
+=======
+            p("Keep in mind that yearlings (weaned calves that are not yet producing calves) 
+              aren't counted in these herd size numbers. You do not have the option to sell yearlings in this game.
+              These herd size predictions also assume that you go back to 'normal' culling and calf sale rates 
+              next year.")
+>>>>>>> master
           )
 
       #   }
       # }
     })
+<<<<<<< HEAD
 
   
   
+=======
+    
+    output[[paste0("profits", i)]] <- renderUI({
+      req(input[[paste0("insCont", i)]])
+        tagList(
+            br(),
+            h4(p("Based on your current selections for market sales, your revenues and costs for this year are as follows:")),
+            h5(p("Cow-calf revenues: $",
+                 span(prettyNum(get(paste0("revenues", i))(), digits = 2, big.mark = ",", scientific = FALSE),
+                      style = "font-weight:bold:font-size:Xlarge;color:green"))),   # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
+            h5(p("Rain-index insurance payouts: $", 
+                 span(prettyNum(indem[[i]]$indemnity, digits = 2, big.mark = ",", scientific = FALSE),
+                      style = "font-weight:bold:font-size:Xlarge;color:green"))), 
+            br(),
+            h5(p("Base operating costs: $", 
+               span(prettyNum(myOuts[i, herd] * simRuns$cow.cost, 
+                              digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:red"))),  # Costs of operatiting
+            h5(p("Extra feed costs: $", 
+                 span(prettyNum(input[[paste0("d", i, "adaptExpend")]], digits = 2, big.mark = ",", scientific = FALSE),
+                      style = "font-weight:bold:font-size:Xlarge;color:red"))), 
+            h5(p("Rain-index insurance premium cost: $", 
+                 span(prettyNum(indem[[i]]$producer_prem, digits = 2, big.mark = ",", scientific = FALSE),
+                      style = "font-weight:bold:font-size:Xlarge;color:red"))),
+            br(),
+            if(get(paste0("revenues", i))() + indem[[i]]$indemnity 
+               - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", i, "adaptExpend")]] - indem[[i]]$producer_prem > 0){
+              h4(p("Total profits: $",
+                    span(prettyNum(get(paste0("revenues", i))() + indem[[i]]$indemnity 
+                                   - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", i, "adaptExpend")]] - indem[[i]]$producer_prem, 
+                                   digits = 2, big.mark = ",", scientific = FALSE),
+                        style = "font-weight:bold:font-size:Xlarge;color:green")))
+            }
+            else{
+              h4(p("Total profits: $",
+                   span(prettyNum(get(paste0("revenues", i))() + indem[[i]]$indemnity 
+                             - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", i, "adaptExpend")]] - indem[[i]]$producer_prem, 
+                             digits = 2, big.mark = ",", scientific = FALSE),
+                   style = "font-weight:bold:font-size:Xlarge;color:red")))
+            }
+            
+        )
+    })
+    
+>>>>>>> master
     ## Create a button to continue after selecting adaptation level
     output[[paste0("continue", i)]] <- renderUI({
       if(!is.null(input[[paste0("year", i, "Start")]])){
@@ -535,9 +602,7 @@ function(input, output, session) {
           herd.projection$`Herd Size` = round(herd.projection$`Herd Size`, 0)
           ggplot(herd.projection, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity", width = .3, fill = "#8b4513") +
             geom_text(aes(label = `Herd Size`), size = 10, position = position_stack( vjust = .5), color = "#ffffff") +
-            theme(text = element_text(size = 20))
-          #Fix Font Size
-          #Fix Fatness of bar graphs
+            theme(text = element_text(size = 20), axis.title.x=element_blank())
           
         }
       }
@@ -550,20 +615,36 @@ function(input, output, session) {
       plotOuts <- melt(plotOuts, id.vars = "Year")
       setnames(plotOuts, c("Year", "Area", "Value in $"))
       plotOuts$Area <- factor(plotOuts$Area)
-      #Rounding PlotOut dataframe table
-      
-      
+
+    
       ggplot(plotOuts, aes(x = Year, y = `Value in $`, fill = Area)) + geom_bar(stat = "identity") + 
-        ggtitle("Net Worth") + theme(legend.title = element_blank()) +
+        ggtitle("Net Worth") + 
+        theme(legend.title = element_blank()) +
         scale_y_continuous(labels = comma) +
-        #geom_text(aes(label = dollar(`Value in $`),), size = 5, position = position_stack(vjust = 0.3), angle = 90) +
-        geom_text(aes(label = dollar(`Value in $`)), size = 5, position = position_stack(vjust = 0.3), angle = 90) +
-        theme(text = element_text(size = 20)) +
+        geom_text(data = subset(plotOuts, `Value in $` !=0), aes(label = dollar(`Value in $`)), size = 5, position = position_stack(vjust = 0.3), angle = 90) +
+        theme(axis.title = element_text(size = 20)) +
         scale_fill_manual(values = c("#f4a460", "#85bb65"))
-      #change default color schemes
-      #Green for cash, light peach for cows
-      #X AXis - Year 1, Year2, Year 3, etc. 
-      #X Label, Character Vector
+  
+      
+    })
+    
+    output[[paste0("RangeHealthPlot", i)]] <- renderPlot({
+      PlotYear <- myOuts[, "yr", with = F]
+      setnames(PlotYear, c("Year"))
+      PlotYear[, Year := startYear:(startYear + nrow(PlotYear) - 1)]
+      PlotYear <- melt(PlotYear, id.vars = "Year")
+      PlotYear$rangeHealthList <- rangeHealthList
+
+      
+      ggplot(PlotYear, aes(x = Year, y = rangeHealthList)) + 
+        geom_bar(stat = "identity", fill = "olivedrab") + 
+        ggtitle("Range Health") + 
+        labs(x = "Year" ,y = "Range Condition") +
+        scale_x_continuous(limits = c(2001,2014)) +
+        theme(text = element_text(size = 20))
+
+
+      
     })
     
     ## Bar graph to display rainfall
@@ -602,11 +683,26 @@ function(input, output, session) {
       yearAvg[, "id" := c("Actual Rain", "Average Rain")]
       yearAvg <- melt(yearAvg, id.vars = "id")
       setnames(yearAvg, c("id", "Month", "Rainfall"))
-      ggplot(yearAvg, aes(x = Month, y = Rainfall, fill = id)) + 
-        geom_bar(width = .9, stat = "identity", position = 'dodge') + 
+      
+      #Setting output to only highlight July and August
+      yprecip1 = yprecip[, (1:12)[-seq(9,10)] :=0]
+      ave1 <- station.gauge$avg
+      yearAvg1 <- rbindlist(list(yprecip1, ave1), use.names = T)
+      yearAvg1[, "id" := c("Actual Rain", "Average Rain")]
+      yearAvg1 <- melt(yearAvg1, id.vars = "id")
+      setnames(yearAvg1, c("id", "Month", "Rainfall"))
+      
+      #ggplot for July and August
+      ggplot(yearAvg, aes(x = Month, y = Rainfall, area = id)) + 
+        geom_bar(width = .9, stat = "identity", position = 'dodge', alpha = .5) + 
         theme(legend.title = element_blank(), text = element_text(size = 15)) + ggtitle("Rainfall") +
         scale_fill_manual(values = c("#00008b", "#1e90ff")) +
-        ylab("Rainfall (Inches)")
+        scale_color_manual(values = c("grey50", "grey50")) +
+        ylab("Rainfall (Inches)") +
+        xlab("Months") + 
+        #Geom__bar only highlighting July and August
+        geom_bar(data = yearAvg1, aes(x = Month, y = Rainfall, fill = id), stat = "identity", position = 'dodge')
+
     })
     
     # Reactive to disable start simulation button after they're clicked
@@ -746,7 +842,8 @@ function(input, output, session) {
               fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
               uiOutput(paste0("decision", rv$page)),
               uiOutput(paste0("insuranceUpdate", rv$page)),
-              uiOutput(paste0("cowSell", rv$page))
+              uiOutput(paste0("cowSell", rv$page)),
+              uiOutput(paste0("profits", rv$page))
        ),
        column(2,
               fluidRow(column(12, style = "background-color:white;", div(style = "height:1000px;")))

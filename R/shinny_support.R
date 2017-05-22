@@ -137,7 +137,13 @@ getCowSell <- function(totalForage, wean, currentYear){
     br(),
     if((weanWeight)<600){
     h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:red") , " pounds, on average.", 
+<<<<<<< HEAD
               " They weigh ", span((600 - weanWeight), style="font-weight:bold;font-size:large;color:red"), " pounds below their target weight."))
+=======
+              " Your weaned calves weigh ", span((600 - weanWeight), style="font-weight:bold;font-size:large;color:red"), " pounds below their target weight.
+              This means that you're losing out on $", 
+         span((simRuns$p.wn[1]*(600 - weanWeight)), style="font-weight:bold;font-size:large:color:red"), " for each calf you sell."))
+>>>>>>> master
     }else{
       h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:green") , " pounds, on average."))
       }
@@ -263,7 +269,8 @@ createNewYr <- function(year){
                     fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
                     uiOutput(paste0("decision", year)),
                     uiOutput(paste0("insuranceUpdate", year)),
-                    uiOutput(paste0("cowSell", year))
+                    uiOutput(paste0("cowSell", year)),
+                    uiOutput(paste0("profits", year))
              ),
              column(2,
                     fluidRow(column(12, style = "background-color:white;", div(style = "height:600px;"))),
@@ -413,8 +420,8 @@ rangeHealth <- function(currentYear){
 
 appendRangeHealth <- function(healthValue, rangeHealthList){
   rangeProd <- healthValue
-  rangeHealthList <<- c(rangeHealthList, rangeProd)
-  # rangeHealthlist <<- rangeHealthlist
-
+  
+  first_na <- which(is.na(rangeHealthList))[1]
+  rangeHealthList[first_na] <<- rangeProd
 }
 
