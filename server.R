@@ -943,7 +943,7 @@ function(input, output, session) {
     saveData <- reactiveValuesToList(input)
     # save(saveData, file = "newSave.RData")
     saveData <<- inputToDF(saveData)
-    saveData$names <- NULL
+    #saveData$names <- NULL
     # Pivot save data to horizontal
     saveData <- t(saveData)
     # Remove first row of variable names
