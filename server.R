@@ -908,6 +908,7 @@ function(input, output, session) {
      )
   }else{
     fluidRow(
+      hide("infoPane"),
       column(width = 10,
       h4(paste0("Congratulations! You've completed ", simLength, " years of ranching.")),
       br(),
