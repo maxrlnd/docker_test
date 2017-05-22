@@ -498,16 +498,18 @@ function(input, output, session) {
       plotOuts <- melt(plotOuts, id.vars = "Year")
       setnames(plotOuts, c("Year", "Area", "Value in $"))
       plotOuts$Area <- factor(plotOuts$Area)
-
+      plotOuts$YearNumbers <-  paste("Year", plotOuts$Year - min(plotOuts$Year) + 1)
+      plotOuts$YearNumbers <- factor(plotOuts$YearNumbers, 
+                                     levels = paste("Year", seq_along(unique(plotOuts$Year))))
     
-      ggplot(plotOuts, aes(x = Year, y = `Value in $`, fill = Area)) + geom_bar(stat = "identity") + 
+      ggplot(plotOuts, aes(x = YearNumbers, y = `Value in $`, fill = Area)) + geom_bar(stat = "identity") + 
         ggtitle("Net Worth") + 
-        theme(legend.title = element_blank()) +
         scale_y_continuous(labels = comma) +
-        geom_text(data = subset(plotOuts, `Value in $` !=0), aes(label = dollar(`Value in $`)), size = 5, position = position_stack(vjust = 0.3), angle = 90) +
-        theme(axis.title = element_text(size = 20)) +
+        geom_text(data = subset(plotOuts, `Value in $` !=0), aes(label = dollar(`Value in $`)), 
+                  size = 5, position = position_stack(vjust = 0.3), angle = 90) +
+        theme(legend.title = element_blank(), axis.title = element_text(size = 20), text = element_text(size = 20)) +
         scale_fill_manual(values = c("#f4a460", "#85bb65"))
-  
+
       
     })
     
@@ -517,15 +519,15 @@ function(input, output, session) {
       PlotYear[, Year := startYear:(startYear + nrow(PlotYear) - 1)]
       PlotYear <- melt(PlotYear, id.vars = "Year")
       PlotYear$rangeHealthList <- rangeHealthList
-
+      PlotYear$YearNumbers <- c(paste("Year", seq(1, simLength, length.out = simLength)))
       
-      ggplot(PlotYear, aes(x = Year, y = rangeHealthList)) + 
+      
+      ggplot(PlotYear, aes(x = YearNumbers, y = rangeHealthList)) + 
         geom_bar(stat = "identity", fill = "olivedrab") + 
         ggtitle("Range Health") + 
-        labs(x = "Year" ,y = "Range Condition") +
-        scale_x_continuous(limits = c(2001,2014)) +
-        theme(text = element_text(size = 20))
-
+        labs(x = "Year" ,y = "Range Condition (%)") +
+        theme(text = element_text(size = 20)) +
+        geom_text(aes(label = paste(rangeHealthList, sep = "", "%")), size = 9, color =  "#ffffff", vjust = 5)
 
       
     })
