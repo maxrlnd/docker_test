@@ -78,16 +78,19 @@ fluidPage("Ranch Drought", id = "navBar",
 tabsetPanel(id = "mainPanels",
   
  ## Instruction panel
- tabPanel("debug",
+ tabPanel("Welcome",
           fluidRow(
-            textInput("code", "Enter Code to be Run"),
-            actionButton("runCode", "Run Code"),
-            textInput("insChange", "Enter True or False to use insurance or not"),
-            actionButton("applyInsChange", "Change Insurance"),
-            actionButton("reset_button", "Reset Page"),
-            br(),
+           # textInput("code", "Enter Code to be Run"),
+           # actionButton("runCode", "Run Code"),
+           # textInput("insChange", "Enter True or False to use insurance or not"),
+           # actionButton("applyInsChange", "Change Insurance"),
+           # actionButton("reset_button", "Reset Page"),
+           # br(),
             textInput("user.ID", "Enter your mTurk code"),
-            actionButton("simStart", "Begin Ranch Game")
+            actionButton("simStart", "Begin Ranch Game"),
+            br(),
+            br(),
+            span((startTime <<- Sys.time()), style="color:white")
             # actionButton("saveInputs", "Save all Input")
           )),
  # tabPanel("Input",
