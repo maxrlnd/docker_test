@@ -175,7 +175,7 @@ getCowSell <- function(totalForage, wean, currentYear){
 }
 
 
-updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales, newHerd, zones, adaptInten, currentYear, ID){
+updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales, newHerd, zones, adaptInten, currentYear, ID, time){
   "
   Function: updateOuts
   Description: Function to update myOuts after a year of the simulation has been completed
@@ -207,6 +207,7 @@ updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales
   myOuts[currentYear, rev.calf := CalculateExpSales(herd = NA, wn.succ = NA, 
                                                      wn.wt = calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 
                                                      calf.sell = calfSale, p.wn = simRuns$p.wn[pastYear])]
+  myOuts[currentYear, timeElapse := (Sys.time() - time)]
   myOuts[currentYear, mTurkID := ID]
   myOuts[currentYear, rev.ins := indem$indemnity]
   myOuts[currentYear, rev.int := myOuts[pastYear, assets.cash] * simRuns$invst.int]

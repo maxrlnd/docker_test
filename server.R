@@ -770,7 +770,7 @@ function(input, output, session) {
                             totalForage = get(paste0("totalForage", i))(), calfSale = input[[paste0("calves", i, "Sale")]],
                             indem = indem[[i]], adaptExpend = input[[paste0("d", i, "adaptExpend")]], cowSales = input[[paste0("cow", i, "Sale")]], 
                             newHerd = get(paste0("herdSize", i))(), zones = get(paste0("currentZones", i))(), 
-                            currentYear = i, ID = ID)
+                            currentYear = i, ID = ID, time = startTime)
       values$currentYear <- values$currentYear + 1
     })
     
@@ -915,6 +915,8 @@ function(input, output, session) {
       p(paste0("Your total net worth is $", round(myOuts$net.wrth[simLength + 1], 0), ". With a conversation rate of $200,000
                of simulation money to $1 of MTurk bonus money, you've earned $", round(myOuts$net.wrth[simLength + 1]/200000, 2),".")),
       actionButton("saveInputs", "Save results and recieve completion code"),
+      span((endTime <<- Sys.time()), style = "color:white"),
+      span((simTime <<- endTime - startTime), style = "color:white"),
       uiOutput("complete"),
       offset = .5)
     )
