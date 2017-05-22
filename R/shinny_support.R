@@ -96,10 +96,9 @@ getJulyInfo <- function(currentYear){
     # 
     # ,
     br(),
+    p("Remember that if you don’t have enough money in the bank to cover the cost of hay you will automatically borrow at a 6.5% interest."),
     numericInput(paste0("d", currentYear, "adaptExpend"), "How much hay, if any, do you want to purchase for your herd?",
-                min = 0, max = adaptMax, value = 0, step = 100, width = "100%"),
-    p(bsButton("loan", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
-      bsPopover(id = "loan", title = "Bank Loan",content = paste0("If you don’t have enough money in the bank you can borrow at 6.5% interest to buy hay."),placement = "auto", trigger = "hover",options = list(container = "body")))
+                min = 0, max = adaptMax, value = 0, step = 100, width = "100%")
   )
 }
 
