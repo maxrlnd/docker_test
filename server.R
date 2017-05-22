@@ -431,20 +431,51 @@ function(input, output, session) {
             h4(p("Based on your current selections for market sales, your revenues and costs for this year are as follows:")),
             h5(p("Cow-calf revenues: $",
                  span(prettyNum(get(paste0("revenues", i))(), digits = 2, big.mark = ",", scientific = FALSE),
-                      style = "font-weight:bold:font-size:Xlarge;color:green"))),   # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
+                      style = "font-weight:bold:font-size:Xlarge;color:green"), 
+                 bsButton("cowRevenues", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"))),   # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
+            bsPopover(id = "cowRevenues", title = "Cow-calf revenue",
+                      content = paste0("Each cow sells for $850. Each calf sells for $1.30 per pound. Move the sliders to change your revenues for this year and your herd size for the next few years."),
+                      placement = "auto", 
+                      trigger = "hover", 
+                      options = list(container = "body")),
+        
             h5(p("Rain-index insurance payouts: $", 
                  span(prettyNum(indem[[i]]$indemnity, digits = 2, big.mark = ",", scientific = FALSE),
-                      style = "font-weight:bold:font-size:Xlarge;color:green"))), 
+                      style = "font-weight:bold:font-size:Xlarge;color:green"), 
+                 bsButton("rainInsurance", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"))), 
+            bsPopover(id = "rainInsurance", title = "Rain-index insurance",
+                      content = paste0("This is how much you were paid from your rain-index insurance this year."),
+                      placement = "auto", 
+                      trigger = "hover", 
+                      options = list(container = "body")),
             br(),
             h5(p("Base operating costs: $", 
                span(prettyNum(myOuts[i, herd] * simRuns$cow.cost, 
-                              digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:red"))),  # Costs of operatiting
+                              digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:red"), 
+               bsButton("operatingCosts", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"))),  # Costs of operatiting
+            bsPopover(id = "operatingCosts", title = "Ranch operating costs",
+                      content = paste0("Your ranch operating costs are based on the size of your herd. Each cow in your herd costs $500 to maintain for the year. Yearlings and calves are not counted in your operating costs."),
+                      placement = "auto", 
+                      trigger = "hover", 
+                      options = list(container = "body")),
             h5(p("Extra feed costs: $", 
                  span(prettyNum(input[[paste0("d", i, "adaptExpend")]], digits = 2, big.mark = ",", scientific = FALSE),
-                      style = "font-weight:bold:font-size:Xlarge;color:red"))), 
+                      style = "font-weight:bold:font-size:Xlarge;color:red"), 
+                 bsButton("extraFeedCost", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"))),
+            bsPopover(id = "extraFeedCost", title = "Extra feed costs",
+                      content = paste0("This is how much you spent on feed earlier in the year."),
+                      placement = "auto", 
+                      trigger = "hover", 
+                      options = list(container = "body")),
             h5(p("Rain-index insurance premium cost: $", 
                  span(prettyNum(indem[[i]]$producer_prem, digits = 2, big.mark = ",", scientific = FALSE),
-                      style = "font-weight:bold:font-size:Xlarge;color:red"))),
+                      style = "font-weight:bold:font-size:Xlarge;color:red"), 
+                 bsButton("premiumCost", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"))),
+            bsPopover(id = "premiumCost", title = "Rain-index costs",
+                      content = paste0("This is how much you spent on your rain-index insurance this year."),
+                      placement = "auto", 
+                      trigger = "hover", 
+                      options = list(container = "body")),
             br(),
             if(get(paste0("revenues", i))() + indem[[i]]$indemnity 
                - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", i, "adaptExpend")]] - indem[[i]]$producer_prem > 0){
@@ -452,15 +483,22 @@ function(input, output, session) {
                     span(prettyNum(get(paste0("revenues", i))() + indem[[i]]$indemnity 
                                    - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", i, "adaptExpend")]] - indem[[i]]$producer_prem, 
                                    digits = 2, big.mark = ",", scientific = FALSE),
-                        style = "font-weight:bold:font-size:Xlarge;color:green")))
+                        style = "font-weight:bold:font-size:Xlarge;color:green"), 
+                   bsButton("totalProfits", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small")))
             }
             else{
               h4(p("Total profits: $",
                    span(prettyNum(get(paste0("revenues", i))() + indem[[i]]$indemnity 
                              - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", i, "adaptExpend")]] - indem[[i]]$producer_prem, 
                              digits = 2, big.mark = ",", scientific = FALSE),
-                   style = "font-weight:bold:font-size:Xlarge;color:red")))
-            }
+                   style = "font-weight:bold:font-size:Xlarge;color:red"), 
+                   bsButton("totalProfits", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small")))
+            },
+            bsPopover(id = "totalProfits", title = "Total profits",
+                      content = paste0("Your profits are your revenues for the year minus your costs."),
+                      placement = "auto", 
+                      trigger = "hover", 
+                      options = list(container = "body"))
             
         )
     })
