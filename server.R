@@ -921,7 +921,7 @@ function(input, output, session) {
 
   output$complete <- renderUI({
     req(values$saveComplete)
-    h4("Your Data has been saved, complete code...")
+    h4(p("Your Data has been saved, your completion code is: ", span(sample(10000:99999,1), style="color:green")), p("Please write down your completion code and close this window to finish the last portion of the game."))
   })
   observeEvent(input$prevBtn, navPage(-1))
   observeEvent(input$nextBtn, navPage(1))
@@ -944,17 +944,17 @@ function(input, output, session) {
     }
     saveData <- reactiveValuesToList(input)
     # save(saveData, file = "newSave.RData")
-    saveData <<- inputToDF(saveData)
+    saveData <- inputToDF(saveData)
     #saveData$names <- NULL
     # Pivot save data to horizontal
-    saveData <- t(saveData)
+    #saveData <- t(saveData)
     # Remove first row of variable names
     withProgress(message = "Saving Data", value = 1/3, {
     gs_new(title =  ID, 
            input = saveData, trim = TRUE, verbose = TRUE)
     ## These are used to check the output in testing
-     inputsheet <- gs_title(ID)
-     insheet <- gs_read(inputsheet)
+     #inputsheet <- gs_title(ID)
+     #insheet <- gs_read(inputsheet)
     incProgress(1/3)
     
     outputSheet <- gs_title("cowGameInputs")
