@@ -39,6 +39,19 @@ function(input, output, session) {
       rangeHealth(i)
       delay(10,session$sendCustomMessage(type = "scrollCallbackTop", 0))
       tagList(
+        tags$head(tags$style(HTML(
+          # CSS formating for the rollover buttons
+          ".inTextTips{
+                      color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(255,255,255);
+                      background-color: rgb(255, 255, 255);
+                                  }
+                      .inTextTips:hover{
+                      color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(255,255,255);
+                      background-color: rgb(255, 255, 255);"))),
         br(),
         h3(paste0("Year ", i,": Winter Finance Assessment")),
         p("Before calving season begins, it is time to take account of your herd, range, and financial health."),
@@ -46,7 +59,7 @@ function(input, output, session) {
         plotOutput(paste0("worthPlot", i)),
         tags$li(p("Your herd has ", 
                  span(prettyNum(myOuts[i, herd], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large"), 
-                 " cows, not including calves or yearlings (cows that are weaned, but not yet reproducing).")),
+                 " cows, not including calves ",bsButton("calfdesc", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "calfdesc", title = "Calf Description",content = paste0("Calves are born in early spring and are raised on milk from their mother until they reach a weight of about 600 pounds.Once the calves stop taking milk from their mothers they arecalled weaned calves."))," or yearlings.",bsButton("yearlingdesc", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "yearlingdesc", title = "Yearling Description",content = paste0("These are cows that are weaned, but not yet reproducing")),"")),
         if(prettyNum(myOuts[i, assets.cash], digits = 0)<0){
         tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
                                                      big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:red")))
@@ -74,8 +87,15 @@ function(input, output, session) {
         plotOutput(paste0("RangeHealthPlot", i)),
         br(),
         h4("Bills Due"),
-        p(p("Your rainfall-index insurance premium is due. You owe $", 
-                 span(prettyNum(myOuts[i, cost.ins], digits = 0, big.mark=",",scientific=FALSE),style="font-weight:bold;font-size:large;color:red"), ". Please enter this amount below to pay your insurance bill.")),
+        p("Your rainfall-index insurance premium is due. You owe $", 
+                 span(prettyNum(myOuts[i, cost.ins], digits = 0, big.mark=",",scientific=FALSE),style="font-weight:bold;font-size:large;color:red"), ". Please
+                 enter this amount below to pay your insurance bill.",
+          bsButton("insurance", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
+          bsPopover(id = "insurance", title = "Insurance",
+                  content = paste0("The rainfall each year is unpredictable, but it can have a big impact on your bottom line. To help protect income, ranchers purchase insurance that will result in a payment if growing season rainfall is below normal. The only months that matter for your payout are May, June, July and August. The worse the drought, the bigger the check. Each year, any payouts are received at the end of August."),
+                                placement = "auto", 
+                                trigger = "hover", 
+                                options = list(container = "body"))),
         textInput(paste0("insurancePremium", i), 
                   "Please type the amount of the insurance premium below and to pay your bill and continue.",
                   width = "100%"),
@@ -97,7 +117,7 @@ function(input, output, session) {
                 # Tooltip creation, a button with an icon and the popover for the "tip"
                 bsButton("infocows", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
               bsPopover(id = "infocows", title = "Cattle in herd",
-                        content = paste0("add in some tips into why you should have 600 cows on the range"),
+                        content = paste0("The carrying capacity of your range is about 600 cows. Your herd can grow or shrink depending on how many calves your cows produce and how many cows and calves you sell in the fall. But be careful: if your herd is too large, you will have less grass per cow and you may reduce your range health. If your herd is too small, you may lose out on profits."),
                         placement = "bottom", 
                         trigger = "hover", 
                         options = list(container = "body")
@@ -107,11 +127,10 @@ function(input, output, session) {
 
                 bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
               bsPopover(id = "infocalves", title = "Calves in herd",
-                        content = paste0("differences between cows and calves"),
+                        content = paste0("Your revenues will primarily depend on how many calves you sell and how much each calf weighs."),
                         placement = "bottom", 
                         trigger = "hover", 
-                        options = list(container = "body")
-              ),
+                        options = list(container = "body")),
               br(),
               p(h4("Ranch Status:")),
               if(ifelse(round(sum(get(paste0("currentZones", i))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", i))()) * 100, 0))<100){
@@ -124,8 +143,8 @@ function(input, output, session) {
 
               },
               bsPopover(id = "infohealth", title = "Range Health",
-                        content = paste0("if you dont have the right ratio of cows to rain to hay you will fail"),
-                        placement = "bottom", 
+                        content = paste0("There is a delicate balance between the size of a ranch and the number of cattle that graze it. Overgrazing will lead to many problems that reduce the health and productivity of your rangeland. Without a healthy rangeland, you will incur increasingly higher hay costs and see lower cattle weights at sale. Also, these problems are exacerbated under dry conditions and drought, so be especially careful when this occurs and adjust your herd size with the weather."),
+                        placement = "left", 
                         trigger = "hover", 
                         options = list(container = "body")),
               
@@ -136,7 +155,19 @@ function(input, output, session) {
                       bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
               },
               bsPopover(id = "infocash", title = "Cash Assets",
-                        content = paste0("this is cash in hand not total net worth"),
+                        content = paste0("If your balance falls below zero, you will automatically borrow money at 6.5% interest."),
+                        placement = "bottom", 
+                        trigger = "hover", 
+                        options = list(container = "body")),
+              if((prettyNum((myOuts[rv$page, net.wrth] - myOuts[rv$page, assets.cash]), digits = 0,big.mark=",", scientific=FALSE)) > 0){
+                p("Value of herd: $", span(prettyNum((myOuts[rv$page, net.wrth] - myOuts[rv$page, assets.cash]), digits = 0,big.mark=",", scientific=FALSE), style="color:green"), 
+                bsButton("herdval", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+              }else{
+                p("Value of herd: $", span(prettyNum((myOuts[rv$page, net.wrth] - myOuts[rv$page, assets.cash]), digits = 0,big.mark=",", scientific=FALSE), style="color:red"), 
+                bsButton("herdval", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+              },
+              bsPopover(id = "herdval", title = "Value of herd",
+                        content = paste0("This is the estimated value of your breeding cows at current market prices."),
                         placement = "bottom", 
                         trigger = "hover", 
                         options = list(container = "body")),
@@ -150,10 +181,11 @@ function(input, output, session) {
                 
               },
               bsPopover(id = "infonet", title = "Net Assets",
-                        content = paste0("this is cash + cow value"),
+                        content = paste0("This is the current market value of your herd combined with your bank balance."),
                         placement = "bottom", 
                         trigger = "hover", 
-                        options = list(container = "body"))
+                        options = list(container = "body")) 
+              
             )
           )
         })
@@ -323,6 +355,19 @@ function(input, output, session) {
               )
             }else{
               tagList(
+                tags$head(tags$style(HTML(
+                  # CSS formating for the rollover buttons
+                  ".inTextTips{
+                      color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(255,255,255);
+                      background-color: rgb(255, 255, 255);
+                                  }
+                      .inTextTips:hover{
+                      color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(255,255,255);
+                      background-color: rgb(255, 255, 255);"))),
                 p("You got sufficient rain this summer, so your grass should be in good shape for your cattle! 
                   In the graph below you can see how much
                   it has rained since you decided whether or not to purchase hay (July and August)."),
@@ -351,14 +396,19 @@ function(input, output, session) {
           tagList(
             getCowSell(get(paste0("totalForage", i))(), AdjWeanSuccess(get(paste0("totalForage", i))(), T, simRuns$normal.wn.succ, 1), i),
             plotOutput(paste0("cowPlot", i)),
-            p("Keep in mind that yearlings (weaned calves that are not yet producing calves) 
-              aren't counted in these herd size numbers. You do not have the option to sell yearlings in this game.
-              These herd size predictions also assume that you go back to 'normal' culling and calf sale rates 
-              next year.")
+
+            br(),
+            p("Herd prediction details",bsButton("herdetails", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "herdetails", title = "Herd Prediction",content = paste0("Keep in mind that yearlings (weaned calves that are not yet producing calves) are not counted in these herd size numbers. You do not have the option to sell yearlings in this game. These herd size predictions also assume that you go back to normal culling and calf sale rates next year. For these reasons, your herd may not go all the way to 0 if you sell off all of your cows and calves."), 
+                            placement = "auto", 
+                            trigger = "hover", 
+                            options = list(container = "body")))
+
           )
+
       #   }
       # }
     })
+
     
     output[[paste0("profits", i)]] <- renderUI({
       req(input[[paste0("insCont", i)]])
@@ -401,6 +451,7 @@ function(input, output, session) {
         )
     })
     
+
     ## Create a button to continue after selecting adaptation level
     output[[paste0("continue", i)]] <- renderUI({
       if(!is.null(input[[paste0("year", i, "Start")]])){
