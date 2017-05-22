@@ -520,14 +520,15 @@ function(input, output, session) {
       PlotYear <- melt(PlotYear, id.vars = "Year")
       PlotYear$rangeHealthList <- rangeHealthList
       PlotYear$YearNumbers <- c(paste("Year", seq(1, simLength, length.out = simLength)))
-      
+      PlotYear$YearNumbers <- factor(PlotYear$YearNumbers, 
+                                     levels = paste("Year", seq_along(unique(PlotYear$Year))))
       
       ggplot(PlotYear, aes(x = YearNumbers, y = rangeHealthList)) + 
         geom_bar(stat = "identity", fill = "olivedrab") + 
         ggtitle("Range Health") + 
         labs(x = "Year" ,y = "Range Condition (%)") +
         theme(text = element_text(size = 20)) +
-        geom_text(aes(label = paste(rangeHealthList, sep = "", "%")), size = 9, color =  "#ffffff", vjust = 5)
+        geom_text(aes(label = paste(rangeHealthList, sep = "", "%")), size = 8, color =  "#ffffff", vjust = 5)
 
       
     })
