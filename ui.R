@@ -85,9 +85,11 @@ tabsetPanel(id = "mainPanels",
            # textInput("insChange", "Enter True or False to use insurance or not"),
            # actionButton("applyInsChange", "Change Insurance"),
            # actionButton("reset_button", "Reset Page"),
-           # br(),
-            textInput("user.ID", "Enter your mTurk code"),
-            actionButton("pracStart", "Begin Practice Ranch Game")
+           br(),
+            textInput("user.ID", "Enter your experiment code."),
+            actionButton("pracStart", "Begin Practice Ranch Game"),
+            p("If clicking the 'Begin Practice Ranch Game' does not advance you to the next screen, 
+              your code is invalid. Check your code again. Then contact the MTurk requester if you have further problems.")
             # actionButton("saveInputs", "Save all Input")
           )),
  

@@ -79,6 +79,9 @@ function(input, output, session) {
   })
   
   observeEvent(input$pracStart, {
+    validate(
+      need(as.numeric(input$user.ID) >= 1000000 & as.numeric(input$user.ID) <= 2999999, "Your code is not valid.")
+    )
     if(as.numeric(input$user.ID) >= 2000000){
       print("no insurance mode")
       purchaseInsurance <<- FALSE
