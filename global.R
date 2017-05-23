@@ -44,11 +44,15 @@ acres <- 3000
 ## Carrying capacity based on acres and carrying.cap constant
 carryingCapacity <- constvars$carrying.cap * acres
 
+## Set Starting Years
+startYear <- 2002
+startYearprac <- 1996
+
 ## create state variables for practice runs
 practiceVars <- getSimVars(
   station.gauge,
   constvars,
-  start_year = 2002,
+  start_year = startYearprac,
   sim_length = 3,
   use.forage = T,
   random.acres=FALSE,
@@ -59,7 +63,7 @@ practiceVars <- getSimVars(
 simvars <- getSimVars(
   station.gauge,
   constvars,
-  start_year = 2002,
+  start_year = startYear,
   sim_length = 10,
   use.forage = T,
   random.acres=FALSE,
@@ -72,14 +76,18 @@ practiceRuns$p.wn <- rep(1.30, length(practiceRuns$p.wn))
 simRuns <- (append(append(station.gauge, constvars), (simvars)))
 simRuns$p.wn <- rep(1.30, length(simRuns$p.wn))
 
-## Set starting year, and simulation length
-startYear <- 2002
+## Set simulation length
 simLength <- 10
-practiceLength <- 5
+practiceLength <- 2
 
 ## Calcualte indemnities for all years of the simulation
 indem <- lapply(startYear:(startYear + simLength - 1), function(x){
   with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
+                            pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+})
+
+indemprac <- lapply(startYearprac:(startYearprac + practiceLength - 1), function(x){
+  with(practiceRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
                             pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
 })
 

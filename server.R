@@ -9,6 +9,7 @@ function(input, output, session) {
     eval(parse(text = input$code))
   })
   rv <- reactiveValues(page = 1)
+  rvPrac <- reactiveValues(page = 1)
   if(!debugMode){
     toggleClass(class = "disabled",
                 selector = "#navBar li a[data-value=Quiz]")
@@ -18,20 +19,17 @@ function(input, output, session) {
                  selector = "#navBar li a[data-value='Ranch Simulation']")
   }
 
-  # Creates empty numeric that will track range health over length of run
-  {
-    rangeHealthList <<- rep(NA, 11)
-  }
+
   #####Year Tab Functions#####################
   
   ## This loop Creates the necessary output functions for each year tab
   lapply(1:simLength, function(i){
-    simCreator(input, output, session, i, rv)
+    simCreator(input, output, session, i, rv, simLength, startYear)
 
   }) ##End of lapply
   
   lapply(1:practiceLength, function(i){
-    simCreator(input, output, session, paste0("prac", i), rv)
+    simCreator(input, output, session,i, rvPrac, practiceLength, startYearprac, name = "prac")
   })
   
   
@@ -78,7 +76,15 @@ function(input, output, session) {
     updateTabsetPanel(session, "mainPanels", selected = "Background Info")
   })
   
+  observeEvent(input$pracStart, {
+    disable("pracStart")
+    toggleClass(class = "disabled",
+                selector = "#navBar li a[data-value='Practice Simulation']")
+    updateTabsetPanel(session, "mainPanels", selected = "Practice Simulation")
+  })
+  
   observeEvent(input$simStart, {
+    createOutputs(practiceRuns, simRuns, indem)
     disable("simStart")
     toggleClass(class = "disabled",
                 selector = "#navBar li a[data-value='Ranch Simulation']")
@@ -99,6 +105,7 @@ function(input, output, session) {
     session$sendCustomMessage(type = "addTabToTabset", message = list(titles = titles, tabsetName = tabsetName))
   }
   
+  
 
   observeEvent(input$update, {
     simRunsList <- as.list(simRuns)
@@ -110,7 +117,7 @@ function(input, output, session) {
     startYear <<- input$act.st.yr
   })
   
-  output$page <- renderText(rv$page)
+  # output$page <- renderText(rv$page)
   
   observe({
     toggleState(id = "prevBtn", condition = rv$page > 1)
@@ -118,15 +125,38 @@ function(input, output, session) {
     hide(selector = ".page")
     show(sprintf("step%s", rv$page))
   })
+  
+  observe({
+    toggleState(id = "prevBtnprac", condition = rvPrac$page > 1)
+    toggleState(id = "nextBtnprac", condition = rvPrac$page < practiceLength + 1)
+    hide(selector = ".page")
+    show(sprintf("step%s", rvPrac$page))
+  })
 
   navPage <- function(direction) {
     rv$page <- rv$page + direction
   }
+  
+  navPagePrac <- function(direction) {
+    rvPrac$page <- rvPrac$page + direction
+  }
+  
 
   
   
   output$practiceOut <- renderUI({
-    simPageOutput(rv, "prac")
+    if(rvPrac$page <= practiceLength){
+      simPageOutput(rvPrac, "prac")  
+    }else{
+      
+      fluidRow(
+        hide("infoPanePrac"),
+        column(width = 10,
+          h4("Done with Practice"),
+          actionButton("simStart", "Begin Ranch Game")
+        )
+      )
+    }
   })
   
   output$pageOut <- renderUI({
@@ -160,6 +190,8 @@ function(input, output, session) {
   })
   observeEvent(input$prevBtn, navPage(-1))
   observeEvent(input$nextBtn, navPage(1))
+  observeEvent(input$prevBtnprac, navPagePrac(-1))
+  observeEvent(input$nextBtnprac, navPagePrac(1))
   observeEvent(input$saveInputs, {
     shinyjs::disable("saveInputs")
     # myDir <- "results"

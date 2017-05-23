@@ -1,6 +1,4 @@
-
-
-getJulyInfo <- function(currentYear){
+getJulyInfo <- function(currentYear, name){
   
   "
   Function: getJulyInfo
@@ -80,7 +78,7 @@ getJulyInfo <- function(currentYear){
                 options = list(container = "body"))),
 
     br(),
-    plotOutput(paste0("rainGraph", currentYear)),
+    plotOutput(paste0("rainGraph", name)),
 
     #tableOutput(paste0("julyRain", currentYear)),
     #rendering table
@@ -97,7 +95,7 @@ getJulyInfo <- function(currentYear){
     # ,
     br(),
     p("Remember that if you don’t have enough money in the bank to cover the cost of hay you will automatically borrow at a 6.5% interest."),
-    numericInput(paste0("d", currentYear, "adaptExpend"), "How much hay, if any, do you want to purchase for your herd?",
+    numericInput(paste0("d", name, "adaptExpend"), "How much hay, if any, do you want to purchase for your herd?",
                 min = 0, max = adaptMax, value = 0, step = 100, width = "100%")
   )
 }
@@ -381,6 +379,7 @@ createOutputs <- function(practiceRuns, simRuns, indem){
   myOuts[1, cost.ins := indem[[1]]$producer_prem]
   practiceOuts <<- practiceOuts
   myOuts <<- myOuts
+  rangeHealthList <<- rep(NA, 11)
 }
 
 rangeHealth <- function(currentYear){
