@@ -102,10 +102,10 @@ getJulyInfo <- function(currentYear){
   )
 }
 
-getCowSell <- function(totalForage, wean, currentYear){
+getCowSellInfo <- function(totalForage, wean, currentYear){
   "
   Function: getCowSell
-  Description: create ui for a user to select how many cow and calves to sell
+  Description: create ui for a user to get information about cow sales
   
   Inputs:
   totalForage = the available forage after adaptation has been applied
@@ -147,22 +147,55 @@ getCowSell <- function(totalForage, wean, currentYear){
       h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:green") , " pounds, on average."))
       }
     ,
-    p("If your calves are lighter than 600 lbs, it is because the mother cows
-                   may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."),
+    #p("If your calves are lighter than 600 lbs, it is because the mother cows
+    #               may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."),
     br(),
     h5(paste0("You currently have ", myOuts[currentYear, herd], " cows and ", calvesAvailable, " calves.")),
     tags$li(paste0("With the current market price of $",paste0(simRuns$p.wn[1], '0'), "/pound, each calf you sell will bring in $", 
                    round(weanWeight * simRuns$p.wn[1], 0) , " of cash.")), 
-    tags$li(paste0("At the normal target weight, each calf you sell would bring in $", simRuns$p.wn[1]*600, " of cash.")),
     tags$li("For every cow you sell, you will bring in $850 of cash."),
     br(),
-    h5("This decision will affect your herd size in future years."),
-    h5(tags$li(paste("If your herd is at full health (normal weight calves, full reproductive potential), your herd will stay
-            the same size as it is now if you sell", standardCalfSale, "calves and",  standardCowSale,  "cows.
-            If you sell more, then your herd size will decrease.If you sell fewer, then your herd size will grow."))),
-    h5(tags$li(p("Selling cows will affect your herd size starting next year, while selling or keeping calves will affect your herd size in two years when those calves could become mother cows."))),
-    h5(tags$li(paste0("Remember, the carrying capacity of your range is ",simRuns$carrying.cap * simRuns$acres, " cow-calf pairs. 
-              If your herd is larger than this you risk damaging your range and producing less grass for your herd."))),
+    h5(paste0("Remember, the carrying capacity of your range is ",simRuns$carrying.cap * simRuns$acres, " cow-calf pairs. 
+              If your herd is larger than this you risk damaging your range and producing less grass for your herd.")),
+    br()
+  )
+}
+
+
+getCowSell <- function(totalForage, wean, currentYear){
+  "
+  Function: getCowSell
+  Description: create ui for a user to select how many cow and calves to sell
+  
+  Inputs:
+  totalForage = the available forage after adaptation has been applied
+  wean = wean success
+  currentYear = the current year 
+  
+  Outputs:
+  tagList = UI elements in a tag list
+  "
+  
+  ## Calcualte how many cows to sell
+  ## Establish current state variables
+  herd <- myOuts[currentYear, herd]
+  
+  
+  ## Calculate weaned Calves
+  calvesAvailable <- round(herd * wean)
+  ## Calculate Standard Sales
+  standardCowSale <- round(herd * simRuns$cull.num)
+  standardCalfSale <- round(calvesAvailable * simRuns$calf.sell)
+  weanWeight <- round(calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 0)
+  
+  ## Create UI elements
+  tagList(    
+    br(),
+    h5("This decision will affect your herd size in future years. Selling cows will affect your herd size starting next year, 
+       while selling or keeping calves will affect your herd size in two years when those calves would become mother cows."),
+    #tags$li(paste("If your herd is at full health (normal weight calves, full reproductive potential), your herd will stay
+    #        the same size as it is now if you sell", standardCalfSale, "calves and",  standardCowSale,  "cows.
+    #        If you sell more, then your herd size will decrease. If you sell fewer, then your herd size will grow.")),
     br(),
     sliderInput(paste0("calves", currentYear, "Sale"), "How many calves do you want to sell?",
                 min = 0, max = calvesAvailable, value =  standardCalfSale, step = 1, width = "600px"),
@@ -171,8 +204,11 @@ getCowSell <- function(totalForage, wean, currentYear){
                 min = 0, max = myOuts[currentYear, herd], value = standardCowSale, step = 1, width = "600px"),
     br()
     
+    
   )
 }
+
+
 
 
 updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales, newHerd, zones, adaptInten, currentYear, ID, time){
