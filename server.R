@@ -655,14 +655,19 @@ function(input, output, session) {
     })
     ## Bar graph to display net worth
     output[[paste0("worthPlot", i)]] <- renderPlot({
-      plotOuts <- myOuts[, c("yr", "assets.cow", "assets.cash"), with = F]
+      if(simLength == 10){
+        myOuts2 <- myOuts[1:10,]
+      }else{
+          myOuts2 <- myOuts[1:5,]
+          }
+      plotOuts <- myOuts2[, c("yr", "assets.cow", "assets.cash"), with = F]
       setnames(plotOuts, c("Year", "Value of Cows", "Cash"))
       plotOuts[, Year := startYear:(startYear + nrow(plotOuts) - 1)]
       plotOuts <- melt(plotOuts, id.vars = "Year")
       setnames(plotOuts, c("Year", "Area", "Value in $"))
-      plotOuts$Area <- factor(plotOuts$Area)
-      #plotOuts$YearNumbers <- c(paste("Yr", seq(1, simLength, length.out = simLength)))
-      plotOuts$YearNumbers <-  paste("Yr", plotOuts$Year - min(plotOuts$Year) + 1)
+      #plotOuts$Area <- factor(plotOuts$Area)
+      plotOuts$YearNumbers <- c(paste("Yr", seq(1, simLength, length.out = simLength)))
+      #plotOuts$YearNumbers <-  paste("Yr", plotOuts$Year - min(plotOuts$Year) + 1)
       plotOuts$YearNumbers <- factor(plotOuts$YearNumbers, 
                                      levels = paste("Yr", seq_along(unique(plotOuts$Year))))
     
