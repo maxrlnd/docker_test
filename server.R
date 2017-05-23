@@ -1,6 +1,9 @@
 
 function(input, output, session) {
   
+  ## Validation for Survey Randomization Code
+  
+  
   ## Reactive value for current year
   values <- reactiveValues("currentYear" = 1, "starting" = TRUE, "saveComplete" = FALSE, "beginSaving" = FALSE)
 
@@ -300,6 +303,27 @@ function(input, output, session) {
     stopApp()
   })
   
+  # Reactive to assign insurance or no insurance functionality
+  observeEvent(input$user.ID, {
+    req(input$user.ID)
+    if(as.numeric(input$user.ID) >= 2000000){
+      print("no insurance mode")
+      purchaseInsurance <<- FALSE
+      print(input$user.ID)
+      indem <<- lapply(indem, function(x){
+        x[, c("producer_prem", "indemnity", "full_prem") := 0]
+        return(x)
+      })
+      indemprac <<- lapply(indemprac, function(x){
+        x[, c("producer_prem", "indemnity", "full_prem") := 0]
+        return(x)
+      })
+    }else{
+      print("insurance mode")
+      purchaseInsurance <<- TRUE
+    }
+    
+  })
 }
 
 
