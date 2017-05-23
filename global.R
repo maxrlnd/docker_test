@@ -96,14 +96,14 @@ createOutputs(practiceRuns, simRuns, indem)
 
 ## Is insurance purchased?
 # purchaseInsurance <- sample(c(T, F), 1)
-purchaseInsurance <- T
-
-if(!purchaseInsurance){
-  indem <- lapply(indem, function(x){
-    x[, c("producer_prem", "indemnity", "full_prem") := 0]
-    return(x)
-  })
-}
+# purchaseInsurance <- T
+# 
+# if(!purchaseInsurance){
+#   indem <- lapply(indem, function(x){
+#     x[, c("producer_prem", "indemnity", "full_prem") := 0]
+#     return(x)
+#   })
+# }
 
 ## Counter to keep track of quiz
 quizCounter <- 0
@@ -117,7 +117,7 @@ yearHandler <- paste0('if(typeMessage == ', 1:simLength, '){
 NUM_PAGES <- 5
 currentPage <- 1
 
-debugMode <- T
+debugMode <<- T
 
 `%then%` <- shiny:::`%OR%`
 genericWrong <- "This is incorrect please try again"
