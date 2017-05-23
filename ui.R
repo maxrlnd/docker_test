@@ -94,6 +94,63 @@ tabsetPanel(id = "mainPanels",
             # actionButton("saveInputs", "Save all Input")
           )),
  
+ tabPanel("Practice Simulation", 
+          # CSS tags to control the button colors, .btn is the default state, 
+          # focus is what happens after the button is clicked, 
+          # hover is the response to a rollover
+          tags$head(tags$style(HTML("
+                                    .btn {
+                                    color:rgb(0, 0, 0);
+                                    text-align: left;
+                                    border-color: rgb(255,255,255);
+                                    background-color: rgb(43, 181, 52);}
+                                    
+                                    .btn:focus{
+                                    background-color:rgb(255,255,255);
+                                    }
+                                    
+                                    
+                                    .btn:hover{
+                                    #border-color: rgb(255,255,255);
+                                    background-color: rgb(255,255,255)
+                                    color: rgb(255,255,255);
+                                    font-weight: bold;
+                                    }",
+                      # CSS formating for the rollover buttons
+                      ".quest{
+                      color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(245,245,245);
+                      background-color: rgb(245, 245, 245);
+                      }
+                      .quest:hover{
+                      color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(245,245,245);
+                      background-color: rgb(245, 245, 245);",
+
+                                  ".inTextTips{
+                      color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(245,245,245);
+                      background-color: rgb(245, 245, 245);
+                                  }
+                      .inTextTips:hover{
+                      color:rgb(0, 0, 0);
+                      text-align: left;
+                      border-color: rgb(245,245,245);
+                      background-color: rgb(245, 245, 245);"
+                      ))),
+          
+          
+          
+          fluidPage(uiOutput("practiceOut")#,
+                    # uiOutput("infoPane")
+                    
+          )
+          
+          
+ ),
  
  tabPanel("Ranch Simulation", 
           # CSS tags to control the button colors, .btn is the default state, 
@@ -154,11 +211,8 @@ tabsetPanel(id = "mainPanels",
  )
  
   
-)#, 
-## Code to insert new tabs, these get inserted into the main panel tabset via the JS at top
+)
 
-
-# uiOutput("creationPool", style = "display: none;")
 
 )
 )

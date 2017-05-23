@@ -126,25 +126,15 @@ function(input, output, session) {
   
   
   output$practiceOut <- renderUI({
-    
+    simPageOutput(rv, "prac")
   })
   
   output$pageOut <- renderUI({
   
   if(rv$page <= simLength){  
-    fluidRow(
-       column(9,
-              uiOutput(paste0("winterInfo", rv$page)),
-              uiOutput(paste0("start", rv$page)),
-              uiOutput(paste0("continue", rv$page)),
-              uiOutput(paste0("decision", rv$page)),
-              uiOutput(paste0("insuranceUpdate", rv$page)),
-              uiOutput(paste0("cowSell", rv$page)),
-              uiOutput(paste0("sellButton", rv$page)),
-              uiOutput(paste0("profits", rv$page)),
-              uiOutput(paste0("nextButton", rv$page))
-       )
-     )
+    simPageOutput(rv, name = "")
+    
+
   }else{
     fluidRow(
       hide("infoPane"),

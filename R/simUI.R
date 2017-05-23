@@ -486,7 +486,6 @@ simCreator <- function(input, output, session, i, rv){
     if(!is.null(input[[paste0("year", i, "Start")]])){
       if(input[[paste0("year", i, "Start")]] == 1){
         tagList(
-          fluidRow(column(12, style = "background-color:white;", div(style = "height:900px;"))),
           actionButton(paste0("year", i, "Summer"), "Purchase Hay")
         )
       }
@@ -497,7 +496,6 @@ simCreator <- function(input, output, session, i, rv){
     if(!is.null(input[[paste0("sell", i)]])){
       if(input[[paste0("sell", i)]] == 1){
         tagList(
-          fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
           actionButton("nextBtn", "Begin Next Year >")
         )
       }
@@ -512,7 +510,6 @@ simCreator <- function(input, output, session, i, rv){
     #   if(input[[paste0("year", i, "Summer")]] == 1){
     req(input[[paste0("insCont", i)]])    
     tagList(
-      fluidRow(column(12, style = "background-color:white;", div(style = "height:750px;"))),
       actionButton(paste0("sell", i), "Sell Calves and Cows")
     )
     #   }

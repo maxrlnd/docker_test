@@ -426,7 +426,22 @@ appendRangeHealth <- function(healthValue, rangeHealthList){
   rangeHealthList[first_na] <<- rangeProd
 }
 
-
+simPageOutput <- function(rv, name = ""){
+  page <- paste0(name, rv$page)
+  fluidRow(
+    column(9,
+           uiOutput(paste0("winterInfo", page)),
+           uiOutput(paste0("start", page)),
+           uiOutput(paste0("decision", page)),
+           uiOutput(paste0("continue", page)),
+           uiOutput(paste0("insuranceUpdate", page)),
+           uiOutput(paste0("cowSell", page)),
+           uiOutput(paste0("sellButton", page)),
+           uiOutput(paste0("profits", page)),
+           uiOutput(paste0("nextButton", page))
+    )
+  )
+}
 
 
 
