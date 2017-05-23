@@ -87,10 +87,7 @@ tabsetPanel(id = "mainPanels",
            # actionButton("reset_button", "Reset Page"),
            # br(),
             textInput("user.ID", "Enter your mTurk code"),
-            actionButton("pracStart", "Begin Practice Ranch Game"),
-            br(),
-            br(),
-            span((startTime <<- Sys.time()), style="color:white")
+            actionButton("pracStart", "Begin Practice Ranch Game")
             # actionButton("saveInputs", "Save all Input")
           )),
  
@@ -144,7 +141,12 @@ tabsetPanel(id = "mainPanels",
           
           
           
-          fluidPage(uiOutput("practiceOut"),
+          fluidPage(
+            
+            br(),
+            br(),
+            span((startTime <<- Sys.time()), style="color:white"),
+            uiOutput("practiceOut"),
                     uiOutput(paste0("infoPane", "Prac"))
                     
           )
@@ -202,7 +204,9 @@ tabsetPanel(id = "mainPanels",
           
           
           
-          fluidPage(uiOutput("pageOut"),
+          fluidPage(
+
+            uiOutput("pageOut"),
                     uiOutput("infoPane")
                     
           )

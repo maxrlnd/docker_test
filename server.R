@@ -149,17 +149,18 @@ function(input, output, session) {
     }else{
       
       fluidRow(
+        
+        h4("Done with Practice"),
         hide("infoPanePrac"),
-        column(width = 10,
-          h4("Done with Practice"),
-          actionButton("simStart", "Begin Ranch Game")
+          actionButton("savePracInputs", "Save practice round"),
+        uiOutput("practComplete")
         )
-      )
+      
     }
   })
   
   output$pageOut <- renderUI({
-  
+    startTime <<- Sys.time()
   if(rv$page <= simLength){  
     simPageOutput(rv, name = "")
     
@@ -235,7 +236,59 @@ function(input, output, session) {
     # write.csv(myOuts, file = paste0("results/output", lastFile + 1, ".csv"), row.names = F)
   })
   
+  observeEvent(input$savePracInputs, {
 
+    shinyjs::disable("simStart")
+    # myDir <- "results"
+    # if(!dir.exists(myDir)){
+    #   dir.create(myDir)
+    # }
+    files <- gs_ls()$sheet_title
+    # files <- files[order(files)]
+    
+    if(length(files) == 0){
+      lastFile <- 0
+    }else{
+      # lastFile <- files[length(files)]
+      # lastFile <- as.numeric(substr(lastFile, nchar(lastFile), nchar(lastFile)))
+      lastFile <- regmatches(files, gregexpr('[0-9]+',files))
+      lapply(lastFile, as.numeric) %>% unlist() %>% max() -> lastFile
+    }
+    saveData <<- reactiveValuesToList(input)
+    # save(saveData, file = "newSave.RData")
+    saveData <- inputToDF(saveData)
+    #saveData$names <- NULL
+    # Pivot save data to horizontal
+    saveData <- t(saveData)
+    # Remove first row of variable names
+    withProgress(message = "Saving Data", value = 1/3, {
+      inputSheet <- gs_title("practiceGameInputs")
+      gs_add_row(inputSheet, ws="Inputs", input = saveData)
+      #gs_new(title =  ID, 
+      # input = saveData, trim = TRUE, verbose = TRUE)
+      ## These are used to check the output in testing
+      #inputsheet <- gs_title(ID)
+      #insheet <- gs_read(inputsheet)
+      incProgress(1/3)
+      outputSheet <- gs_title("practiceGameOutputs")
+      gs_add_row(outputSheet, ws="Outputs", input = myOuts)
+      ## This is used to validate in testing
+      #outsheet <- outputSheet %>% gs_read(ws = "Outputs")
+      
+    })
+    values$practSaveComplete <- TRUE
+    
+    shinyjs::disable("savePracInputs")
+    # write.csv(saveData, file = paste0("results/input", lastFile + 1, ".csv"), row.names = F)
+    # write.csv(myOuts, file = paste0("results/output", lastFile + 1, ".csv"), row.names = F)
+  })
+  
+  
+  output$practComplete <- renderUI({
+    req(values$practSaveComplete)
+    h4("Practice rounds complete, continue on to begin ranching game")
+    actionButton("simStart", "Begin Ranch Game")
+  })
   
   observeEvent(input$reset_button, {
     createOutputs(practiceRuns, simRuns, indem)
