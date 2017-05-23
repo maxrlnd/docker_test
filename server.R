@@ -976,9 +976,9 @@ function(input, output, session) {
     # write.csv(myOuts, file = paste0("results/output", lastFile + 1, ".csv"), row.names = F)
   })
   
-  observeEvent(input$applyInsChange, {
-    req(input$insChange)
-    if(input$insChange){
+  observeEvent(input$user.ID, {
+    req(input$user.ID)
+    if(input$user.ID < 2000000){
       purchaseInsurance <<- T
       indem <<- lapply(startYear:(startYear + simLength - 1), function(x){
         with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
@@ -989,9 +989,9 @@ function(input, output, session) {
       indem <<- lapply(indem, function(x){
         x[, c("producer_prem", "indemnity", "full_prem") := 0]
         return(x)
-      }) 
+      })
     }
-      
+
   })
   observeEvent(input$reset_button, {
     createOutputs(practiceRuns, simRuns, indem)
