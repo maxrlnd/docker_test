@@ -661,6 +661,7 @@ function(input, output, session) {
       plotOuts <- melt(plotOuts, id.vars = "Year")
       setnames(plotOuts, c("Year", "Area", "Value in $"))
       plotOuts$Area <- factor(plotOuts$Area)
+      #plotOuts$YearNumbers <- c(paste("Yr", seq(1, simLength, length.out = simLength)))
       plotOuts$YearNumbers <-  paste("Yr", plotOuts$Year - min(plotOuts$Year) + 1)
       plotOuts$YearNumbers <- factor(plotOuts$YearNumbers, 
                                      levels = paste("Yr", seq_along(unique(plotOuts$Year))))
