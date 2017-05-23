@@ -8,6 +8,7 @@ library(shinyBS)
 source("R/load.R")
 source("R/dynamicFunctions.R")
 source("R/shinny_support.R")
+source("R/simUI.R")
 
 
 ## Code to disable tab
