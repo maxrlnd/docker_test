@@ -26,9 +26,13 @@ function(input, output, session) {
   
   ## This loop Creates the necessary output functions for each year tab
   lapply(1:simLength, function(i){
-    simCreator(input, output, session, i, rv, values)
+    simCreator(input, output, session, i, rv)
 
   }) ##End of lapply
+  
+  lapply(1:practiceLength, function(i){
+    simCreator(input, output, session, paste0("prac", i), rv)
+  })
   
   
   ## Observer for begin button in demographis panel
@@ -121,7 +125,9 @@ function(input, output, session) {
 
   
   
-
+  output$practiceOut <- renderUI({
+    
+  })
   
   output$pageOut <- renderUI({
   
@@ -129,19 +135,13 @@ function(input, output, session) {
     fluidRow(
        column(9,
               uiOutput(paste0("winterInfo", rv$page)),
-              fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
+              uiOutput(paste0("start", rv$page)),
+              uiOutput(paste0("continue", rv$page)),
               uiOutput(paste0("decision", rv$page)),
               uiOutput(paste0("insuranceUpdate", rv$page)),
               uiOutput(paste0("cowSell", rv$page)),
-              uiOutput(paste0("profits", rv$page))
-       ),
-       column(2,
-              fluidRow(column(12, style = "background-color:white;", div(style = "height:1000px;")))
-              ,
-              uiOutput(paste0("start", rv$page)),
-              uiOutput(paste0("continue", rv$page)),
-              uiOutput(paste0("insSpace", rv$page)),
               uiOutput(paste0("sellButton", rv$page)),
+              uiOutput(paste0("profits", rv$page)),
               uiOutput(paste0("nextButton", rv$page))
        )
      )

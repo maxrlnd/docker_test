@@ -1,4 +1,4 @@
-simCreator <- function(input, output, session, i, rv, values){
+simCreator <- function(input, output, session, i, rv){
   # lapply(c("p", "r"), function(j){})
   ## Reactive taglist for the first set of winter info at the start of each year, updates when
   ## myOuts updates
@@ -747,7 +747,6 @@ simCreator <- function(input, output, session, i, rv, values){
                           indem = indem[[i]], adaptExpend = input[[paste0("d", i, "adaptExpend")]], cowSales = input[[paste0("cow", i, "Sale")]], 
                           newHerd = get(paste0("herdSize", i))(), zones = get(paste0("currentZones", i))(), 
                           currentYear = i, ID = ID, time = startTime)
-    values$currentYear <- values$currentYear + 1
   })
   
   
