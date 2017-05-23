@@ -208,28 +208,27 @@ function(input, output, session) {
       lastFile <- regmatches(files, gregexpr('[0-9]+',files))
       lapply(lastFile, as.numeric) %>% unlist() %>% max() -> lastFile
     }
-    saveData <- reactiveValuesToList(input)
+    saveData <<- reactiveValuesToList(input)
     # save(saveData, file = "newSave.RData")
     saveData <- inputToDF(saveData)
     #saveData$names <- NULL
     # Pivot save data to horizontal
-    #saveData <- t(saveData)
+    saveData <- t(saveData)
     # Remove first row of variable names
     withProgress(message = "Saving Data", value = 1/3, {
-    gs_new(title =  ID, 
-           input = saveData, trim = TRUE, verbose = TRUE)
-    ## These are used to check the output in testing
-     #inputsheet <- gs_title(ID)
-     #insheet <- gs_read(inputsheet)
-    incProgress(1/3)
-    
-    outputSheet <- gs_title("cowGameInputs")
-    gs_add_row(outputSheet, ws=1, input = myOuts)
-    ## This is used to validate in testing
-     outsheet <- outputSheet %>% gs_read(ws = "Sheet1")
-    
-    # gs_new(title =  paste0("output", lastFile + 1), 
-    #        input = myOuts, trim = TRUE, verbose = TRUE)
+      inputSheet <- gs_title("cowGameInputs")
+      gs_add_row(inputSheet, ws="Inputs", input = saveData)
+      #gs_new(title =  ID, 
+      # input = saveData, trim = TRUE, verbose = TRUE)
+      ## These are used to check the output in testing
+      #inputsheet <- gs_title(ID)
+      #insheet <- gs_read(inputsheet)
+      incProgress(1/3)
+      outputSheet <- gs_title("cowGameOutputs")
+      gs_add_row(outputSheet, ws="Outputs", input = myOuts)
+      ## This is used to validate in testing
+      #outsheet <- outputSheet %>% gs_read(ws = "Outputs")
+      
     })
     values$saveComplete <- TRUE
     # write.csv(saveData, file = paste0("results/input", lastFile + 1, ".csv"), row.names = F)
