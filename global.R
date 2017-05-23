@@ -72,7 +72,7 @@ simRuns <- (append(append(station.gauge, constvars), (simvars)))
 simRuns$p.wn <- rep(1.30, length(simRuns$p.wn))
 
 ## Set starting year, and simulation length
-startYear <- 2002
+startYear <- 2000
 simLength <- 10
 
 ## Calcualte indemnities for all years of the simulation
