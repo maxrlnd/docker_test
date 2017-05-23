@@ -96,7 +96,7 @@ getJulyInfo <- function(currentYear){
     # 
     # ,
     br(),
-    p("Remember that if you don’t have enough money in the bank to cover the cost of hay you will automatically borrow at a 6.5% interest."),
+    p("Remember that if you do not have enough money in the bank to cover the cost of hay you will automatically borrow at a 6.5% interest."),
     numericInput(paste0("d", currentYear, "adaptExpend"), "How much hay, if any, do you want to purchase for your herd?",
                 min = 0, max = adaptMax, value = 0, step = 100, width = "100%")
   )
@@ -137,12 +137,8 @@ getCowSellInfo <- function(totalForage, wean, currentYear){
       Use the information below to decide how many cows and calves you want to sell this year."),
     br(),
     if((weanWeight)<600){
-    h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:red") , " pounds, on average.", 
-
-              " Your weaned calves weigh ", span((600 - weanWeight), style="font-weight:bold;font-size:large;color:red"), " pounds below their target weight.
-              This means that you're losing out on $", 
+    h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:red") , " pounds, on average. Your weaned calves weigh ", span((600 - weanWeight), style="font-weight:bold;font-size:large;color:red"), " pounds below their target weight.",bsButton("lightcalves", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"), bsPopover(id = "lightcalves", title = "Underweight Calves",content = paste0("If your calves are lighter than 600 lbs, it is because the mother cows may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."), placement = "auto",trigger = "hover", options = list(container = "body"))," This means that you're losing out on $", 
          span(paste0((simRuns$p.wn[1]*(600 - weanWeight)), "0"), style="font-weight:bold;font-size:large:color:red"), " for each calf you sell."))
-
     }else{
       h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:green") , " pounds, on average."))
       }
@@ -157,6 +153,7 @@ getCowSellInfo <- function(totalForage, wean, currentYear){
     br(),
     h5(paste0("Remember, the carrying capacity of your range is ",simRuns$carrying.cap * simRuns$acres, " cow-calf pairs. 
               If your herd is larger than this you risk damaging your range and producing less grass for your herd.")),
+    
     br()
   )
 }
@@ -192,7 +189,7 @@ getCowSell <- function(totalForage, wean, currentYear){
   tagList(    
     br(),
     h5("This decision will affect your herd size in future years. Selling cows will affect your herd size starting next year, 
-       while selling or keeping calves will affect your herd size in two years when those calves would become mother cows."),
+       while selling or keeping calves will affect your herd size in two years when those calves would become mother cows.",bsButton("saleadvise", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"), bsPopover(id = "saleadvise", title = "Sale Advise",content = paste0("If your herd is at full health (normal weight calves, full reproductive potential), your herd will stay the same size as it is now if you sell ", standardCalfSale, " calves and ",  standardCowSale,  " cows. If you sell more, then your herd size will decrease. If you sell fewer, then your herd size will grow."), placement = "auto",trigger = "hover", options = list(container = "body"))),
     #tags$li(paste("If your herd is at full health (normal weight calves, full reproductive potential), your herd will stay
     #        the same size as it is now if you sell", standardCalfSale, "calves and",  standardCowSale,  "cows.
     #        If you sell more, then your herd size will decrease. If you sell fewer, then your herd size will grow.")),
