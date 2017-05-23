@@ -92,7 +92,7 @@ indemprac <- lapply(startYearprac:(startYearprac + practiceLength - 1), function
 })
 
 ## Create results frames for practice and simulation
-createOutputs(practiceRuns, simRuns, indem)
+createOutputs(practiceRuns, simRuns, indem, indemprac)
 
 ## Is insurance purchased?
 # purchaseInsurance <- sample(c(T, F), 1)
