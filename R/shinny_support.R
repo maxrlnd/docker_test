@@ -94,7 +94,7 @@ getJulyInfo <- function(currentYear, name){
     # 
     # ,
     br(),
-    p("Remember that if you don’t have enough money in the bank to cover the cost of hay you will automatically borrow at a 6.5% interest."),
+    p("Remember that if you do not have enough money in the bank to cover the cost of hay you will automatically borrow at a 6.5% interest."),
     numericInput(paste0("d", name, "adaptExpend"), "How much hay, if any, do you want to purchase for your herd?",
                 min = 0, max = adaptMax, value = 0, step = 100, width = "100%")
   )
