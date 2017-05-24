@@ -289,13 +289,13 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     if(!debugMode){
       req(userPay == round(get(paste0("indem", orgName))[[i]]$producer_prem, 0), genericWrong)
     }
-    actionButton(paste0("year", i, "Start"), "Next")
+    actionButton(paste0("year", name, "Start"), "Next")
   })
   
   ## Display rain info up to July and allow user to choose adaptation level
   output[[paste0("decision", name)]] <- renderUI({
-    if(!is.null(input[[paste0("year", i, "Start")]])){  
-      if(input[[paste0("year", i, "Start")]] == 1){
+    if(!is.null(input[[paste0("year", name, "Start")]])){  
+      if(input[[paste0("year", name, "Start")]] == 1){
         tagList(
           getJulyInfo(i, name)
         )
@@ -316,8 +316,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   
   ## Display Update for insurance info
   output[[paste0("insuranceUpdate", name)]] <- renderUI({
-    if(!is.null(input[[paste0("year", i, "Summer")]])){
-      if(input[[paste0("year", i, "Summer")]]){
+    if(!is.null(input[[paste0("year", name, "Summer")]])){
+      if(input[[paste0("year", name, "Summer")]]){
         if(myOuts[i, herd] == 0){
           get(paste0("indem", orgName))[[i]]$indemnity <<- 0
         }
@@ -379,8 +379,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   
   ## Present options to sell cows
   output[[paste0("cowSell", name)]] <- renderUI({
-    # if(!is.null(input[[paste0("year", i, "Summer")]])){
-    #   if(input[[paste0("year", i, "Summer")]] == 1){
+    # if(!is.null(input[[paste0("year", name, "Summer")]])){
+    #   if(input[[paste0("year", name, "Summer")]] == 1){
     req(input[[paste0("insCont", name)]])
     # print(get(paste0("totalForage", name))())
     # print( AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1))
@@ -488,10 +488,10 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   
   ## Create a button to continue after selecting adaptation level
   output[[paste0("continue", name)]] <- renderUI({
-    if(!is.null(input[[paste0("year", i, "Start")]])){
-      if(input[[paste0("year", i, "Start")]] == 1){
+    if(!is.null(input[[paste0("year", name, "Start")]])){
+      if(input[[paste0("year", name, "Start")]] == 1){
         tagList(
-          actionButton(paste0("year", i, "Summer"), "Purchase Hay")
+          actionButton(paste0("year", name, "Summer"), "Purchase Hay")
         )
       }
     }
@@ -511,8 +511,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   ## Create button to sell calves and cows once decisions are made
   ## Additionally moves simualation to the next year
   output[[paste0("sellButton", name)]] <- renderUI({
-    # if(!is.null(input[[paste0("year", i, "Summer")]])){
-    #   if(input[[paste0("year", i, "Summer")]] == 1){
+    # if(!is.null(input[[paste0("year", name, "Summer")]])){
+    #   if(input[[paste0("year", name, "Summer")]] == 1){
     req(input[[paste0("insCont", name)]])    
     tagList(
       actionButton(paste0("sell", name), "Sell Calves and Cows")
@@ -555,13 +555,13 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   })
   
   output[[paste0("insSpace", name)]] <- renderUI({
-    req(input[[paste0("year", i, "Summer")]])
+    req(input[[paste0("year", name, "Summer")]])
     fluidRow(column(12, style = "background-color:white;", div(style = "height:1050px;")))
   })
   
   output[[paste0("postDepositButt", name)]] <- renderUI({
     
-    if(!is.null(input[[paste0("year", i, "Summer")]])){
+    if(!is.null(input[[paste0("year", name, "Summer")]])){
       if(get(paste0("indem", orgName))[[i]]$indemnity == 0){
         tagList(
           actionButton(paste0("insCont", name), "Next")
@@ -601,8 +601,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   
   ## Bar graphs for herd size
   output[[paste0("cowPlot", name)]] <- renderPlot({
-    if(!is.null(input[[paste0("year", i, "Summer")]])){
-      if(input[[paste0("year", i, "Summer")]] == 1){
+    if(!is.null(input[[paste0("year", name, "Summer")]])){
+      if(input[[paste0("year", name, "Summer")]] == 1){
         cows <- input[[paste0("cow", name, "Sale")]]
         calves <- input[[paste0("calves", name, "Sale")]]
         
@@ -641,7 +641,6 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     plotOuts$YearNumbers <-  paste("Year", plotOuts$Year - min(plotOuts$Year) + 1)
     plotOuts$YearNumbers <- factor(plotOuts$YearNumbers, 
                                    levels = paste("Year", seq_along(unique(plotOuts$Year))))
-    print(plotOuts)
     
     ggplot(plotOuts, aes(x = YearNumbers, y = `Value in $`, fill = Area)) + geom_bar(stat = "identity") + 
       ggtitle("Net Worth") + 
@@ -734,8 +733,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   })
   
   # Reactive to disable start simulation button after they're clicked
-  observeEvent(input[[paste0("year", i, "Start")]], {
-    shinyjs::disable(paste0("year", i, "Start"))
+  observeEvent(input[[paste0("year", name, "Start")]], {
+    shinyjs::disable(paste0("year", name, "Start"))
     delay(100,session$sendCustomMessage(type = "scrollCallbackRain", paste0("rainGraph", i)))
   })
   
@@ -755,10 +754,9 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   
   
   # Disable continue button and adaptation slider after clicking
-  observeEvent(input[[paste0("year", i, "Summer")]], {
-    shinyjs::disable(paste0("year", i, "Summer"))
-    shinyjs::disable(paste0("d", i, "
-                              "))
+  observeEvent(input[[paste0("year", name, "Summer")]], {
+    shinyjs::disable(paste0("year", name, "Summer"))
+    shinyjs::disable(paste0("d", name, "adaptExpend"))
     delay(100,session$sendCustomMessage(type = "scrollCallbackIns", paste0("rainGraphSep", i)))
   })
   
