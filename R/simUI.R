@@ -233,7 +233,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   assign(paste0("herdSize", name), reactive({
     
     ## Get cows being sold based on slide position
-    cows <- input[[paste0("cow", i, "Sale")]]
+    cows <- input[[paste0("cow", name, "Sale")]]
     
     ## Calculate herd size for the first year in the simulation (i = 1)
     if(i == 1){
@@ -260,8 +260,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   assign(paste0("revenues", name), reactive({
     
     ## Get cows being sold based on slide position
-    cows <- input[[paste0("cow", i, "Sale")]]
-    calves <- input[[paste0("calves", i, "Sale")]]
+    cows <- input[[paste0("cow", name, "Sale")]]
+    calves <- input[[paste0("calves", name, "Sale")]]
     totalForage <- get(paste0("totalForage", name))()
     weanWeight <- round(calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 0)
     
@@ -385,7 +385,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     # print(get(paste0("totalForage", name))())
     # print( AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1))
     tagList(
-      getCowSell(get(paste0("totalForage", name))(), AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1), i),
+      getCowSell(get(paste0("totalForage", name))(), AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1), i, name),
       plotOutput(paste0("cowPlot", name)),
       
       br(),
@@ -603,8 +603,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   output[[paste0("cowPlot", name)]] <- renderPlot({
     if(!is.null(input[[paste0("year", i, "Summer")]])){
       if(input[[paste0("year", i, "Summer")]] == 1){
-        cows <- input[[paste0("cow", i, "Sale")]]
-        calves <- input[[paste0("calves", i, "Sale")]]
+        cows <- input[[paste0("cow", name, "Sale")]]
+        calves <- input[[paste0("calves", name, "Sale")]]
         
         # Current herd size (determined by last years choices)
         herdy0 <- myOuts[i, herd]  
@@ -743,11 +743,11 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   ## update myOuts based on forage and the year's decisions
   observeEvent(input[[paste0("sell", name)]], {
     disable(paste0("sell", name))
-    disable(paste0("calves", i, "Sale"))
-    disable(paste0("cow", i, "Sale"))
+    disable(paste0("calves", name, "Sale"))
+    disable(paste0("cow", name, "Sale"))
     myOuts <<- updateOuts(wean = AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1), 
-                          totalForage = get(paste0("totalForage", name))(), calfSale = input[[paste0("calves", i, "Sale")]],
-                          indem = get(paste0("indem", orgName))[[i]], adaptExpend = input[[paste0("d", name, "adaptExpend")]], cowSales = input[[paste0("cow", i, "Sale")]], 
+                          totalForage = get(paste0("totalForage", name))(), calfSale = input[[paste0("calves", name, "Sale")]],
+                          indem = get(paste0("indem", orgName))[[i]], adaptExpend = input[[paste0("d", name, "adaptExpend")]], cowSales = input[[paste0("cow", name, "Sale")]], 
                           newHerd = get(paste0("herdSize", name))(), zones = get(paste0("currentZones", name))(), 
                           currentYear = i, ID = ID, time = startTime)
   })
