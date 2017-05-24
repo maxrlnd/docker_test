@@ -412,17 +412,24 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     # print(get(paste0("totalForage", name))())
     # print( AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1))
     tagList(
-      getCowSell(get(paste0("totalForage", name))(), AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1), i),
+      getCowSellInfo(get(paste0("totalForage", name))(), AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1), i),
       plotOutput(paste0("cowPlot", name)),
-      
-      br(),
-      p("Herd prediction details",bsButton("herdetails", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "herdetails", title = "Herd Prediction",content = paste0("Keep in mind that yearlings (weaned calves that are not yet producing calves) are not counted in these herd size numbers. You do not have the option to sell yearlings in this game. These herd size predictions also assume that you go back to normal culling and calf sale rates next year. For these reasons, your herd may not go all the way to 0 if you sell off all of your cows and calves."), 
-                                                                                                                                                                  placement = "auto", 
-                                                                                                                                                                  trigger = "hover", 
-                                                                                                                                                                  options = list(container = "body")))
-      
+      p("Herd prediction details",
+        bsButton("herdetails", label = "", icon = icon("question"), style = "info", 
+                 class="inTextTips", size = "extra-small"),
+        bsPopover(id = "herdetails", title = "Herd Prediction",
+                  content = paste0("Keep in mind that yearlings (weaned calves that are not yet 
+                                   producing calves) are not counted in these herd size numbers. 
+                                   You do not have the option to sell yearlings in this game. 
+                                   These herd size predictions also assume that you go back to 
+                                   normal culling and calf sale rates next year. For these reasons, 
+                                   your herd may not go all the way to 0 if you sell off all of 
+                                   your cows and calves."),
+                  placement = "auto", 
+                  trigger = "hover", 
+                  options = list(container = "body"))),
+      getCowSell(get(paste0("totalForage", name))(), AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1), i)
     )
-    
     #   }
     # }
   })
