@@ -632,7 +632,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   })
   ## Bar graph to display net worth
   output[[paste0("worthPlot", name)]] <- renderPlot({
-    plotOuts <- myOuts[, c("yr", "assets.cow", "assets.cash"), with = F]
+    plotOuts <- myOuts[1:simLength, c("yr", "assets.cow", "assets.cash"), with = F]
     setnames(plotOuts, c("Year", "Value of Cows", "Cash"))
     plotOuts[, Year := startYear:(startYear + nrow(plotOuts) - 1)]
     plotOuts <- melt(plotOuts, id.vars = "Year")
@@ -641,6 +641,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     plotOuts$YearNumbers <-  paste("Year", plotOuts$Year - min(plotOuts$Year) + 1)
     plotOuts$YearNumbers <- factor(plotOuts$YearNumbers, 
                                    levels = paste("Year", seq_along(unique(plotOuts$Year))))
+    print(plotOuts)
     
     ggplot(plotOuts, aes(x = YearNumbers, y = `Value in $`, fill = Area)) + geom_bar(stat = "identity") + 
       ggtitle("Net Worth") + 
