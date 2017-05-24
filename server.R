@@ -308,7 +308,7 @@ function(input, output, session) {
   
   
   output$practComplete <- renderUI({
-    req(values$practSaveComplete)
+    if(!debugMode)req(values$practSaveComplete)
     h4("Practice rounds complete, continue on to begin ranching game")
     actionButton("simStart", "Begin Ranch Game")
   })
