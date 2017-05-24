@@ -116,7 +116,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
                       options = list(container = "body")
             ),
             
-            p("Calves in herd:", "still cant figure out",
+            p("Calves in herd:", prettyNum(get(paste0("calvesAvailable", name))(), digits = 0, big.mark=",", scientific=FALSE),
               
               
               bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
@@ -127,6 +127,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
                       options = list(container = "body")),
             br(),
             p(h4("Ranch Status:")),
+            p("Bank Balance:", prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE)),
             if(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0))<100){
               
               p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="color:red"), 
@@ -190,7 +191,46 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
       )
         }))
   
+  assign(paste0("calvesAvailable", name), reactive({
+    if(!is.null(input[[paste0("insCont", name)]])){  
+      if(input[[paste0("insCont", name)]] == 1){
+        calvesAvailable <- 
+          myOuts[i, herd] * AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1)
+      }else{
+        calvesAvailable <- myOuts[i, herd] * simRuns$normal.wn.succ
+      }
+    }else{
+      calvesAvailable <- myOuts[i, herd] * simRuns$normal.wn.succ
+    }
+    return(calvesAvailable)
+  }))
   
+  assign(paste0("bankBalance", name), reactive({
+    balance <- myOuts[i, assets.cash]
+    if(!is.null(input[[paste0("year", name, "Start")]])){  
+      if(input[[paste0("year", name, "Start")]] == 1){
+        balance <- balance - get(paste0("indem", orgName))[[i]]$producer_prem
+      }
+    }
+    if(!is.null(input[[paste0("year", name, "Summer")]])){  
+      if(input[[paste0("year", name, "Summer")]] == 1){
+        balance <- balance - input[[paste0("d", name, "adaptExpend")]]
+      }
+    }
+    if(!is.null(input[[paste0("insCont", name)]])){  
+      if(input[[paste0("insCont", name)]] == 1){
+        balance <- balance + get(paste0("indem", orgName))[[i]]$indemnity
+      }
+    }
+    if(!is.null(input[[paste0("sell", name)]])){  
+      if(input[[paste0("sell", name)]] == 1){
+        balance <- myOuts[i + 1, assets.cash]
+      }
+    }
+    return(balance)
+    
+        
+  }))
   
   ## Creates a reactive to track the current zone weights for each year
   assign(paste0("currentZones", name), reactive({
@@ -220,7 +260,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     ## Calculate available forage produced on the land using Nov-Nov as a year
     ## forageProduction = 1 is full feed for a cow-calf pair
     forage.production <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
-    print(paste("forage production", forage.production))
+    # print(paste("forage production", forage.production))
     
     ## Calculate adaptation intensity based on forage production
     adaptInten <- CalculateAdaptationIntensity(forage.production)
@@ -231,7 +271,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     
     ## Calculate how much of the needed adaptation is being done
     adaptPercent <- ifelse(fullAdaptCost == 0, 0, input[[paste0("d", name, "adaptExpend")]]/fullAdaptCost * (1 - forage.production))
-    print(paste("adaptPercent", adaptPercent))
+    # print(paste("adaptPercent", adaptPercent))
     
     ## Output new forage that includes forage and adaptation feed
     totalForage <- forage.production + adaptPercent
@@ -241,7 +281,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   assign(paste0("herdSize", name), reactive({
     
     ## Get cows being sold based on slide position
-    cows <- input[[paste0("cow", i, "Sale")]]
+    cows <- input[[paste0("cow", name, "Sale")]]
     
     ## Calculate herd size for the first year in the simulation (i = 1)
     if(i == 1){
@@ -268,8 +308,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   assign(paste0("revenues", name), reactive({
     
     ## Get cows being sold based on slide position
-    cows <- input[[paste0("cow", i, "Sale")]]
-    calves <- input[[paste0("calves", i, "Sale")]]
+    cows <- input[[paste0("cow", name, "Sale")]]
+    calves <- input[[paste0("calves", name, "Sale")]]
     totalForage <- get(paste0("totalForage", name))()
     weanWeight <- round(calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 0)
     
@@ -297,13 +337,13 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     if(!debugMode){
       req(userPay == round(get(paste0("indem", orgName))[[i]]$producer_prem, 0), genericWrong)
     }
-    actionButton(paste0("year", i, "Start"), "Next")
+    actionButton(paste0("year", name, "Start"), "Next")
   })
   
   ## Display rain info up to July and allow user to choose adaptation level
   output[[paste0("decision", name)]] <- renderUI({
-    if(!is.null(input[[paste0("year", i, "Start")]])){  
-      if(input[[paste0("year", i, "Start")]] == 1){
+    if(!is.null(input[[paste0("year", name, "Start")]])){  
+      if(input[[paste0("year", name, "Start")]] == 1){
         tagList(
           getJulyInfo(i, name)
         )
@@ -324,8 +364,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   
   ## Display Update for insurance info
   output[[paste0("insuranceUpdate", name)]] <- renderUI({
-    if(!is.null(input[[paste0("year", i, "Summer")]])){
-      if(input[[paste0("year", i, "Summer")]]){
+    if(!is.null(input[[paste0("year", name, "Summer")]])){
+      if(input[[paste0("year", name, "Summer")]]){
         if(myOuts[i, herd] == 0){
           get(paste0("indem", orgName))[[i]]$indemnity <<- 0
         }
@@ -406,13 +446,13 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   
   ## Present options to sell cows
   output[[paste0("cowSell", name)]] <- renderUI({
-    # if(!is.null(input[[paste0("year", i, "Summer")]])){
-    #   if(input[[paste0("year", i, "Summer")]] == 1){
+    # if(!is.null(input[[paste0("year", name, "Summer")]])){
+    #   if(input[[paste0("year", name, "Summer")]] == 1){
     req(input[[paste0("insCont", name)]])
     # print(get(paste0("totalForage", name))())
     # print( AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1))
     tagList(
-      getCowSellInfo(get(paste0("totalForage", name))(), AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1), i),
+      getCowSellInfo(get(paste0("totalForage", name))(), AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1), i, name),
       plotOutput(paste0("cowPlot", name)),
       p("Herd prediction details",
         bsButton("herdetails", label = "", icon = icon("question"), style = "info", 
@@ -522,10 +562,10 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   
   ## Create a button to continue after selecting adaptation level
   output[[paste0("continue", name)]] <- renderUI({
-    if(!is.null(input[[paste0("year", i, "Start")]])){
-      if(input[[paste0("year", i, "Start")]] == 1){
+    if(!is.null(input[[paste0("year", name, "Start")]])){
+      if(input[[paste0("year", name, "Start")]] == 1){
         tagList(
-          actionButton(paste0("year", i, "Summer"), "Purchase Hay")
+          actionButton(paste0("year", name, "Summer"), "Purchase Hay")
         )
       }
     }
@@ -545,8 +585,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   ## Create button to sell calves and cows once decisions are made
   ## Additionally moves simualation to the next year
   output[[paste0("sellButton", name)]] <- renderUI({
-    # if(!is.null(input[[paste0("year", i, "Summer")]])){
-    #   if(input[[paste0("year", i, "Summer")]] == 1){
+    # if(!is.null(input[[paste0("year", name, "Summer")]])){
+    #   if(input[[paste0("year", name, "Summer")]] == 1){
     req(input[[paste0("insCont", name)]])    
     tagList(
       actionButton(paste0("sell", name), "Sell Calves and Cows")
@@ -589,13 +629,13 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   })
   
   output[[paste0("insSpace", name)]] <- renderUI({
-    req(input[[paste0("year", i, "Summer")]])
+    req(input[[paste0("year", name, "Summer")]])
     fluidRow(column(12, style = "background-color:white;", div(style = "height:1050px;")))
   })
   
   output[[paste0("postDepositButt", name)]] <- renderUI({
     
-    if(!is.null(input[[paste0("year", i, "Summer")]])){
+    if(!is.null(input[[paste0("year", name, "Summer")]])){
       if(get(paste0("indem", orgName))[[i]]$indemnity == 0){
         tagList(
           actionButton(paste0("insCont", name), "Next")
@@ -635,10 +675,10 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   
   ## Bar graphs for herd size
   output[[paste0("cowPlot", name)]] <- renderPlot({
-    if(!is.null(input[[paste0("year", i, "Summer")]])){
-      if(input[[paste0("year", i, "Summer")]] == 1){
-        cows <- input[[paste0("cow", i, "Sale")]]
-        calves <- input[[paste0("calves", i, "Sale")]]
+    if(!is.null(input[[paste0("year", name, "Summer")]])){
+      if(input[[paste0("year", name, "Summer")]] == 1){
+        cows <- input[[paste0("cow", name, "Sale")]]
+        calves <- input[[paste0("calves", name, "Sale")]]
         
         # Current herd size (determined by last years choices)
         herdy0 <- myOuts[i, herd]  
@@ -666,7 +706,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   })
   ## Bar graph to display net worth
   output[[paste0("worthPlot", name)]] <- renderPlot({
-    plotOuts <- myOuts[, c("yr", "assets.cow", "assets.cash"), with = F]
+    plotOuts <- myOuts[1:simLength, c("yr", "assets.cow", "assets.cash"), with = F]
     setnames(plotOuts, c("Year", "Value of Cows", "Cash"))
     plotOuts[, Year := startYear:(startYear + nrow(plotOuts) - 1)]
     plotOuts <- melt(plotOuts, id.vars = "Year")
@@ -767,8 +807,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   })
   
   # Reactive to disable start simulation button after they're clicked
-  observeEvent(input[[paste0("year", i, "Start")]], {
-    shinyjs::disable(paste0("year", i, "Start"))
+  observeEvent(input[[paste0("year", name, "Start")]], {
+    shinyjs::disable(paste0("year", name, "Start"))
     delay(100,session$sendCustomMessage(type = "scrollCallbackRain", paste0("rainGraph", i)))
   })
   
@@ -777,21 +817,20 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   ## update myOuts based on forage and the year's decisions
   observeEvent(input[[paste0("sell", name)]], {
     disable(paste0("sell", name))
-    disable(paste0("calves", i, "Sale"))
-    disable(paste0("cow", i, "Sale"))
+    disable(paste0("calves", name, "Sale"))
+    disable(paste0("cow", name, "Sale"))
     myOuts <<- updateOuts(wean = AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1), 
-                          totalForage = get(paste0("totalForage", name))(), calfSale = input[[paste0("calves", i, "Sale")]],
-                          indem = get(paste0("indem", orgName))[[i]], adaptExpend = input[[paste0("d", name, "adaptExpend")]], cowSales = input[[paste0("cow", i, "Sale")]], 
+                          totalForage = get(paste0("totalForage", name))(), calfSale = input[[paste0("calves", name, "Sale")]],
+                          indem = get(paste0("indem", orgName))[[i]], adaptExpend = input[[paste0("d", name, "adaptExpend")]], cowSales = input[[paste0("cow", name, "Sale")]], 
                           newHerd = get(paste0("herdSize", name))(), zones = get(paste0("currentZones", name))(), 
                           currentYear = i, ID = ID, time = startTime)
   })
   
   
   # Disable continue button and adaptation slider after clicking
-  observeEvent(input[[paste0("year", i, "Summer")]], {
-    shinyjs::disable(paste0("year", i, "Summer"))
-    shinyjs::disable(paste0("d", i, "
-                              "))
+  observeEvent(input[[paste0("year", name, "Summer")]], {
+    shinyjs::disable(paste0("year", name, "Summer"))
+    shinyjs::disable(paste0("d", name, "adaptExpend"))
     delay(100,session$sendCustomMessage(type = "scrollCallbackIns", paste0("rainGraphSep", i)))
   })
   

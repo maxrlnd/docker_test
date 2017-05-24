@@ -100,7 +100,7 @@ getJulyInfo <- function(currentYear, name){
   )
 }
 
-getCowSellInfo <- function(totalForage, wean, currentYear){
+getCowSellInfo <- function(totalForage, wean, currentYear, name){
   "
   Function: getCowSellInfo
   Description: create ui for a user to get info on how many cow and calves to sell
@@ -159,7 +159,7 @@ getCowSellInfo <- function(totalForage, wean, currentYear){
   )
 }
 
-getCowSell <- function(totalForage, wean, currentYear){
+getCowSell <- function(totalForage, wean, currentYear, name){
   "
   Function: getCowSell
   Description: create ui for a user to select how many cow and calves to sell
@@ -195,10 +195,10 @@ getCowSell <- function(totalForage, wean, currentYear){
     h5(tags$li(paste0("Remember, the carrying capacity of your range is ",simRuns$carrying.cap * simRuns$acres, " cow-calf pairs. 
                       If your herd is larger than this you risk damaging your range and producing less grass for your herd."))),
     br(),
-    sliderInput(paste0("calves", currentYear, "Sale"), "How many calves do you want to sell?",
+    sliderInput(paste0("calves", name, "Sale"), "How many calves do you want to sell?",
                 min = 0, max = calvesAvailable, value =  standardCalfSale, step = 1, width = "600px"),
     # p(bsButton("calfherd", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),bsPopover(id = "calfherd", title = "Calf Description",content = paste0("selling or keeping calves will affect your herd size in two years, when those calves could become mother cows."))),
-    sliderInput(paste0("cow", currentYear, "Sale"), "How many cows do you want to sell?",
+    sliderInput(paste0("cow", name, "Sale"), "How many cows do you want to sell?",
                 min = 0, max = myOuts[currentYear, herd], value = standardCowSale, step = 1, width = "600px"),
     br()
     
@@ -280,39 +280,6 @@ updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales
   myOuts[currentYear, Gt := 1 - (totalForage)]
   print(paste("Gt", myOuts[currentYear, Gt]))
   myOuts[currentYear, forage.potential := sum(zones)]
-}
-
-createNewYr <- function(year){
-  "
-  Function: createNewYr
-  Description: create a list of 1 tabPanel for specified year
-  
-  Inputs:
-  year = year of simulation (not calendar year)
-  
-  Outputs:
-  list of 1 tabset panel with year UI
-  "
-  list(tabPanel(paste0("Year ", year),
-           fluidRow(
-             column(8,
-                    uiOutput(paste0("winterInfo", year)),
-                    fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
-                    uiOutput(paste0("decision", year)),
-                    uiOutput(paste0("insuranceUpdate", year)),
-                    uiOutput(paste0("cowSell", year)),
-                    uiOutput(paste0("profits", year))
-             ),
-             column(2,
-                    fluidRow(column(12, style = "background-color:white;", div(style = "height:600px;"))),
-                    actionButton(paste0("year", year, "Start"), "Begin Simulation"),
-                    fluidRow(column(12, style = "background-color:white;", div(style = "height:950px;"))),
-                    uiOutput(paste0("continue", year)),
-                    fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
-                    uiOutput(paste0("sellButton", year))
-             )
-           )
-  ))
 }
 
 
