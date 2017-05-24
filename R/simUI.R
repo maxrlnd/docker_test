@@ -108,7 +108,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
                       options = list(container = "body")
             ),
             
-            p("Calves in herd:", "still cant figure out",
+            p("Calves in herd:", prettyNum(get(paste0("calvesAvailable", name))(), digits = 0, big.mark=",", scientific=FALSE),
               
               
               bsButton("infocalves", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
@@ -119,6 +119,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
                       options = list(container = "body")),
             br(),
             p(h4("Ranch Status:")),
+            p("Bank Balance:", prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE)),
             if(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0))<100){
               
               p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="color:red"), 
@@ -182,7 +183,46 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
       )
         }))
   
+  assign(paste0("calvesAvailable", name), reactive({
+    if(!is.null(input[[paste0("insCont", name)]])){  
+      if(input[[paste0("insCont", name)]] == 1){
+        calvesAvailable <- 
+          myOuts[i, herd] * AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1)
+      }else{
+        calvesAvailable <- myOuts[i, herd] * simRuns$normal.wn.succ
+      }
+    }else{
+      calvesAvailable <- myOuts[i, herd] * simRuns$normal.wn.succ
+    }
+    return(calvesAvailable)
+  }))
   
+  assign(paste0("bankBalance", name), reactive({
+    balance <- myOuts[i, assets.cash]
+    if(!is.null(input[[paste0("year", name, "Start")]])){  
+      if(input[[paste0("year", name, "Start")]] == 1){
+        balance <- balance - get(paste0("indem", orgName))[[i]]$producer_prem
+      }
+    }
+    if(!is.null(input[[paste0("year", name, "Summer")]])){  
+      if(input[[paste0("year", name, "Summer")]] == 1){
+        balance <- balance - input[[paste0("d", name, "adaptExpend")]]
+      }
+    }
+    if(!is.null(input[[paste0("insCont", name)]])){  
+      if(input[[paste0("insCont", name)]] == 1){
+        balance <- balance + get(paste0("indem", orgName))[[i]]$indemnity
+      }
+    }
+    if(!is.null(input[[paste0("sell", name)]])){  
+      if(input[[paste0("sell", name)]] == 1){
+        balance <- myOuts[i + 1, assets.cash]
+      }
+    }
+    return(balance)
+    
+        
+  }))
   
   ## Creates a reactive to track the current zone weights for each year
   assign(paste0("currentZones", name), reactive({
@@ -212,7 +252,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     ## Calculate available forage produced on the land using Nov-Nov as a year
     ## forageProduction = 1 is full feed for a cow-calf pair
     forage.production <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
-    print(paste("forage production", forage.production))
+    # print(paste("forage production", forage.production))
     
     ## Calculate adaptation intensity based on forage production
     adaptInten <- CalculateAdaptationIntensity(forage.production)
@@ -223,7 +263,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     
     ## Calculate how much of the needed adaptation is being done
     adaptPercent <- ifelse(fullAdaptCost == 0, 0, input[[paste0("d", name, "adaptExpend")]]/fullAdaptCost * (1 - forage.production))
-    print(paste("adaptPercent", adaptPercent))
+    # print(paste("adaptPercent", adaptPercent))
     
     ## Output new forage that includes forage and adaptation feed
     totalForage <- forage.production + adaptPercent
