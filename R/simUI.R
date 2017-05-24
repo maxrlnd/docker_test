@@ -128,9 +128,9 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
             br(),
             p(h4("Ranch Status:")),
             if("bankBalance">0){
-              p("Bank Balance: $", span(prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE),style="color:red"),             bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+              p("Bank Balance: $", span(prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE),style="color:black"),             bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
             }else{
-              p("Bank Balance: $", span(prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE),style="color:green"), 
+              p("Bank Balance: $", span(prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE),style="color:black"), 
                 bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
             },
             bsPopover(id = "infocash", title = "Cash Assets",
@@ -480,6 +480,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   
   output[[paste0("profits", name)]] <- renderUI({
     req(input[[paste0("insCont", name)]])
+    profit <- get(paste0("revenues", name))() + get(paste0("indem", orgName))[[i]]$indemnity - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", name, "adaptExpend")]] - get(paste0("indem", orgName))[[i]]$producer_prem
+    print(paste0("Profits: $", profit))
      tagList(
        br(),
        h4(p("Based on your current selections for market sales, your revenues and costs for this year are as follows:")),
@@ -532,14 +534,16 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
                 placement = "auto",
                 trigger = "hover",
                 options = list(container = "body")),
+      h5(p("Taxes: $",
+           span(prettyNum(profit * (0.124 + 0.15 + 0.04), digits = 2, big.mark = ",", scientific = FALSE),
+                style = "font-weight:bold:font-size:Xlarge;color:red"))),
 
       br(),
       if(get(paste0("revenues", name))() + get(paste0("indem", orgName))[[i]]$indemnity
          - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", name, "adaptExpend")]] - get(paste0("indem", orgName))[[i]]$producer_prem > 0){
 
         h4(p("Total profits: $",
-             span(prettyNum(get(paste0("revenues", name))() + get(paste0("indem", orgName))[[i]]$indemnity
-                            - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", name, "adaptExpend")]] - get(paste0("indem", orgName))[[i]]$producer_prem,
+             span(prettyNum(profit - profit * (0.124 + 0.15 + 0.04),
                             digits = 2, big.mark = ",", scientific = FALSE),
                   style = "font-weight:bold:font-size:Xlarge;color:green"),
              bsButton("totalProfits", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small")))
