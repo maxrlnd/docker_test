@@ -134,9 +134,8 @@ getCowSellInfo <- function(totalForage, wean, currentYear, name){
     p("It is the end of the season and it is time to take your stock to market.
       Use the information below to decide how many cows and calves you want to sell this year."),
     br(),
-    if((weanWeight)<600){
+    if((weanWeight) < 600){
     h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:red") , " pounds, on average.", 
-
               " Your weaned calves weigh ", span((600 - weanWeight), style="font-weight:bold;font-size:large;color:red"), " pounds below their target weight.
               This means that you're losing out on $", 
          span(paste0((simRuns$p.wn[1]*(600 - weanWeight)), "0"), style="font-weight:bold;font-size:large:color:red"), " for each calf you sell."))
