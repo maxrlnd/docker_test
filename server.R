@@ -175,7 +175,7 @@ function(input, output, session) {
         
         h4("Done with Practice"),
         hide("infoPanePrac"),
-          actionButton("savePracInputs", "Save practice round"),
+        actionButton("savePracInputs", "Save practice round"),
         uiOutput("practComplete")
         )
       
@@ -261,7 +261,6 @@ function(input, output, session) {
   
   observeEvent(input$savePracInputs, {
 
-    shinyjs::disable("simStart")
     # myDir <- "results"
     # if(!dir.exists(myDir)){
     #   dir.create(myDir)
@@ -308,7 +307,9 @@ function(input, output, session) {
   
   
   output$practComplete <- renderUI({
-    if(!debugMode)req(values$practSaveComplete)
+    if(!debugMode)
+    req(values$practSaveComplete == TRUE)
+    hide("savepractInputs")
     h4("Practice rounds complete, continue on to begin ranching game")
     actionButton("simStart", "Begin Ranch Game")
   })
