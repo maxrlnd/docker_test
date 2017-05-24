@@ -250,39 +250,6 @@ updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales
   myOuts[currentYear, forage.potential := sum(zones)]
 }
 
-createNewYr <- function(year){
-  "
-  Function: createNewYr
-  Description: create a list of 1 tabPanel for specified year
-  
-  Inputs:
-  year = year of simulation (not calendar year)
-  
-  Outputs:
-  list of 1 tabset panel with year UI
-  "
-  list(tabPanel(paste0("Year ", year),
-           fluidRow(
-             column(8,
-                    uiOutput(paste0("winterInfo", year)),
-                    fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
-                    uiOutput(paste0("decision", year)),
-                    uiOutput(paste0("insuranceUpdate", year)),
-                    uiOutput(paste0("cowSell", year)),
-                    uiOutput(paste0("profits", year))
-             ),
-             column(2,
-                    fluidRow(column(12, style = "background-color:white;", div(style = "height:600px;"))),
-                    actionButton(paste0("year", year, "Start"), "Begin Simulation"),
-                    fluidRow(column(12, style = "background-color:white;", div(style = "height:950px;"))),
-                    uiOutput(paste0("continue", year)),
-                    fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
-                    uiOutput(paste0("sellButton", year))
-             )
-           )
-  ))
-}
-
 
 shinyInsMat <- function(yy, clv, acres, pfactor, insPurchase, tgrd){
   "
