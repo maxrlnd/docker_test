@@ -71,20 +71,28 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
       },
       plotOutput(paste0("RangeHealthPlot", name)),
       br(),
-      h4("Bills Due"),
-      p("Your rainfall-index insurance premium is due. You owe $", 
-        span(prettyNum(myOuts[i, cost.ins], digits = 0, big.mark=",",scientific=FALSE),style="font-weight:bold;font-size:large;color:red"), ". Please
-        enter this amount below to pay your insurance bill.",
-        bsButton("insurance", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
-        bsPopover(id = "insurance", title = "Insurance",
-                  content = paste0("The rainfall each year is unpredictable, but it can have a big impact on your bottom line. To help protect income, ranchers purchase insurance that will result in a payment if growing season rainfall is below normal. The only months that matter for your payout are May, June, July and August. The worse the drought, the bigger the check. Each year, any payouts are received at the end of August."),
-                  placement = "auto", 
-                  trigger = "hover", 
-                  options = list(container = "body"))),
-      textInput(paste0("insurancePremium", name), 
-                "Please type the amount of the insurance premium below and to pay your bill and continue.",
-                width = "100%"),
-      uiOutput(paste0("premCheck", name)),
+      if(purchaseInsurance == TRUE) {
+        h4("Bills Due")
+      },
+      if(purchaseInsurance == TRUE) {
+        p("Your rainfall-index insurance premium is due. You owe $", 
+          span(prettyNum(myOuts[i, cost.ins], digits = 0, big.mark=",",scientific=FALSE),style="font-weight:bold;font-size:large;color:red"), ". Please
+          enter this amount below to pay your insurance bill.",
+          bsButton("insurance", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
+          bsPopover(id = "insurance", title = "Insurance",
+                    content = paste0("The rainfall each year is unpredictable, but it can have a big impact on your bottom line. To help protect income, ranchers purchase insurance that will result in a payment if growing season rainfall is below normal. The only months that matter for your payout are May, June, July and August. The worse the drought, the bigger the check. Each year, any payouts are received at the end of August."),
+                    placement = "auto", 
+                    trigger = "hover", 
+                    options = list(container = "body")))
+      },
+      if(purchaseInsurance == TRUE) {
+        textInput(paste0("insurancePremium", name), 
+                  "Please type the amount of the insurance premium below and to pay your bill and continue.",
+                  width = "100%")   
+      },
+      if(purchaseInsurance == TRUE) {
+        uiOutput(paste0("premCheck", name))   
+      },
       tags$hr(style="border-color: darkgray;"),
       span(rangeHealth(i),style = "color:white"),
       
@@ -331,15 +339,21 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
               p("You didn't get much rain this summer! In the graph below you can see how much
                 it has rained since you decided whether or not to purchase hay (July and August)."),
               plotOutput(paste0("rainGraphSep", name)),
-              p("Since you have rainfall insurance, 
+              if(purchaseInsurance == TRUE) {
+                p("Since you have rainfall insurance, 
                 you get a check to help cover your losses and extra expenses.
-                (Your rainfall insurance pays out when the rain falls significantly below
-                normal in May, June, July, and August.)"),
+                  (Your rainfall insurance pays out when the rain falls significantly below
+                  normal in May, June, July, and August.)")
+              },
               br(),
-              h4(p("You have received a check for $", span((currentIndem),style="font-weight:bold;font-size:large;color:green"), " from your rain insurance policy.")),
-              textInput(paste0("insuranceDeposit", name), 
-                        "Please type the amount of the check below and to add the money to your bank account and continue.",
-                        width = "100%"),
+              if(purchaseInsurance == TRUE) {
+                h4(p("You have received a check for $", span((currentIndem),style="font-weight:bold;font-size:large;color:green"), " from your rain insurance policy."))
+              },
+              if(purchaseInsurance == TRUE) {
+                textInput(paste0("insuranceDeposit", name), 
+                          "Please type the amount of the check below and to add the money to your bank account and continue.",
+                          width = "100%")
+              },
               # actionButton(paste0("deposit", name), "Deposit"),
               uiOutput(paste0("postDeposit", name)),
               uiOutput(paste0("postDepositButt", name))
@@ -363,11 +377,24 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
                 In the graph below you can see how much
                 it has rained since you decided whether or not to purchase hay (July and August)."),
               plotOutput(paste0("rainGraphSep", name)),
-              p("Because rainfall was close to or above normal levels, you did not recieve a check for your rain insurance policy"),
-              h4(paste0("After your expenditures on hay and insurance, your new bank balance is: $", 
-                        prettyNum(myOuts[i, assets.cash] - 
-                                    get(paste0("indem", orgName))[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
-                                  digits = 0, big.mark=",",scientific=FALSE))),
+              if(purchaseInsurance == TRUE) {
+                h4("Because rainfall was close to or above normal levels during the growing season, you did not recieve a check for your rain insurance policy")
+              },
+              if(purchaseInsurance == FALSE) {
+                h4("Rainfall was close to or above normal levels during the growing season.")
+              },
+              if(purchaseInsurance == TRUE) {
+                h4(paste0("After your expenditures on hay and insurance, your new bank balance is: $", 
+                          prettyNum(myOuts[i, assets.cash] - 
+                                      get(paste0("indem", orgName))[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
+                                    digits = 0, big.mark=",",scientific=FALSE)))  
+              },
+              if(purchaseInsurance == FALSE) {
+                h4(paste0("After your expenditures on hay, your new bank balance is: $", 
+                          prettyNum(myOuts[i, assets.cash] - 
+                                      get(paste0("indem", orgName))[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
+                                    digits = 0, big.mark=",",scientific=FALSE)))
+              },
               actionButton(paste0("insCont", name), "Next")
               )
                 }
