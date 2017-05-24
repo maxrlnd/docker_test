@@ -252,7 +252,7 @@ function(input, output, session) {
       gs_add_row(outputSheet, ws="Outputs", input = myOuts)
       ## This is used to validate in testing
       #outsheet <- outputSheet %>% gs_read(ws = "Outputs")
-      
+
     })
     values$saveComplete <- TRUE
     # write.csv(saveData, file = paste0("results/input", lastFile + 1, ".csv"), row.names = F)
