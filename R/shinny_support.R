@@ -1,6 +1,4 @@
-
-
-getJulyInfo <- function(currentYear){
+getJulyInfo <- function(currentYear, name){
   
   "
   Function: getJulyInfo
@@ -80,7 +78,7 @@ getJulyInfo <- function(currentYear){
                 options = list(container = "body"))),
 
     br(),
-    plotOutput(paste0("rainGraph", currentYear)),
+    plotOutput(paste0("rainGraph", name)),
 
     #tableOutput(paste0("julyRain", currentYear)),
     #rendering table
@@ -96,13 +94,13 @@ getJulyInfo <- function(currentYear){
     # 
     # ,
     br(),
-    p("Remember that if you don’t have enough money in the bank to cover the cost of hay you will automatically borrow at a 6.5% interest."),
-    numericInput(paste0("d", currentYear, "adaptExpend"), "How much hay, if any, do you want to purchase for your herd?",
+    p("Remember that if you do not have enough money in the bank to cover the cost of hay you will automatically borrow at a 6.5% interest."),
+    numericInput(paste0("d", name, "adaptExpend"), "How much hay, if any, do you want to purchase for your herd?",
                 min = 0, max = adaptMax, value = 0, step = 100, width = "100%")
   )
 }
 
-getCowSell <- function(totalForage, wean, currentYear){
+getCowSell <- function(totalForage, wean, currentYear, name){
   "
   Function: getCowSell
   Description: create ui for a user to select how many cow and calves to sell
@@ -137,15 +135,15 @@ getCowSell <- function(totalForage, wean, currentYear){
       Use the information below to decide how many cows and calves you want to sell this year."),
     br(),
     if((weanWeight)<600){
-    h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:red") , " pounds, on average.", 
-
-              " Your weaned calves weigh ", span((600 - weanWeight), style="font-weight:bold;font-size:large;color:red"), " pounds below their target weight.
-              This means that you're losing out on $", 
-         span(paste0((simRuns$p.wn[1]*(600 - weanWeight)), "0"), style="font-weight:bold;font-size:large:color:red"), " for each calf you sell."))
-
+      h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:red") , " pounds, on average.", 
+           
+           " Your weaned calves weigh ", span((600 - weanWeight), style="font-weight:bold;font-size:large;color:red"), " pounds below their target weight.
+           This means that you're losing out on $", 
+           span(paste0((simRuns$p.wn[1]*(600 - weanWeight)), "0"), style="font-weight:bold;font-size:large:color:red"), " for each calf you sell."))
+      
     }else{
       h5(p("Your weaned calves weigh ", span((weanWeight), style="font-weight:bold;font-size:large;color:green") , " pounds, on average."))
-      }
+    }
     ,
     p("If your calves are lighter than 600 lbs, it is because the mother cows
                    may not have had sufficient feed due to low rainfall, insufficient hay, or too many cows on the range."),
@@ -164,16 +162,15 @@ getCowSell <- function(totalForage, wean, currentYear){
     h5(tags$li(paste0("Remember, the carrying capacity of your range is ",simRuns$carrying.cap * simRuns$acres, " cow-calf pairs. 
               If your herd is larger than this you risk damaging your range and producing less grass for your herd."))),
     br(),
-    sliderInput(paste0("calves", currentYear, "Sale"), "How many calves do you want to sell?",
+    sliderInput(paste0("calves", name, "Sale"), "How many calves do you want to sell?",
                 min = 0, max = calvesAvailable, value =  standardCalfSale, step = 1, width = "600px"),
     # p(bsButton("calfherd", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),bsPopover(id = "calfherd", title = "Calf Description",content = paste0("selling or keeping calves will affect your herd size in two years, when those calves could become mother cows."))),
-    sliderInput(paste0("cow", currentYear, "Sale"), "How many cows do you want to sell?",
+    sliderInput(paste0("cow", name, "Sale"), "How many cows do you want to sell?",
                 min = 0, max = myOuts[currentYear, herd], value = standardCowSale, step = 1, width = "600px"),
     br()
     
-  )
+      )
 }
-
 
 updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales, newHerd, zones, adaptInten, currentYear, ID, time){
   "
@@ -250,39 +247,6 @@ updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales
   myOuts[currentYear, Gt := 1 - (totalForage)]
   print(paste("Gt", myOuts[currentYear, Gt]))
   myOuts[currentYear, forage.potential := sum(zones)]
-}
-
-createNewYr <- function(year){
-  "
-  Function: createNewYr
-  Description: create a list of 1 tabPanel for specified year
-  
-  Inputs:
-  year = year of simulation (not calendar year)
-  
-  Outputs:
-  list of 1 tabset panel with year UI
-  "
-  list(tabPanel(paste0("Year ", year),
-           fluidRow(
-             column(8,
-                    uiOutput(paste0("winterInfo", year)),
-                    fluidRow(column(12, style = "background-color:white;", div(style = "height:50px;"))),
-                    uiOutput(paste0("decision", year)),
-                    uiOutput(paste0("insuranceUpdate", year)),
-                    uiOutput(paste0("cowSell", year)),
-                    uiOutput(paste0("profits", year))
-             ),
-             column(2,
-                    fluidRow(column(12, style = "background-color:white;", div(style = "height:600px;"))),
-                    actionButton(paste0("year", year, "Start"), "Begin Simulation"),
-                    fluidRow(column(12, style = "background-color:white;", div(style = "height:950px;"))),
-                    uiOutput(paste0("continue", year)),
-                    fluidRow(column(12, style = "background-color:white;", div(style = "height:700px;"))),
-                    uiOutput(paste0("sellButton", year))
-             )
-           )
-  ))
 }
 
 
@@ -374,13 +338,14 @@ inputToDF <- function(inputList){
   return(returnTable)
 }
 
-createOutputs <- function(practiceRuns, simRuns, indem){
+createOutputs <- function(practiceRuns, simRuns, indem, indemprac){
   practiceOuts <- createResultsFrame(practiceRuns)
-  practiceOuts[1, cost.ins := indem[[1]]$producer_prem]
+  practiceOuts[1, cost.ins := indemprac[[1]]$producer_prem]
   myOuts <- createResultsFrame(simRuns)
   myOuts[1, cost.ins := indem[[1]]$producer_prem]
   practiceOuts <<- practiceOuts
   myOuts <<- myOuts
+  rangeHealthList <<- rep(NA, 11)
 }
 
 rangeHealth <- function(currentYear){
@@ -426,7 +391,33 @@ appendRangeHealth <- function(healthValue, rangeHealthList){
   rangeHealthList[first_na] <<- rangeProd
 }
 
+simPageOutput <- function(rv, name = ""){
+  page <- paste0(name, rv$page)
+  fluidRow(
+    column(9,
+           uiOutput(paste0("winterInfo", page)),
+           uiOutput(paste0("start", page)),
+           uiOutput(paste0("decision", page)),
+           uiOutput(paste0("continue", page)),
+           uiOutput(paste0("insuranceUpdate", page)),
+           uiOutput(paste0("cowSell", page)),
+           uiOutput(paste0("sellButton", page)),
+           uiOutput(paste0("profits", page)),
+           uiOutput(paste0("nextButton", page))
+    )
+  )
+}
 
-
+noIns <- function(){
+  purchaseInsurance <<- FALSE
+  indem <<- lapply(indem, function(x){
+    x[, c("producer_prem", "indemnity", "full_prem") := 0]
+    return(x)
+  })
+  indemprac <<- lapply(indemprac, function(x){
+    x[, c("producer_prem", "indemnity", "full_prem") := 0]
+    return(x)
+  })
+}
 
 
