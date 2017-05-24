@@ -127,7 +127,17 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
                       options = list(container = "body")),
             br(),
             p(h4("Ranch Status:")),
-            p("Bank Balance:", prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE)),
+            if("bankBalance">0){
+              p("Bank Balance: $", span(prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE),style="color:red"),             bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+            }else{
+              p("Bank Balance: $", span(prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE),style="color:green"), 
+                bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+            },
+            bsPopover(id = "infocash", title = "Cash Assets",
+                      content = paste0("If your balance falls below zero, you will automatically borrow money at 6.5% interest."),
+                      placement = "bottom", 
+                      trigger = "hover", 
+                      options = list(container = "body")),
             if(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0))<100){
               
               p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="color:red"), 
@@ -143,18 +153,18 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
                       trigger = "hover", 
                       options = list(container = "body")),
             
-            if((prettyNum(myOuts[i, assets.cash], digits = 0,
-                          big.mark=",", scientific=FALSE))>=0){
-              p("Bank balance: $", span(prettyNum((myOuts[rv$page, assets.cash]), digits = 0, big.mark=",", scientific=FALSE), style="color:green"),
-                bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
-            }else{p("Bank balance: $", networth, 
-                    bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
-            },
-            bsPopover(id = "infocash", title = "Cash Assets",
-                      content = paste0("If your balance falls below zero, you will automatically borrow money at 6.5% interest."),
-                      placement = "bottom", 
-                      trigger = "hover", 
-                      options = list(container = "body")),
+            #if((prettyNum(myOuts[i, assets.cash], digits = 0,
+                          #big.mark=",", scientific=FALSE))>=0){
+              #p("Bank balance: $", span(prettyNum((myOuts[rv$page, assets.cash]), digits = 0, big.mark=",", scientific=FALSE), style="color:green"),
+                #bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+            #}else{p("Bank balance: $", networth, 
+                    #bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+            #},
+            #bsPopover(id = "infocash", title = "Cash Assets",
+                      #content = paste0("If your balance falls below zero, you will automatically borrow money at 6.5% interest."),
+                      #placement = "bottom", 
+                      #trigger = "hover", 
+                      #options = list(container = "body")),
             if((prettyNum((myOuts[rv$page, net.wrth] - myOuts[rv$page, assets.cash]), digits = 0,big.mark=",", scientific=FALSE)) > 0){
               p("Value of herd: $", span(prettyNum((myOuts[rv$page, net.wrth] - myOuts[rv$page, assets.cash]), digits = 0,big.mark=",", scientific=FALSE), style="color:green"), 
                 bsButton("herdval", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
