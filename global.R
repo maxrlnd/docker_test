@@ -46,14 +46,14 @@ carryingCapacity <- constvars$carrying.cap * acres
 
 ## Set Starting Years
 startYear <- 2000
-startYearprac <- 1996
+startYearprac <- 1961
 
 ## create state variables for practice runs
 practiceVars <- getSimVars(
   station.gauge,
   constvars,
   start_year = startYearprac,
-  sim_length = 3,
+  sim_length = 5,
   use.forage = T,
   random.acres=FALSE,
   random.productivity=FALSE,
@@ -78,7 +78,7 @@ simRuns$p.wn <- rep(1.30, length(simRuns$p.wn))
 
 ## Set simulation length
 simLength <- 10
-practiceLength <- 2
+practiceLength <- 5
 
 ## Calcualte indemnities for all years of the simulation
 indem <- lapply(startYear:(startYear + simLength - 1), function(x){
