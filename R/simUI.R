@@ -483,7 +483,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
      tagList(
        br(),
        h4(p("Based on your current selections for market sales, your revenues and costs for this year are as follows:")),
-      h5(p("Cow-calf revenues: $",
+       h5(p("Cow-calf revenues: $",
            span(prettyNum(get(paste0("revenues", name))(), digits = 2, big.mark = ",", scientific = FALSE),
                 style = "font-weight:bold:font-size:Xlarge;color:green"),
                 bsButton("cowRevenues", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"))),   # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
@@ -536,6 +536,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
       br(),
       if(get(paste0("revenues", name))() + get(paste0("indem", orgName))[[i]]$indemnity
          - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", name, "adaptExpend")]] - get(paste0("indem", orgName))[[i]]$producer_prem > 0){
+
         h4(p("Total profits: $",
              span(prettyNum(get(paste0("revenues", name))() + get(paste0("indem", orgName))[[i]]$indemnity
                             - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", name, "adaptExpend")]] - get(paste0("indem", orgName))[[i]]$producer_prem,
@@ -562,7 +563,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
 
      )
   })
-  
+
   
   ## Create a button to continue after selecting adaptation level
   output[[paste0("continue", name)]] <- renderUI({
@@ -678,8 +679,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   
   
   output[[paste0("cowPlot", name)]] <- renderPlot({
-    if(!is.null(input[[paste0("year", i, "Summer")]])){
-      if(input[[paste0("year", i, "Summer")]] == 1){
+    if(!is.null(input[[paste0("year", name, "Summer")]])){
+      if(input[[paste0("year", name, "Summer")]] == 1){
         cows <- input[[paste0("cow", name, "Sale")]]
         calves <- input[[paste0("calves", name, "Sale")]]
         
