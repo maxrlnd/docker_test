@@ -96,7 +96,7 @@ createOutputs(practiceRuns, simRuns, indem, indemprac)
 
 ## Is insurance purchased?
 # purchaseInsurance <- sample(c(T, F), 1)
-# purchaseInsurance <- T
+purchaseInsurance <- T
 # 
 # if(!purchaseInsurance){
 #   indem <- lapply(indem, function(x){

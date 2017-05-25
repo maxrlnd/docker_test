@@ -98,6 +98,16 @@ function(input, output, session) {
     }else{
       print("insurance mode")
       purchaseInsurance <<- TRUE
+      indem <<- lapply(startYear:(startYear + simLength - 1), function(x){
+        with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
+                                  pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+      })
+      
+      indemprac <<- lapply(startYearprac:(startYearprac + practiceLength - 1), function(x){
+        with(practiceRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
+                                       pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+      })
+      createOutputs(practiceRuns, simRuns, indem, indemprac)
     }
     disable("pracStart")
     toggleClass(class = "disabled",
