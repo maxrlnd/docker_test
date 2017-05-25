@@ -732,7 +732,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
                 size = 5, position = position_stack(vjust = 0.3), angle = 90) +
       theme(legend.title = element_blank(), axis.title = element_text(size = 20), text = element_text(size = 20)) +
       scale_fill_manual(values = c("#f4a460", "#85bb65")) +
-      labs(x="", y="Value in $")
+      labs(x="Year", y="Value in $")
     
     
   })
