@@ -207,14 +207,14 @@ tabsetPanel(id = "mainPanels",
                                   ".inTextTips{
                                     color:rgb(0, 0, 0);
                                     text-align: left;
-                                    border-color: rgb(245,245,245);
-                                    background-color: rgb(245, 245, 245);
+                                    border-color: rgb(255,255,255);
+                                    background-color: rgb(255, 255, 255);
                                 }
                                   .inTextTips:hover{
                                     color:rgb(0, 0, 0);
                                     text-align: left;
-                                    border-color: rgb(245,245,245);
-                                    background-color: rgb(245, 245, 245);"
+                                    border-color: rgb(255,255,255);
+                                    background-color: rgb(255, 255, 255);"
                       ))),
           
           

@@ -127,10 +127,10 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
                       options = list(container = "body")),
             br(),
             p(h4("Ranch Status:")),
-            if("bankBalance">0){
-              p("Bank Balance: $", span(prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE),style="color:black"),             bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+            if((prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE))>=0){
+              p("Bank Balance: $", span(prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE),style="color:green"),             bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
             }else{
-              p("Bank Balance: $", span(prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE),style="color:black"), 
+              p("Bank Balance: $", span(prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE),style="color:red"), 
                 bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
             },
             bsPopover(id = "infocash", title = "Cash Assets",
@@ -387,7 +387,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
           if(currentIndem > 0){
             tagList(
               p("You didn't get much rain this summer! In the graph below you can see how much
-                it has rained since you decided whether or not to purchase hay (July and August)."),
+                it has rained since you decided whether or not to purchase hay (July and August). The grey bars indicate old/past rainfall, while the dark blue bars indicate new rainfall"),
               plotOutput(paste0("rainGraphSep", name)),
               if(purchaseInsurance == TRUE) {
                 p("Since you have rainfall insurance, 
@@ -480,26 +480,41 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     # }
   })
   
-  
   output[[paste0("profits", name)]] <- renderUI({
     req(input[[paste0("insCont", name)]])
     profit <- get(paste0("revenues", name))() + get(paste0("indem", orgName))[[i]]$indemnity - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", name, "adaptExpend")]] - get(paste0("indem", orgName))[[i]]$producer_prem
     print(paste0("Profits: $", profit))
      tagList(
+       tags$head(tags$style(HTML(
+    ".inTextTips{
+    color:rgb(0, 0, 0);
+    text-align: left;
+    border-color: rgb(255,255,255);
+    background-color: rgb(255, 255, 255);
+    }
+    .inTextTips:hover{
+    color:rgb(0, 0, 0);
+    text-align: left;
+    border-color: rgb(255,255,255);
+    background-color: rgb(255, 255, 255);"
+       ))),
+    
        br(),
+
+    
+    # p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="color:green"),
+    #   bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+    
+    
        h4(p("Based on your current selections for market sales, your cow-calf revenues for this year are as follows:")),
-       # h4(p("Cow-calf revenues: $",
-       #     span(prettyNum(get(paste0("revenues", name))(), digits = 2, big.mark = ",", scientific = FALSE),
-       #          style = "font-weight:bold:font-size:Xlarge;color:green"),
-       #          bsButton("cowRevenues", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"))),   # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
-       #          bsPopover(id = "cowRevenues", title = "Cow-calf revenue",
-       #                    content = paste0("Each cow sells for $850. Each calf sells
-       #                                     for $1.30 per pound. Move the sliders to
-       #                                     change your revenues for this year and
-       #                                     your herd size for the next few years."),
-       #                    placement = "auto",
-       #                    trigger = "hover",
-       #                    options = list(container = "body")),
+       h4(p("Cow-calf revenues: $",
+           span(prettyNum(get(paste0("revenues", name))(), digits = 2, big.mark = ",", scientific = FALSE),
+                style = "font-weight:bold:font-size:Xlarge;color:green"),
+         bsButton("revenueFromCows", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
+    bsPopover(id = "revenueFromCows", title = "Herd Prediction", placement= "top",content = paste0("Each cow sells for $850. Each calf sells for $1.30 per pound. Move the sliders to change your revenues for this year and your herd size for the next few years.")))),
+
+    # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
+                
        br(),
        if(purchaseInsurance == TRUE){
          h4("Other revenues and costs that will affect your income for the year include:
@@ -739,9 +754,12 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     plotOuts <- melt(plotOuts, id.vars = "Year")
     setnames(plotOuts, c("Year", "Area", "Value in $"))
     plotOuts$Area <- factor(plotOuts$Area)
-    plotOuts$YearNumbers <-  paste("Yr", plotOuts$Year - min(plotOuts$Year) + 1)
+    plotOuts$YearNumbers <- paste("Year", seq(1,10))
     plotOuts$YearNumbers <- factor(plotOuts$YearNumbers, 
-                                   levels = paste("Yr", seq_along(unique(plotOuts$Year))))
+                                   levels = paste("Year", seq(1,10)))
+    #plotOuts$YearNumbers <-  paste("Yr", plotOuts$Year - min(plotOuts$Year) + 1)
+    #plotOuts$YearNumbers <- factor(plotOuts$YearNumbers, 
+                                   #levels = paste("Yr", seq_along(unique(plotOuts$Year))))
     
     ggplot(plotOuts, aes(x = YearNumbers, y = `Value in $`, fill = Area)) + geom_bar(stat = "identity") + 
       ggtitle("Net Worth") + 
@@ -762,9 +780,12 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     PlotYear[, Year := startYear:(startYear + nrow(PlotYear) - 1)]
     PlotYear <- melt(PlotYear, id.vars = "Year")
     PlotYear$rangeHealthList <- rangeHealthList
-    PlotYear$YearNumbers <- c(paste("Yr", seq(1, simLength, length.out = simLength)))
+    PlotYear$YearNumbers <- paste("Year", seq(1,10))
     PlotYear$YearNumbers <- factor(PlotYear$YearNumbers, 
-                                   levels = paste("Yr", seq_along(unique(PlotYear$Year))))
+                                   levels = paste("Year", seq(1,10)))
+    #PlotYear$YearNumbers <- c(paste("Yr", seq(1, simLength, length.out = simLength)))
+    #PlotYear$YearNumbers <- factor(PlotYear$YearNumbers, 
+                                   #levels = paste("Yr", seq_along(unique(PlotYear$Year))))
     
     ggplot(PlotYear, aes(x = YearNumbers, y = rangeHealthList)) + 
       geom_bar(stat = "identity", fill = "olivedrab") + 
