@@ -87,7 +87,6 @@ tabsetPanel(id = "mainPanels",
              actionButton("reset_button", "Reset Page"),
              br(),
              textInput("name", "Enter your name or alias"),
-             actionButton("simStart", "Begin Ranch Game")
              # actionButton("saveInputs", "Save all Input")
            )),
   
