@@ -64,17 +64,21 @@ function(input, output, session) {
         plotOutput(paste0("worthPlot", i)),
         tags$li(p("Your herd has ", 
                  span(prettyNum(myOuts[i, herd], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large"), 
-                 " cows, not including calves ",bsButton("calfdesc", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "calfdesc", title = "Calf Description",content = paste0("Calves are born in early spring and are raised on milk from their mother until they reach a weight of about 600 pounds.Once the calves stop taking milk from their mothers they arecalled weaned calves."))," or yearlings.",bsButton("yearlingdesc", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "yearlingdesc", title = "Yearling Description",content = paste0("These are cows that are weaned, but not yet reproducing")),"")),
-
+                 " cows, not including calves ",
+                 bsButton("calfdesc", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
+                 bsPopover(id = "calfdesc", title = "Calf Description",content = paste0("Calves are born in early spring and are raised on milk from their mother until they reach a weight of about 600 pounds.Once the calves stop taking milk from their mothers they arecalled weaned calves."))," or yearlings.",
+                 bsButton("yearlingdesc", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
+                 bsPopover(id = "yearlingdesc", title = "Yearling Description",content = paste0("These are cows that are weaned, but not yet reproducing.")))),
         if(prettyNum(myOuts[i, assets.cash], digits = 0)<0){
           tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
-                                                             big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:red")))
+                                                             big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:red"),
+                    bsButton("interest", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small")))
         }else{
           tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
-                                                             big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:green")))
-        }
-        
-        ,
+                                                             big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:green"),
+                    bsButton("interest", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small")))
+        },
+        bsPopover(id = "interest", title = "Interest",content = paste0("If your bank balance is above $0, you will automatically earn 1.25% interest. If it is below $0, you will automatically be charged 6.5% interest.")),
         if((prettyNum(myOuts[i, net.wrth], digits = 0)>0)){
         tags$li(p("Your current net worth, including cows and your bank balance, is $", 
                  span(prettyNum(myOuts[i, net.wrth], digits = 0, big.mark=",", scientific=FALSE),style="font-weight:bold;font-size:large;color:green"), "."))
@@ -402,17 +406,15 @@ function(input, output, session) {
       req(input[[paste0("insCont", i)]])
       # print(get(paste0("totalForage", i))())
       # print( AdjWeanSuccess(get(paste0("totalForage", i))(), T, simRuns$normal.wn.succ, 1))
-      
           tagList(
-
-            getCowSellInfo(get(paste0("totalForage", i))(), AdjWeanSuccess(get(paste0("totalForage", i))(), T, simRuns$normal.wn.succ, 1), i),
+            getCowSell(get(paste0("totalForage", i))(), AdjWeanSuccess(get(paste0("totalForage", i))(), T, simRuns$normal.wn.succ, 1), i),
             plotOutput(paste0("cowPlot", i)),
+
+            br(),
             p("Herd prediction details",bsButton("herdetails", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "herdetails", title = "Herd Prediction",content = paste0("Keep in mind that yearlings (weaned calves that are not yet producing calves) are not counted in these herd size numbers. You do not have the option to sell yearlings in this game. These herd size predictions also assume that you go back to normal culling and calf sale rates next year. For these reasons, your herd may not go all the way to 0 if you sell off all of your cows and calves."), 
-                                                                                                                                                                        placement = "auto", 
-                                                                                                                                                                        trigger = "hover", 
-                                                                                                                                                                        options = list(container = "body"))),
-            getCowSell(get(paste0("totalForage", i))(), AdjWeanSuccess(get(paste0("totalForage", i))(), T, simRuns$normal.wn.succ, 1), i)
-          
+                            placement = "auto", 
+                            trigger = "hover", 
+                            options = list(container = "body")))
 
           )
 
@@ -948,28 +950,27 @@ function(input, output, session) {
       lastFile <- regmatches(files, gregexpr('[0-9]+',files))
       lapply(lastFile, as.numeric) %>% unlist() %>% max() -> lastFile
     }
-    saveData <- reactiveValuesToList(input)
+    saveData <<- reactiveValuesToList(input)
     # save(saveData, file = "newSave.RData")
     saveData <- inputToDF(saveData)
     #saveData$names <- NULL
     # Pivot save data to horizontal
-    #saveData <- t(saveData)
+    saveData <- t(saveData)
     # Remove first row of variable names
     withProgress(message = "Saving Data", value = 1/3, {
-    gs_new(title =  ID, 
-           input = saveData, trim = TRUE, verbose = TRUE)
+    inputSheet <- gs_title("cowGameInputs")
+    gs_add_row(inputSheet, ws="Sheet1", input = saveData)
+     #gs_new(title =  ID, 
+           # input = saveData, trim = TRUE, verbose = TRUE)
     ## These are used to check the output in testing
      #inputsheet <- gs_title(ID)
      #insheet <- gs_read(inputsheet)
     incProgress(1/3)
-    
-    outputSheet <- gs_title("cowGameInputs")
-    gs_add_row(outputSheet, ws=1, input = myOuts)
+    outputSheet <- gs_title("cowGameOutputs")
+    gs_add_row(outputSheet, ws="Outputs", input = myOuts)
     ## This is used to validate in testing
-     outsheet <- outputSheet %>% gs_read(ws = "Sheet1")
-    
-    # gs_new(title =  paste0("output", lastFile + 1), 
-    #        input = myOuts, trim = TRUE, verbose = TRUE)
+    #outsheet <- outputSheet %>% gs_read(ws = "Outputs")
+
     })
     values$saveComplete <- TRUE
     # write.csv(saveData, file = paste0("results/input", lastFile + 1, ".csv"), row.names = F)
