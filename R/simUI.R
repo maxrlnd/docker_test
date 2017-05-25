@@ -480,26 +480,38 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     # }
   })
   
-  
   output[[paste0("profits", name)]] <- renderUI({
     req(input[[paste0("insCont", name)]])
     profit <- get(paste0("revenues", name))() + get(paste0("indem", orgName))[[i]]$indemnity - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", name, "adaptExpend")]] - get(paste0("indem", orgName))[[i]]$producer_prem
     print(paste0("Profits: $", profit))
      tagList(
+       tags$head(tags$style(HTML(
+    ".inTextTips{
+    color:rgb(0, 0, 0);
+    text-align: left;
+    border-color: rgb(255,255,255);
+    background-color: rgb(255, 255, 255);
+    }
+    .inTextTips:hover{
+    color:rgb(0, 0, 0);
+    text-align: left;
+    border-color: rgb(255,255,255);
+    background-color: rgb(255, 255, 255);"
+       ))),
+    
        br(),
+
+    
+    # p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="color:green"),
+    #   bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+    
+    
        h4(p("Based on your current selections for market sales, your cow-calf revenues for this year are as follows:")),
-       # h4(p("Cow-calf revenues: $",
-       #     span(prettyNum(get(paste0("revenues", name))(), digits = 2, big.mark = ",", scientific = FALSE),
-       #          style = "font-weight:bold:font-size:Xlarge;color:green"),
-       #          bsButton("cowRevenues", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"))),   # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
-       #          bsPopover(id = "cowRevenues", title = "Cow-calf revenue",
-       #                    content = paste0("Each cow sells for $850. Each calf sells
-       #                                     for $1.30 per pound. Move the sliders to
-       #                                     change your revenues for this year and
-       #                                     your herd size for the next few years."),
-       #                    placement = "auto",
-       #                    trigger = "hover",
-       #                    options = list(container = "body")),
+       p(h4("Cow-calf revenues: $",
+           span(prettyNum(get(paste0("revenues", name))(), digits = 2, big.mark = ",", scientific = FALSE),
+                style = "font-weight:bold:font-size:Xlarge;color:green"))),
+         # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
+                
        br(),
        if(purchaseInsurance == TRUE){
          h4("Other revenues and costs that will affect your income for the year include:
