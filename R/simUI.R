@@ -128,9 +128,9 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
             br(),
             p(h4("Ranch Status:")),
             if((prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE))>=0){
-              p("Bank Balance: $", span(prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE),style="color:green"),             bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+              p("Bank Balance: $", span(prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE),style="color:black"),             bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
             }else{
-              p("Bank Balance: $", span(prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE),style="color:red"), 
+              p("Bank Balance: $", span(prettyNum(get(paste0("bankBalance", name))(), digits = 0, big.mark=",", scientific=FALSE),style="color:black"), 
                 bsButton("infocash", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
             },
             bsPopover(id = "infocash", title = "Cash Assets",
