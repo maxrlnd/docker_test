@@ -355,7 +355,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     if(!is.null(input[[paste0("year", name, "Start")]])){  
       if(input[[paste0("year", name, "Start")]] == 1){
         tagList(
-          getJulyInfo(i, name)
+          getJulyInfo(i, name, startYear)
         )
       }
     }
@@ -696,8 +696,10 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   
   
   output[[paste0("cowPlot", name)]] <- renderPlot({
+    print("starting cow plot")
     if(!is.null(input[[paste0("year", name, "Summer")]])){
       if(input[[paste0("year", name, "Summer")]] == 1){
+        print("in if")
         cows <- input[[paste0("cow", name, "Sale")]]
         calves <- input[[paste0("calves", name, "Sale")]]
         
@@ -718,9 +720,11 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
         herd.projection <- data.table("Year" = years, "Herd Size" = c(herdy0, herdy1, herdy2))
         herd.projection$Year <- factor(herd.projection$Year, levels = c("This Year", "Next Year", "In Two Years"))
         herd.projection$`Herd Size` = round(herd.projection$`Herd Size`, 0)
-        ggplot(herd.projection, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity", width = .3, fill = "#8b4513") +
-          geom_text(aes(label = `Herd Size`), size = 10, position = position_stack( vjust = .5), color = "#ffffff") +
-          theme(text = element_text(size = 20), axis.title.x=element_blank())
+        print(herd.projection)
+        qplot(data = herd.projection, x = as.factor(Year), y = `Herd Size`)
+        # ggplot(herd.projection, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity", width = .3, fill = "#8b4513") +
+        #   geom_text(aes(label = `Herd Size`), size = 10, position = position_stack( vjust = .5), color = "#ffffff") +
+        #   theme(text = element_text(size = 20), axis.title.x=element_blank())
         
       }
     }

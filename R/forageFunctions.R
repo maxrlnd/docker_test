@@ -124,10 +124,10 @@ whatIfForage <- function(station.gauge, zonewt, styear, herd, carryingCap,
   forage.production = the predicted amount of forage available based on 
     scenario selection
   "
-  
   yprecip <- station.gauge$stgg[Year %in% (styear-1):styear, ]  # monthly precip amounts for start year
   yprecip <- cbind((yprecip[Year == styear - 1, c("NOV", "DEC")]), 
                    (yprecip[Year == styear, -c("NOV", "DEC", "Year")]))
+
   monthly.averages <- station.gauge$avg
   yearAvg <- rbindlist(list(yprecip, monthly.averages), use.names = T)
   
@@ -142,8 +142,8 @@ whatIfForage <- function(station.gauge, zonewt, styear, herd, carryingCap,
   }
   
   # Monthly precip "index"
-  precip.index  <- yearAvg[1,] / yearAvg[2,] 
-  
+  precip.index  <- yearAvg[1,] / yearAvg[2,]
+
   #Compute Forage Weight Potentials
   foragewt = zonewt * precip.index[, names(monthly.averages), with = F]
   
