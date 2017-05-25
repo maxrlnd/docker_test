@@ -196,8 +196,8 @@ function(input, output, session) {
       br(),
       p(paste0("Through ranching you accumulated $", round(myOuts$assets.cash[simLength + 1], 0), " in cash" )),
       p(paste0("You also have a herd worth $", round(myOuts$assets.cow[simLength + 1], 0), ".")),
-      p(paste0("Your total net worth is $", round(myOuts$net.wrth[simLength + 1], 0), ". With a conversation rate of $200,000
-               of simulation money to $1 of MTurk bonus money, you've earned $", round(myOuts$net.wrth[simLength + 1]/200000, 2),".")),
+      p(paste0("Your total net worth is $", round(myOuts$net.wrth[simLength + 1], 0), ". With a conversation rate of $400,000
+               of simulation money to $1 of MTurk bonus money, you've earned $", round(myOuts$net.wrth[simLength + 1]/400000, 2),".")),
       actionButton("saveInputs", "Save results and recieve completion code"),
       span((endTime <<- Sys.time()), style = "color:white"),
       span((simTime <<- endTime - startTime), style = "color:white"),
@@ -209,7 +209,9 @@ function(input, output, session) {
 
   output$complete <- renderUI({
     req(values$saveComplete)
-    h4(p("Your Data has been saved, your completion code is: ", span(sample(10000:99999,1), style="color:green")), p("Please write down your completion code and close this window to finish the last portion of the game."))
+    h4(p("Your Data has been saved, your completion code is: ", span(sample(10000:99999,1), style="color:green")), 
+       p("Please copy and paste your completion code into the designated box in the qualtrics survey.
+         Once you have the code entered, you can close this window."))
   })
   observeEvent(input$prevBtn, navPage(-1))
   observeEvent(input$nextBtn, navPage(1))
