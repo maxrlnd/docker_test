@@ -45,8 +45,8 @@ acres <- 3000
 carryingCapacity <- constvars$carrying.cap * acres
 
 ## Set Starting Years
-startYear <- 2000
-startYearprac <- 1961
+startYear <- 1999
+startYearprac <- 1951
 
 ## create state variables for practice runs
 practiceVars <- getSimVars(
