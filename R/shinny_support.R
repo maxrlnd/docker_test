@@ -50,7 +50,7 @@ getJulyInfo <- function(currentYear, name){
   Rain2 <- c(forageList1[2], fullAdaptCost1[2])
   Rain3 <- c(forageList1[3], fullAdaptCost1[3])
   RainfallL <- data.table(Rain1, Rain2, Rain3)
-  colnames(RainfallL) <- c("If you expect Jul-Oct rainfall to be normal", "If Above Average Rainfall", "If Below Average Rainfall")
+  colnames(RainfallL) <- c("If you expect Jul-Oct rainfall to be normal", "If you expect Jul-Oct rainfall to be above average ", "If you expect Jul-Oct rainfall to be below average")
   
   
   ## Create taglist showing all adpatation
