@@ -319,7 +319,7 @@ function(input, output, session) {
   
   
   output$practComplete <- renderUI({
-    if(!debugMode)
+    #if(!debugMode)
     req(values$practSaveComplete == TRUE)
     hide("savepractInputs")
     h4("Practice rounds complete, continue on to begin ranching game")
