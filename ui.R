@@ -86,7 +86,7 @@ tabsetPanel(id = "mainPanels",
              actionButton("applyInsChange", "Change Insurance"),
              actionButton("reset_button", "Reset Page"),
              br(),
-             textInput("name", "Enter your name or alias"),
+             textInput("name", "Enter your name or alias")
              # actionButton("saveInputs", "Save all Input")
            )),
   
