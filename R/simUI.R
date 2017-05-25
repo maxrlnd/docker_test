@@ -468,10 +468,6 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     tagList(
       getCowSell(get(paste0("totalForage", name))(), AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1), i, name),
       plotOutput(paste0("cowPlot", name)),
-      # plotOutput(paste0("safePlot", i)),
-      # plotOutput("safePlot"),
-      # plotOutput("cowPlot"),
-      
       br(),
       p("Herd prediction details",bsButton("herdetails", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "herdetails", title = "Herd Prediction",content = paste0("Keep in mind that yearlings (weaned calves that are not yet producing calves) are not counted in these herd size numbers. You do not have the option to sell yearlings in this game. These herd size predictions also assume that you go back to normal culling and calf sale rates next year. For these reasons, your herd may not go all the way to 0 if you sell off all of your cows and calves."), 
                                                                                                                                                                   placement = "auto", 
@@ -492,18 +488,18 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
      tagList(
        br(),
        h4(p("Based on your current selections for market sales, your cow-calf revenues for this year are as follows:")),
-       h4(p("Cow-calf revenues: $",
-           span(prettyNum(get(paste0("revenues", name))(), digits = 2, big.mark = ",", scientific = FALSE),
-                style = "font-weight:bold:font-size:Xlarge;color:green"),
-                bsButton("cowRevenues", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"))),   # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
-                bsPopover(id = "cowRevenues", title = "Cow-calf revenue",
-                          content = paste0("Each cow sells for $850. Each calf sells
-                                           for $1.30 per pound. Move the sliders to
-                                           change your revenues for this year and
-                                           your herd size for the next few years."),
-                          placement = "auto",
-                          trigger = "hover",
-                          options = list(container = "body")),
+       # h4(p("Cow-calf revenues: $",
+       #     span(prettyNum(get(paste0("revenues", name))(), digits = 2, big.mark = ",", scientific = FALSE),
+       #          style = "font-weight:bold:font-size:Xlarge;color:green"),
+       #          bsButton("cowRevenues", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"))),   # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
+       #          bsPopover(id = "cowRevenues", title = "Cow-calf revenue",
+       #                    content = paste0("Each cow sells for $850. Each calf sells
+       #                                     for $1.30 per pound. Move the sliders to
+       #                                     change your revenues for this year and
+       #                                     your herd size for the next few years."),
+       #                    placement = "auto",
+       #                    trigger = "hover",
+       #                    options = list(container = "body")),
        br(),
        if(purchaseInsurance == TRUE){
          h4("Other revenues and costs that will affect your income for the year include:

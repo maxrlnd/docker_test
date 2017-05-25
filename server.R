@@ -326,46 +326,7 @@ function(input, output, session) {
     stopApp()
   })
   
-  output$safePlot <- renderPlot({
-    randomData <- data.table("Year" = c(1,2,3), "Herd" = c(600,500,400))
-    qplot(data = randomData, x = as.factor(Year), y = Herd)
-  })
-  
-  output$cowPlot <- renderPlot({
-    print("starting cow plot")
-    if(!is.null(input[[paste0("year", rv$page, "Summer")]])){
-      if(input[[paste0("year", rv$page, "Summer")]] == 1){
-        print("in if")
-        cows <- input[[paste0("cow", rv$page, "Sale")]]
-        calves <- input[[paste0("calves", rv$page, "Sale")]]
-        
-        # Current herd size (determined by last years choices)
-        herdy0 <- myOuts[rv$page, herd]  
-        
-        # Next year's herd size
-        herdy1 <- get(paste0("herdSize", rv$page))()  
-        
-        # Herd size for the year after next
-        herdy2 <- shinyHerd(herd_1 = herdy1,  # t-1 for year 2 is next years herd size
-                            cull_1 = myOuts[1, cows.culled] * herdy1,  # we don't know how many cows they will cull next year. assume stability/default of 16% (draw from )
-                            herd_2 = herdy0,  # t-2 for year 2 is this year
-                            calves_2 = (floor(herdy0 * AdjWeanSuccess(get(paste0("totalForage", rv$page))(), T, simRuns$normal.wn.succ, 1)) - calves),  # Calves in the herd this year minus those that are sold via the slider input
-                            deathRate = simRuns$death.rate)  
-        
-        years <- c("This Year","Next Year","In Two Years")
-        herd.projection <- data.table("Year" = years, "Herd Size" = c(herdy0, herdy1, herdy2))
-        herd.projection$Year <- factor(herd.projection$Year, levels = c("This Year", "Next Year", "In Two Years"))
-        herd.projection$`Herd Size` = round(herd.projection$`Herd Size`, 0)
-        print(herd.projection)
-        qplot(data = herd.projection, x = as.factor(Year), y = `Herd Size`)
-        # ggplot(herd.projection, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity", width = .3, fill = "#8b4513") +
-        #   geom_text(aes(label = `Herd Size`), size = 10, position = position_stack( vjust = .5), color = "#ffffff") +
-        #   theme(text = element_text(size = 20), axis.title.x=element_blank())
-        
-      }
-    }
-  })
-  
+
 }
 
 
