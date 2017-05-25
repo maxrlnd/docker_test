@@ -207,7 +207,9 @@ updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales
   myOuts[currentYear, timeElapse := (Sys.time() - time)]
   myOuts[currentYear, mTurkID := ID]
   myOuts[currentYear, rev.ins := indem$indemnity]
-  myOuts[currentYear, rev.int := myOuts[pastYear, assets.cash] * simRuns$invst.int]
+  myOuts[currentYear, rev.int := ifelse(myOuts[pastYear, assets.cash] > 0, 
+                                        myOuts[pastYear, assets.cash] * simRuns$invst.int,
+                                        0)]
   myOuts[currentYear, rev.tot := myOuts[currentYear, rev.ins] + myOuts[currentYear, rev.int] + myOuts[currentYear, rev.calf]]
   myOuts[currentYear, cost.op := CalculateBaseOpCosts(herd = currentHerd, cow.cost = simRuns$cow.cost)]
   myOuts[currentYear, cost.ins := indem$producer_prem]
