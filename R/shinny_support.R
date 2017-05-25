@@ -43,7 +43,7 @@ getJulyInfo <- function(currentYear, name){
   
   
   #Adding $ sign to Adaptation Cost/Hay Cost
-  fullAdaptCost1 = paste("You Should Buy $",sep="", fullAdaptCost, " of Hay" )
+  fullAdaptCost1 = paste("You should buy $",sep="", fullAdaptCost, " of hay" )
   forageList1 = paste("The grass available for your herd will be ", forageList, sep="", "% of normal")
   #code for rainplot
   Rain1 <- c(forageList1[1], fullAdaptCost1[1])
