@@ -93,9 +93,9 @@ tabsetPanel(id = "mainPanels",
             # actionButton("saveInputs", "Save all Input")
           )),
  
- tabPanel("Practice Simulation", 
-          # CSS tags to control the button colors, .btn is the default state, 
-          # focus is what happens after the button is clicked, 
+ tabPanel("Practice Simulation",
+          # CSS tags to control the button colors, .btn is the default state,
+          # focus is what happens after the button is clicked,
           # hover is the response to a rollover
           tags$head(tags$style(HTML("
                                     .btn {
@@ -103,12 +103,12 @@ tabsetPanel(id = "mainPanels",
                                     text-align: left;
                                     border-color: rgb(255,255,255);
                                     background-color: rgb(43, 181, 52);}
-                                    
+
                                     .btn:focus{
                                     background-color:rgb(255,255,255);
                                     }
-                                    
-                                    
+
+
                                     .btn:hover{
                                     #border-color: rgb(255,255,255);
                                     background-color: rgb(255,255,255)
@@ -140,20 +140,20 @@ tabsetPanel(id = "mainPanels",
                       border-color: rgb(245,245,245);
                       background-color: rgb(245, 245, 245);"
                       ))),
-          
-          
-          
+
+
+
           fluidPage(
-            
+
             br(),
             br(),
             span((startTime <<- Sys.time()), style="color:white"),
             uiOutput("practiceOut"),
                     uiOutput(paste0("infoPane", "Prac"))
-                    
+
           )
-          
-          
+
+
  ),
  
  tabPanel("Ranch Simulation", 

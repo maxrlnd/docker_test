@@ -453,7 +453,11 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     }
   })
   
-  
+  output[[paste0("safePlot", i)]] <- renderPlot({
+    randomData <- data.table("Year" = c(1,2,3), "Herd" = c(600,500,400))
+    qplot(data = randomData, x = as.factor(Year), y = Herd)
+  })
+
   ## Present options to sell cows
   output[[paste0("cowSell", name)]] <- renderUI({
     # if(!is.null(input[[paste0("year", i, "Summer")]])){
@@ -464,6 +468,9 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     tagList(
       getCowSell(get(paste0("totalForage", name))(), AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1), i, name),
       plotOutput(paste0("cowPlot", name)),
+      # plotOutput(paste0("safePlot", i)),
+      # plotOutput("safePlot"),
+      # plotOutput("cowPlot"),
       
       br(),
       p("Herd prediction details",bsButton("herdetails", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "herdetails", title = "Herd Prediction",content = paste0("Keep in mind that yearlings (weaned calves that are not yet producing calves) are not counted in these herd size numbers. You do not have the option to sell yearlings in this game. These herd size predictions also assume that you go back to normal culling and calf sale rates next year. For these reasons, your herd may not go all the way to 0 if you sell off all of your cows and calves."), 
@@ -699,7 +706,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     print("starting cow plot")
     if(!is.null(input[[paste0("year", name, "Summer")]])){
       if(input[[paste0("year", name, "Summer")]] == 1){
-        print("in if")
+
         cows <- input[[paste0("cow", name, "Sale")]]
         calves <- input[[paste0("calves", name, "Sale")]]
         
@@ -720,11 +727,9 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
         herd.projection <- data.table("Year" = years, "Herd Size" = c(herdy0, herdy1, herdy2))
         herd.projection$Year <- factor(herd.projection$Year, levels = c("This Year", "Next Year", "In Two Years"))
         herd.projection$`Herd Size` = round(herd.projection$`Herd Size`, 0)
-        print(herd.projection)
-        qplot(data = herd.projection, x = as.factor(Year), y = `Herd Size`)
-        # ggplot(herd.projection, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity", width = .3, fill = "#8b4513") +
-        #   geom_text(aes(label = `Herd Size`), size = 10, position = position_stack( vjust = .5), color = "#ffffff") +
-        #   theme(text = element_text(size = 20), axis.title.x=element_blank())
+        ggplot(herd.projection, aes(x = Year, y = `Herd Size`)) + geom_bar(stat = "identity", width = .3, fill = "#8b4513") +
+          geom_text(aes(label = `Herd Size`), size = 10, position = position_stack( vjust = .5), color = "#ffffff") +
+          theme(text = element_text(size = 20), axis.title.x=element_blank())
         
       }
     }
