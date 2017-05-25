@@ -387,7 +387,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
           if(currentIndem > 0){
             tagList(
               p("You didn't get much rain this summer! In the graph below you can see how much
-                it has rained since you decided whether or not to purchase hay (July and August)."),
+                it has rained since you decided whether or not to purchase hay (July and August). The grey bars indicate old/past rainfall, while the dark blue bars indicate new rainfall"),
               plotOutput(paste0("rainGraphSep", name)),
               if(purchaseInsurance == TRUE) {
                 p("Since you have rainfall insurance, 
