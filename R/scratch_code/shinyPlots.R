@@ -23,9 +23,9 @@ loadPlots <- function(input, output, session, i, rv){
     plotOuts <- melt(plotOuts, id.vars = "Year")
     setnames(plotOuts, c("Year", "Area", "Value in $"))
     plotOuts$Area <- factor(plotOuts$Area)
-    plotOuts$YearNumbers <-  paste("Year", plotOuts$Year - min(plotOuts$Year) + 1)
+    plotOuts$YearNumbers <-  paste("Yr", plotOuts$Year - min(plotOuts$Year) + 1)
     plotOuts$YearNumbers <- factor(plotOuts$YearNumbers, 
-                                   levels = paste("Year", seq_along(unique(plotOuts$Year))))
+                                   levels = paste("Yr", seq_along(unique(plotOuts$Year))))
     
     ggplot(plotOuts, aes(x = YearNumbers, y = `Value in $`, fill = Area)) + geom_bar(stat = "identity") + 
       ggtitle("Net Worth") + 
@@ -46,9 +46,9 @@ loadPlots <- function(input, output, session, i, rv){
     PlotYear[, Year := startYear:(startYear + nrow(PlotYear) - 1)]
     PlotYear <- melt(PlotYear, id.vars = "Year")
     PlotYear$rangeHealthList <- rangeHealthList
-    PlotYear$YearNumbers <- c(paste("Year", seq(1, simLength, length.out = simLength)))
+    PlotYear$YearNumbers <- c(paste("Yr", seq(1, simLength, length.out = simLength)))
     PlotYear$YearNumbers <- factor(PlotYear$YearNumbers, 
-                                   levels = paste("Year", seq_along(unique(PlotYear$Year))))
+                                   levels = paste("Yr", seq_along(unique(PlotYear$Year))))
     
     ggplot(PlotYear, aes(x = YearNumbers, y = rangeHealthList)) + 
       geom_bar(stat = "identity", fill = "olivedrab") + 
