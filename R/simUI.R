@@ -507,10 +507,19 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     
     
        h4(p("Based on your current selections for market sales, your cow-calf revenues for this year are as follows:")),
-       p(h4("Cow-calf revenues: $",
+       h4(p("Cow-calf revenues: $",
            span(prettyNum(get(paste0("revenues", name))(), digits = 2, big.mark = ",", scientific = FALSE),
-                style = "font-weight:bold:font-size:Xlarge;color:green"))),
-         # Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
+                style = "font-weight:bold:font-size:Xlarge;color:green"),
+         bsButton("revenueFromCows", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
+    bsPopover(id = "revenueFromCows", title = "Herd Prediction", placement= "top",content = paste0("Each cow sells for $850. Each calf sells for $1.30 per pound. Move the sliders to change your revenues for this year and your herd size for the next few years.")))),
+       # bsPopover(id = "revenueFromCows", title = "Cow-calf revenue",
+       #           content = paste0("Each cow sells for $850. Each calf sells
+       #                            for $1.30 per pound. Move the sliders to
+       #                            change your revenues for this year and
+       #                            your herd size for the next few years."),
+       #           placement = "auto",
+       #           trigger = "hover",
+       #           options = list(container = "body")),# Revenues from sales of cows and calves. Currently breaks the ability to use the sliders...
                 
        br(),
        if(purchaseInsurance == TRUE){
