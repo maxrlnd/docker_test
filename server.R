@@ -98,6 +98,16 @@ function(input, output, session) {
     }else{
       print("insurance mode")
       purchaseInsurance <<- TRUE
+      indem <<- lapply(startYear:(startYear + simLength - 1), function(x){
+        with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
+                                  pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+      })
+      
+      indemprac <<- lapply(startYearprac:(startYearprac + practiceLength - 1), function(x){
+        with(practiceRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
+                                       pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+      })
+      createOutputs(practiceRuns, simRuns, indem, indemprac)
     }
     disable("pracStart")
     toggleClass(class = "disabled",
@@ -196,8 +206,8 @@ function(input, output, session) {
       br(),
       p(paste0("Through ranching you accumulated $", round(myOuts$assets.cash[simLength + 1], 0), " in cash" )),
       p(paste0("You also have a herd worth $", round(myOuts$assets.cow[simLength + 1], 0), ".")),
-      p(paste0("Your total net worth is $", round(myOuts$net.wrth[simLength + 1], 0), ". With a conversation rate of $400,000
-               of simulation money to $1 of MTurk bonus money, you've earned $", round(myOuts$net.wrth[simLength + 1]/400000, 2),".")),
+      p(paste0("Your total net worth is $", round(myOuts$net.wrth[simLength + 1], 0), ". With a conversation rate of $500,000
+               of simulation money to $1 of MTurk bonus money, you've earned $", round(myOuts$net.wrth[simLength + 1]/500000, 2),".")),
       actionButton("saveInputs", "Save results and recieve completion code"),
       span((endTime <<- Sys.time()), style = "color:white"),
       span((simTime <<- endTime - startTime), style = "color:white"),
@@ -309,7 +319,7 @@ function(input, output, session) {
   
   
   output$practComplete <- renderUI({
-    if(!debugMode)
+    #if(!debugMode)
     req(values$practSaveComplete == TRUE)
     hide("savepractInputs")
     h4("Practice rounds complete, continue on to begin ranching game")
@@ -326,6 +336,7 @@ function(input, output, session) {
     stopApp()
   })
   
+
 }
 
 

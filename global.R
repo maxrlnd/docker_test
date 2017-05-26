@@ -45,8 +45,8 @@ acres <- 3000
 carryingCapacity <- constvars$carrying.cap * acres
 
 ## Set Starting Years
-startYear <- 2000
-startYearprac <- 1961
+startYear <- 1999
+startYearprac <- 1951
 
 ## create state variables for practice runs
 practiceVars <- getSimVars(
@@ -80,6 +80,8 @@ simRuns$p.wn <- rep(1.30, length(simRuns$p.wn))
 simLength <- 10
 practiceLength <- 5
 
+
+
 ## Calcualte indemnities for all years of the simulation
 indem <- lapply(startYear:(startYear + simLength - 1), function(x){
   with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
@@ -88,15 +90,24 @@ indem <- lapply(startYear:(startYear + simLength - 1), function(x){
 
 indemprac <- lapply(startYearprac:(startYearprac + practiceLength - 1), function(x){
   with(practiceRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
-                            pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+                                 pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
 })
+
+## Calculate binary variable for hypothetical payout based on the weather
+## If 
+indemnity <- lapply(indem, "[[", 3) # Pulling the value of the indemnity from the (list of) dataframes
+whatifIndem <- sapply(indemnity > 0, ifelse, 1, 0)  # Creating a binary variable where a year is eligible for a payout if you have insurance
+
+indemnityprac <- lapply(indemprac, "[[", 3) # Pulling the value of the indemnity from the (list of) dataframes
+whatifIndemprac <- sapply(indemnityprac > 0, ifelse, 1, 0)
+
 
 ## Create results frames for practice and simulation
 createOutputs(practiceRuns, simRuns, indem, indemprac)
 
 ## Is insurance purchased?
 # purchaseInsurance <- sample(c(T, F), 1)
-# purchaseInsurance <- T
+purchaseInsurance <- T
 # 
 # if(!purchaseInsurance){
 #   indem <- lapply(indem, function(x){

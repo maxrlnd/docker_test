@@ -1,4 +1,4 @@
-getJulyInfo <- function(currentYear, name){
+getJulyInfo <- function(currentYear, name, startYear){
   
   "
   Function: getJulyInfo
@@ -25,7 +25,7 @@ getJulyInfo <- function(currentYear, name){
     zones <- myOuts[currentYear - 1, zone.change] * zones * 
       (1 - (myOuts[currentYear - 1, Gt])/simRuns$forage.constant)
   }
-  
+
   forageList <- vector("numeric", 3)
   forageList[1] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "normal")
   forageList[2] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "high")
