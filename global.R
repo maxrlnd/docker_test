@@ -96,10 +96,10 @@ indemprac <- lapply(startYearprac:(startYearprac + practiceLength - 1), function
 ## Calculate binary variable for hypothetical payout based on the weather
 ## If 
 indemnity <- lapply(indem, "[[", 3) # Pulling the value of the indemnity from the (list of) dataframes
-whatifIndem <- lapply(indemnity > 0, ifelse, 1, 0)
+whatifIndem <- sapply(indemnity > 0, ifelse, 1, 0)  # Creating a binary variable where a year is eligible for a payout if you have insurance
 
 indemnityprac <- lapply(indemprac, "[[", 3) # Pulling the value of the indemnity from the (list of) dataframes
-whatifIndemprac <- lapply(indemnityprac > 0, ifelse, 1, 0)
+whatifIndemprac <- sapply(indemnityprac > 0, ifelse, 1, 0)
 
 
 ## Create results frames for practice and simulation
