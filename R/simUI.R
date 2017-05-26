@@ -384,10 +384,11 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
           br(),
           br(),
           h3(paste0("Year ", i, ": End of Growing Season")),
-          if(currentIndem > 0){
+          if(get(paste0("whatifIndem", orgName))[i] == 1){
             tagList(
               p("You didn't get much rain this summer! In the graph below you can see how much
-                it has rained since you decided whether or not to purchase hay (July and August). The grey bars indicate old/past rainfall, while the dark blue bars indicate new rainfall"),
+                it has rained since you decided whether or not to purchase hay (July and August). 
+                The grey bars indicate old/past rainfall, while the dark blue bars indicate new rainfall"),
               plotOutput(paste0("rainGraphSep", name)),
               if(purchaseInsurance == TRUE) {
                 p("Since you have rainfall insurance, 
@@ -397,11 +398,18 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
               },
               br(),
               if(purchaseInsurance == TRUE) {
-                h4(p("You have received a check for $", span((currentIndem),style="font-weight:bold;font-size:large;color:green"), " from your rain insurance policy."))
+                h4(p("Rainfall was below normal levels during the growing season, 
+                     so you have received a check for $", span((currentIndem),
+                                                             style="font-weight:bold;font-size:large;color:green"), 
+                     " from your rain insurance policy."))
+              },
+              if(purchaseInsurance == FALSE) {
+                h4("Rainfall was below normal levels during the growing season.")
               },
               if(purchaseInsurance == TRUE) {
                 textInput(paste0("insuranceDeposit", name), 
-                          "Please type the amount of the check below and to add the money to your bank account and continue.",
+                          "Please type the amount of the check below and to add 
+                          the money to your bank account and continue.",
                           width = "100%")
               },
               # actionButton(paste0("deposit", name), "Deposit"),
@@ -428,7 +436,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
                 it has rained since you decided whether or not to purchase hay (July and August)."),
               plotOutput(paste0("rainGraphSep", name)),
               if(purchaseInsurance == TRUE) {
-                h4("Because rainfall was close to or above normal levels during the growing season, you did not recieve a check for your rain insurance policy")
+                h4("Rainfall was close to or above normal levels during the growing season, so you did not recieve a check for your rain insurance policy.")
               },
               if(purchaseInsurance == FALSE) {
                 h4("Rainfall was close to or above normal levels during the growing season.")
