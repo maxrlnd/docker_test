@@ -63,9 +63,9 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
       br(),
       h4("Range Condition"),
       if(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0))<100){
-        p("Your range is currently at ", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="font-weight:bold;font-size:large;color:red"), "%")
+        p("Your range condition is currently at ", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="font-weight:bold;font-size:large;color:red"), "%")
       }else{
-        p("Your range is currently at ", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="font-weight:bold;font-size:large;color:green"), "%")
+        p("Your range condition is currently at ", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="font-weight:bold;font-size:large;color:green"), "%")
       },
       plotOutput(paste0("RangeHealthPlot", name)),
       br(),
