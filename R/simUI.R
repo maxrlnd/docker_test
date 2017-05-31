@@ -10,7 +10,6 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     if(myOuts[i, herd] == 0){
       myOuts[i, cost.ins := 0]
     }
-    
     ID<<- input$user.ID
     myOuts[1, mTurkID := ID]
     
@@ -19,6 +18,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     # Compute health info for sidebar display
     span(rangeHealth(i),style = "color:white")
     delay(10,session$sendCustomMessage(type = "scrollCallbackTop", 0))
+    print("hello")
     
     tagList(
       tags$head(tags$style(HTML(
@@ -762,13 +762,12 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     plotOuts <- melt(plotOuts, id.vars = "Year")
     setnames(plotOuts, c("Year", "Area", "Value in $"))
     plotOuts$Area <- factor(plotOuts$Area)
-    plotOuts$YearNumbers <- paste("Year", seq(1,10))
+    plotOuts$YearNumbers <- paste("Yr", seq(1,simLength))
     plotOuts$YearNumbers <- factor(plotOuts$YearNumbers, 
-                                   levels = paste("Year", seq(1,10)))
+                                   levels = paste("Yr", seq(1,simLength)))
     #plotOuts$YearNumbers <-  paste("Yr", plotOuts$Year - min(plotOuts$Year) + 1)
     #plotOuts$YearNumbers <- factor(plotOuts$YearNumbers, 
                                    #levels = paste("Yr", seq_along(unique(plotOuts$Year))))
-    
     ggplot(plotOuts, aes(x = YearNumbers, y = `Value in $`, fill = Area)) + geom_bar(stat = "identity") + 
       ggtitle("Net Worth") + 
       scale_y_continuous(labels = comma) +
@@ -778,19 +777,19 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
       scale_fill_manual(values = c("#f4a460", "#85bb65")) +
       labs(x="Year", y="Value in $")
     
-    
   })
   
   output[[paste0("RangeHealthPlot", name)]] <- renderPlot({
-    PlotYear <- myOuts[, "yr", with = F]
-    print(PlotYear)
+    PlotYear <- myOuts[1:simLength, "yr", with = F]
     setnames(PlotYear, c("Year"))
     PlotYear[, Year := startYear:(startYear + nrow(PlotYear) - 1)]
     PlotYear <- melt(PlotYear, id.vars = "Year")
-    PlotYear$rangeHealthList <- rangeHealthList
-    PlotYear$YearNumbers <- paste("Year", seq(1,10))
+    PlotYear[,rangeHealthList := rangeHealthList[1:simLength]]
+    PlotYear[is.na(rangeHealthList), rangeHealthList := 0]
+    
+    PlotYear$YearNumbers <- paste("Year", seq(1,simLength))
     PlotYear$YearNumbers <- factor(PlotYear$YearNumbers, 
-                                   levels = paste("Year", seq(1,10)))
+                                   levels = paste("Year", seq(1,simLength)))
     #PlotYear$YearNumbers <- c(paste("Yr", seq(1, simLength, length.out = simLength)))
     #PlotYear$YearNumbers <- factor(PlotYear$YearNumbers, 
                                    #levels = paste("Yr", seq_along(unique(PlotYear$Year))))
@@ -838,6 +837,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     yprecip[, 11:12 := 0]
     ave <- station.gauge$avg
     yearAvg <- rbindlist(list(yprecip, ave), use.names = T)
+    print(yearAvg)
+    print(yearAvg[1,]/yearAvg[2,])
     yearAvg[, "id" := c("Actual Rain", "Average Rain")]
     yearAvg <- melt(yearAvg, id.vars = "id")
     setnames(yearAvg, c("id", "Month", "Rainfall"))
