@@ -832,7 +832,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     yprecip <- station.gauge$stgg[Year %in% (currentYear - 1):currentYear, ]  # monthly precip amounts for start year
     yprecip <- cbind((yprecip[Year == currentYear - 1, c("NOV", "DEC")]), 
                      (yprecip[Year == currentYear, -c("NOV", "DEC", "Year")]))
-    yprecip[, 11:12 := 0]
+    #yprecip[, 11:12 := 0]
     ave <- station.gauge$avg
     yearAvg <- rbindlist(list(yprecip, ave), use.names = T)
     print(yearAvg)
@@ -842,7 +842,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     setnames(yearAvg, c("id", "Month", "Rainfall"))
     
     #Setting output to only highlight July and August
-    yprecip1 = yprecip[, (1:12)[-seq(9,10)] :=0]
+    #yprecip1 = yprecip[, (1:12)[-seq(9,10)] :=0]
+    yprecip1 = yprecip[, 1:8 :=0]
     ave1 <- station.gauge$avg
     yearAvg1 <- rbindlist(list(yprecip1, ave1), use.names = T)
     yearAvg1[, "id" := c("Actual Rain", "Average Rain")]
