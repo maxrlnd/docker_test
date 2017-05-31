@@ -18,8 +18,6 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     # Compute health info for sidebar display
     span(rangeHealth(i),style = "color:white")
     delay(10,session$sendCustomMessage(type = "scrollCallbackTop", 0))
-    print("hello")
-    
     tagList(
       tags$head(tags$style(HTML(
         # CSS formating for the rollover buttons
