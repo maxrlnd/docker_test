@@ -785,9 +785,9 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     PlotYear[,rangeHealthList := rangeHealthList[1:simLength]]
     PlotYear[is.na(rangeHealthList), rangeHealthList := 0]
     
-    PlotYear$YearNumbers <- paste("Year", seq(1,simLength))
+    PlotYear$YearNumbers <- paste("Yr", seq(1,simLength))
     PlotYear$YearNumbers <- factor(PlotYear$YearNumbers, 
-                                   levels = paste("Year", seq(1,simLength)))
+                                   levels = paste("Yr", seq(1,simLength)))
     #PlotYear$YearNumbers <- c(paste("Yr", seq(1, simLength, length.out = simLength)))
     #PlotYear$YearNumbers <- factor(PlotYear$YearNumbers, 
                                    #levels = paste("Yr", seq_along(unique(PlotYear$Year))))
