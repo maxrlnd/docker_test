@@ -78,6 +78,8 @@ fluidPage("Ranch Drought", id = "navBar",
 tabsetPanel(id = "mainPanels",
             
   ## Instruction panel
+  
+  
   tabPanel("debug",
            fluidRow(
              textInput("code", "Enter Code to be Run"),
@@ -85,6 +87,8 @@ tabsetPanel(id = "mainPanels",
              textInput("insChange", "Enter True or False to use insurance or not"),
              actionButton("applyInsChange", "Change Insurance"),
              actionButton("reset_button", "Reset Page"),
+             textInput("fileName", "Enter File Name"),
+             actionButton("saveState", "Save Current Inputs and Outputs"),
              br(),
              textInput("name", "Enter your name or alias")
              # actionButton("saveInputs", "Save all Input")

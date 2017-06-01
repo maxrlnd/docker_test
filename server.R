@@ -14,9 +14,7 @@ function(input, output, session) {
   rvPrac <- reactiveValues(page = 1)
   if(!debugMode){
     toggleClass(class = "disabled",
-                selector = "#navBar li a[data-value=Quiz]")
-    toggleClass(class = "disabled",
-                selector = "#navBar li a[data-value='Background Info']")
+                selector = "#navBar li a[data-value='Practice Simulation']")
     toggleClass(class = "disabled",
                  selector = "#navBar li a[data-value='Ranch Simulation']")
   }
@@ -71,19 +69,15 @@ function(input, output, session) {
 
   ## Disable agree button on instructions after it has been clicked and move to
   ## Demographics tab
-  observeEvent(input$agree, {
-    disable("agree")
-    toggleClass(class = "disabled",
-                selector = "#navBar li a[data-value='Background Info']")
-    updateTabsetPanel(session, "mainPanels", selected = "Background Info")
-  })
+
   
   observeEvent(input$pracStart, {
     validate(
       need(as.numeric(input$user.ID) >= 1000000 & as.numeric(input$user.ID) <= 2999999, "Your code is not valid.")
     )
+    toggleClass(class = "disabled",
+                selector = "#navBar li a[data-value='Welcome']")
     if(as.numeric(input$user.ID) >= 2000000){
-      print("no insurance mode")
       purchaseInsurance <<- FALSE
       print(input$user.ID)
       indem <<- lapply(indem, function(x){
@@ -96,7 +90,6 @@ function(input, output, session) {
       })
       createOutputs(practiceRuns, simRuns, indem, indemprac)
     }else{
-      print("insurance mode")
       purchaseInsurance <<- TRUE
       indem <<- lapply(startYear:(startYear + simLength - 1), function(x){
         with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
@@ -118,6 +111,8 @@ function(input, output, session) {
   observeEvent(input$simStart, {
     createOutputs(practiceRuns, simRuns, indem, indemprac)
     disable("simStart")
+    toggleClass(class = "disabled",
+                selector = "#navBar li a[data-value='Practice Simulation']")
     toggleClass(class = "disabled",
                 selector = "#navBar li a[data-value='Ranch Simulation']")
     updateTabsetPanel(session, "mainPanels", selected = "Ranch Simulation")
@@ -227,6 +222,22 @@ function(input, output, session) {
   observeEvent(input$nextBtn, navPage(1))
   observeEvent(input$prevBtnprac, navPagePrac(-1))
   observeEvent(input$nextBtnprac, navPagePrac(1))
+  observeEvent(input$saveState, {
+     
+      myDir <- "results"
+      
+      saveData <<- reactiveValuesToList(input)
+      # save(saveData, file = "newSave.RData")
+      saveData <- inputToDF(saveData)
+      #saveData$names <- NULL
+      # Pivot save data to horizontal
+      saveData <- t(saveData)
+      # Remove first row of variable names
+
+      write.csv(saveData, file = paste0("results/input", input$fileName, ".csv"), row.names = F)
+      write.csv(myOuts, file = paste0("results/output", input$fileName, ".csv"), row.names = F)
+  })
+  
   observeEvent(input$saveInputs, {
     shinyjs::disable("saveInputs")
     # myDir <- "results"
