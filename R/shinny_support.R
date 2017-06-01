@@ -235,19 +235,20 @@ updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales
   myOuts[currentYear, herd := round(newHerd, 0)]
   myOuts[currentYear, calves.sold := ifelse(floor(currentHerd * wean) == 0, 0, calfSale / floor(currentHerd * wean))]
   myOuts[currentYear, cows.culled := ifelse(currentHerd == 0, 0, cowSales / currentHerd)]
-  print(paste("zone.change", sum(zones)))
   myOuts[currentYear, zone.change := sum(zones)]
-  print(paste("forage production", whatIfForage(station.gauge, zones, myOuts[currentYear, yr], currentHerd, carryingCapacity, 10, 11, "normal")))
-  print(paste("adapt expend", adaptExpend))
-  print(paste("adapt inten", adaptInten))
-  print(paste("adapt needed", getAdaptCost(adpt_choice = "feed", 
-                                                     pars = simRuns, 
-                                                     days.act = 180, 
-                                                     current_herd = currentHerd, 
-                                                     intens.adj = adaptInten)))
-  print(paste("total forage", totalForage))
+  if(!debugMode){
+    print(paste("forage production", whatIfForage(station.gauge, zones, myOuts[currentYear, yr], currentHerd, carryingCapacity, 10, 11, "normal")))
+    print(paste("adapt expend", adaptExpend))
+    print(paste("adapt inten", adaptInten))
+    print(paste("adapt needed", getAdaptCost(adpt_choice = "feed",
+                                                       pars = simRuns,
+                                                       days.act = 180,
+                                                       current_herd = currentHerd,
+                                                       intens.adj = adaptInten)))
+    print(paste("total forage", totalForage))
+    print(paste("Gt", myOuts[currentYear, Gt]))
+  }
   myOuts[currentYear, Gt := 1 - (totalForage)]
-  print(paste("Gt", myOuts[currentYear, Gt]))
   myOuts[currentYear, forage.potential := sum(zones)]
 }
 

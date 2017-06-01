@@ -489,7 +489,6 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   output[[paste0("profits", name)]] <- renderUI({
     req(input[[paste0("insCont", name)]])
     profit <- get(paste0("revenues", name))() + get(paste0("indem", orgName))[[i]]$indemnity - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", name, "adaptExpend")]] - get(paste0("indem", orgName))[[i]]$producer_prem
-    print(paste0("Profits: $", profit))
      tagList(
        tags$head(tags$style(HTML(
     ".inTextTips{
@@ -720,7 +719,6 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   
   
   output[[paste0("cowPlot", name)]] <- renderPlot({
-    print("starting cow plot")
     if(!is.null(input[[paste0("year", name, "Summer")]])){
       if(input[[paste0("year", name, "Summer")]] == 1){
 
@@ -835,8 +833,6 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     #yprecip[, 11:12 := 0]
     ave <- station.gauge$avg
     yearAvg <- rbindlist(list(yprecip, ave), use.names = T)
-    print(yearAvg)
-    print(yearAvg[1,]/yearAvg[2,])
     yearAvg[, "id" := c("Actual Rain", "Average Rain")]
     yearAvg <- melt(yearAvg, id.vars = "id")
     setnames(yearAvg, c("id", "Month", "Rainfall"))
