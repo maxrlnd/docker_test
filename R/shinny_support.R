@@ -57,13 +57,18 @@ getJulyInfo <- function(currentYear, name, startYear){
   #creating code for above/below/average rainfall
   load("data/noaaPrecip.RData")
   #subsetting NOAA monthly precipitation values based on myYear - the current year the simulation is running on
-  #station.gauge$zone.wt
   subsetNOAAyear <- subset(stgg, Year == 2000)
+  #renaming columns to 3-letters
   subsetNOAAyear <- plyr::rename(subsetNOAAyear,c("JUNE" = "JUN", "JULY" = "JUL", "SEPT" = "SEP"))
+  
+  tidyr::gather(subsetNOAAyear)
+  New1 <- data.frame(station.gauge$zonewt)
+  plyr::rename(New1, c("e"))
+  subsetNOAAyear$`Rain*ForagePotential` = subsetNOAAyear$
   subsetNOAADectoJune <- (subsetNOAAyear[,c(JAN,FEB,MAR,APR,MAY,JUN,OCT,NOV,DEC)])
+  #station.gauge$zone.wt
   #do weighted average(value*forage potential )
 
-  
 
   ## Create taglist showing all adpatation
   tagList(
@@ -88,13 +93,13 @@ getJulyInfo <- function(currentYear, name, startYear){
                 trigger = "hover", 
                 options = list(container = "body"))),
     #Pastes/shows if the rainfall was below, at, or above average.
-    #if(subsetNOAA1 >= 120){
-     # p("Your rainfall so far has been above average at", subsetNOAA1)
-    #} else if(subsetNOAA1<120 & subsetNOAA1>100){
-     # p("Your rainfall so far has been average at", subsetNOAA1)
-    #} else {
-    #  p("Your rainfall so far has been below average at", subsetNOAA1)
-    #},
+    if(subsetNOAA1 >= 120){
+      p("Your rainfall so far has been above average at", subsetNOAA1)
+    } else if(subsetNOAA1<120 & subsetNOAA1>100){
+      p("Your rainfall so far has been average at", subsetNOAA1)
+    } else {
+      p("Your rainfall so far has been below average at", subsetNOAA1)
+    },
     br(),
     plotOutput(paste0("rainGraph", name)),
 
