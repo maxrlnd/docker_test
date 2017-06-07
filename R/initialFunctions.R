@@ -224,6 +224,7 @@ getStationGauge<-function(target.loc="CPER"){
     # stgg <- stgg[stgg$Year %in% c(1948:2016, "AVE"), ]
     
     load("data/cperPrecip.RData")
+    # load("data/noaaPrecip.RData")
     
     ## Target grid cell
     tgrd = 25002  # target grid cell - CPER default
