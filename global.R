@@ -43,6 +43,22 @@ color: white !important;
 # Default location is CPER site
 station.gauge <- getStationGauge()
 
+monthlyNOAA_long <- station.gauge$stgg
+
+monthlyNOAA_long <- monthlyNOAA_long[!Year %in% c("2016"),]
+
+monthlyNOAA_long <- melt(monthlyNOAA_long, id.vars = "Year")
+monthlyNOAA_long <- merge(monthlyNOAA_long[Year != "AVG",], monthlyNOAA_long[Year == "AVG"], 
+                          by = c("variable"), all.x = T)
+monthlyNOAA_long[, Year.y := NULL]
+setnames(monthlyNOAA_long, c("value.x", "value.y", "Year.x"), c("realValue", "AVG", "Year"))
+monthlyNOAA_long[, index := realValue/AVG * 100]
+
+monthlyNOAA_long[,value := realValue/AVG * 100]
+monthlyNOAA_long[, grid := 25002]
+
+
+
 # Populate a new environment with constant (user) variables
 constvars <- getConstantVars()
 
