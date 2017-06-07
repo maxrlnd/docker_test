@@ -36,8 +36,8 @@ sim_run_single <- function(pars,
   origZoneWT <- station.gauge$zonewt
   
   ## Adjust zonewt based on forage results from previous simulation
-  station.gauge$zonewt <- results_1ya$zone.change * pars$zonewt * (1 - (results_1ya$Gt)/pars$forage.constant)
-  
+  potential.zonewt <- results_1ya$zone.change * pars$zonewt * (1 - (results_1ya$Gt)/pars$forage.constant)
+  station.gauge$zonewt <- ifelse(sum(potential.zonewt) > 1, origZoneWT, potential.zonewt)
 
   
   # Set current cull rate at standard
