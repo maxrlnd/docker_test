@@ -55,10 +55,16 @@ getJulyInfo <- function(currentYear, name, startYear){
   plotOutput(paste0("RangeHealthPlot", name))
   
   #creating code for above/below/average rainfall
-  subsetNOAA = subset(intervalNOAA, Year == myYear)
-  sumNOAA = sum(subsetNOAA$realValue[c(1:5,11)])
-  averagerainfall = sumNOAA/5
+  load("data/noaaPrecip.RData")
+  #subsetting NOAA monthly precipitation values based on myYear - the current year the simulation is running on
+  #station.gauge$zone.wt
+  subsetNOAAyear <- subset(stgg, Year == 2000)
+  subsetNOAAyear <- plyr::rename(subsetNOAAyear,c("JUNE" = "JUN", "JULY" = "JUL", "SEPT" = "SEP"))
+  subsetNOAADectoJune <- (subsetNOAAyear[,c(JAN,FEB,MAR,APR,MAY,JUN,OCT,NOV,DEC)])
+  #do weighted average(value*forage potential )
+
   
+
   ## Create taglist showing all adpatation
   tagList(
     tags$head(tags$style(HTML(
@@ -76,17 +82,19 @@ getJulyInfo <- function(currentYear, name, startYear){
                       background-color: rgb(255, 255, 255);"))),
     h3(paste0("Year ", currentYear, ": Summer Adaptation Investment Decision")),
     p("It is now the end of June, and you are almost past the most important part of the growing season for forage on your rangeland. Good rainfall levels in July and August can further increase the forage for your herd. However, low rainfall levels will provide limited forage levels for your herd. It is your choice to decide how much hay to supplement in order to compensate the possible low amounts of grass on your range. Below indicates three options if you choose to invest in hay.",
-      if(averagerainfall <1){
-      p("So far up to june, your rainfall has been below average at", averagerainfall)
-      }else{
-        p("your rainfall has been average at", averagerainfall)
-      },
       bsButton("Precipitation", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),
       bsPopover(id = "Precipitation", title = "Precipitation",content = paste0("The ranch operates by putting mother cows on rangeland to graze. In years with less precipitation the ranch must purchase extra hay because there is less grass available and calves are unable to reach their target weight. Thinner calves mean less revenue when they go to market. Feeding the mother cows more hay keeps them healthy and able to produce milk for the calves. Also, if the mother cows are not healthy, they will not produce as many calves next season."),
                 placement = "bottom", 
                 trigger = "hover", 
                 options = list(container = "body"))),
-
+    #Pastes/shows if the rainfall was below, at, or above average.
+    #if(subsetNOAA1 >= 120){
+     # p("Your rainfall so far has been above average at", subsetNOAA1)
+    #} else if(subsetNOAA1<120 & subsetNOAA1>100){
+     # p("Your rainfall so far has been average at", subsetNOAA1)
+    #} else {
+    #  p("Your rainfall so far has been below average at", subsetNOAA1)
+    #},
     br(),
     plotOutput(paste0("rainGraph", name)),
 
