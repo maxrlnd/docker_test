@@ -57,20 +57,34 @@ getJulyInfo <- function(currentYear, name, startYear){
   #creating code for above/below/average rainfall
   
   #subsetting NOAA monthly precipitation values based on myYear - the current year the simulation is running on
-  #subsetNOAAyear <- subset(monthlyNOAA_long, Year == 2000)
+  SubsetNOAAyear <- subset(monthlyNOAA_long, Year == myYear)
   
   #renaming "variable" column to "Month", value to percentage of rainfall 
-  #names(subsetNOAAyear)[names(subsetNOAAyear) == "variable"] <- "Month"
-  #names(subsetNOAAyear)[names(subsetNOAAyear) == "value"] <- "RainfallP"
+  names(SubsetNOAAyear)[names(SubsetNOAAyear) == "variable"] <- "Month"
+  names(SubsetNOAAyear)[names(SubsetNOAAyear) == "value"] <- "RainfallP"
   
   #removing useless columns
-  #subsetNOAAyear[,c("AVG","index","grid","realValue","Year")] <- NULL
+  SubsetNOAAyear[,c("AVG","index","grid","realValue","Year")] <- NULL
 
+  #Creating FOrage Potential dataframe
+  ForageMonthly <- data.frame(station.gauge$zonewt)
+  ForageMonthly <- setNames(cbind(rownames(ForageMonthly), ForageMonthly, row.names = NULL), 
+           c("Month", "FPvalue"))
+
+  #Combining Subsetted NOAA precipitation data with Forage Potential Values
+  CombinedForageandRain = data.frame(SubsetNOAAyear, ForageMonthly)
   
-  #ForageMonthly <- data.frame(station.gauge$zonewt)
-  #setNames(cbind(rownames(ForageMonthly), ForageMonthly, row.names = NULL), 
-   #        c("Month", "FPvalue"))
+  #Removing second column of months
+  CombinedForageandRain[,c("Month.1")] <- NULL
+  
+  #Creating Weighted Values for all months
+  CombinedForageandRain$`Weighted Values` = CombinedForageandRain$RainfallP*CombinedForageandRain$FPvalue
+  
+  #Finding the overall percentage of rainfall from January to June, Novermber to December. Also Rounds it to a whole number. 
+  ForageValue = round(sum(CombinedForageandRain$`Weighted Values`[c(1:5,11,12)])/sum(CombinedForageandRain$FPvalue[c(1:5,11,12)]),digits = 0)
+  
 
+    #do weighted average(value*forage potential )
 
 
   ## Create taglist showing all adpatation
@@ -96,13 +110,16 @@ getJulyInfo <- function(currentYear, name, startYear){
                 trigger = "hover", 
                 options = list(container = "body"))),
     #Pastes/shows if the rainfall was below, at, or above average.
-    #if(subsetNOAA1 >= 120){
-    #  p("Your rainfall so far has been above average at", subsetNOAA1)
-    #} else if(subsetNOAA1<120 & subsetNOAA1>100){
-     # p("Your rainfall so far has been average at", subsetNOAA1)
-    #} else {
-     # p("Your rainfall so far has been below average at", subsetNOAA1)
-    #},
+    if(ForageValue >= 110){
+      p(span("Your rainfall so far has been above average at",style = "font-size:normal"), 
+        span(ForageValue, style = "font-weight:bold;font-size:large;color:green"), "%")  
+      } else if(ForageValue<110 & ForageValue>100){
+     p(span("Your rainfall so far has been average at",style = "color:blue"), 
+       span(ForageValue, style = "font-weight:bold;font-size:large;color:green"), "%") 
+    } else {
+     p(span("Your rainfall so far has been below average at", style = "font-size:normal"),
+       span(ForageValue, style = "font-weight:bold;font-size:large;color:red"), "%")
+    },
     br(),
     plotOutput(paste0("rainGraph", name)),
 
