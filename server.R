@@ -163,7 +163,15 @@ function(input, output, session) {
        p("Please copy and paste your completion code into the designated box in the qualtrics survey.
          Once you have the code entered, you can close this window."))
   })
-
+  
+  # Output once practice data has been saved allows user to start ranch game
+  output$practComplete <- renderUI({
+    req(values$practSaveComplete == TRUE)
+    hide("savepractInputs")
+    h4("Practice rounds complete, continue on to begin ranching game")
+    actionButton("simStart", "Begin Ranch Game")
+  })
+  
   # Observers to save data-----------------------------------------------------
   
   # Observer triggered when user saves current state in non-web mode only used
@@ -242,14 +250,18 @@ function(input, output, session) {
   
   
   observeEvent(input$savePracInputs, {
-    files <- gs_ls()$sheet_title
-
-    if(length(files) == 0){
-      lastFile <- 0
-    }else{
-      lastFile <- regmatches(files, gregexpr('[0-9]+',files))
-      lapply(lastFile, as.numeric) %>% unlist() %>% max() -> lastFile
-    }
+    
+    # Currently this code isn't in use but I'm keeping it becuase it looks 
+    #   like the saving of inputs is a bit foobarred
+    
+    # files <- gs_ls()$sheet_title
+    # 
+    # if(length(files) == 0){
+    #   lastFile <- 0
+    # }else{
+    #   lastFile <- regmatches(files, gregexpr('[0-9]+',files))
+    #   lapply(lastFile, as.numeric) %>% unlist() %>% max() -> lastFile
+    # }
     saveData <<- reactiveValuesToList(input)
     # save(saveData, file = "newSave.RData")
     saveData <- inputToDF(saveData)
@@ -279,14 +291,7 @@ function(input, output, session) {
     # write.csv(myOuts, file = paste0("results/output", lastFile + 1, ".csv"), row.names = F)
   })
   
-  
-  output$practComplete <- renderUI({
-    req(values$practSaveComplete == TRUE)
-    hide("savepractInputs")
-    h4("Practice rounds complete, continue on to begin ranching game")
-    actionButton("simStart", "Begin Ranch Game")
-  })
-  
+
   observeEvent(input$reset_button, {
     createOutputs(practiceRuns, simRuns, indem, indemprac)
     js$reset()
