@@ -1,16 +1,17 @@
 
 function(input, output, session) {
 
-  ## Reactive value for current year
-  # values <- reactiveValues("currentYear" = 1, "starting" = TRUE, "saveComplete" = FALSE, "beginSaving" = FALSE)
+  # Set reactive values--------------------------------------------------------
+  # Reactive values used to track when inputs/outputs are saved at the end of practice round
+  #  and regular round. Once values become TRUE simulation contineus
+  values <- reactiveValues("saveComplete" = FALSE, "practSaveComplete" = FALSE)
   
-  values <- reactiveValues("saveComplete" = FALSE)
-  
-  observeEvent(input$runCode, {
-    eval(parse(text = input$code))
-  })
+  # Reactive value used to track what page to display, once value changes display page changes
   rv <- reactiveValues(page = 1)
   rvPrac <- reactiveValues(page = 1)
+  
+
+  
   if(!debugMode){
     toggleClass(class = "disabled",
                 selector = "#navBar li a[data-value='Practice Simulation']")
@@ -19,9 +20,8 @@ function(input, output, session) {
   }
 
 
-  #####Year Tab Functions#####################
+  # Create pratice and simulation tabs-----------------------------------------
   
-  ## This loop Creates the necessary output functions for each year tab
   lapply(1:simLength, function(i){
     simCreator(input, output, session, i, rv, simLength, startYear)
 
@@ -356,7 +356,6 @@ function(input, output, session) {
   
   
   output$practComplete <- renderUI({
-    #if(!debugMode)
     req(values$practSaveComplete == TRUE)
     hide("savepractInputs")
     h4("Practice rounds complete, continue on to begin ranching game")
@@ -371,6 +370,10 @@ function(input, output, session) {
     createOutputs(practiceRuns, simRuns, indem, indemprac)
     js$reset()
     stopApp()
+  })
+  
+  observeEvent(input$runCode, {
+    eval(parse(text = input$code))
   })
   
 
