@@ -89,14 +89,6 @@ function(input, output, session) {
     updateTabsetPanel(session, "mainPanels", selected = "Practice Simulation")
   })
   
-  # Observer to advance practice pages
-  observe({
-    toggleState(id = "prevBtnprac", condition = rvPrac$page > 1)
-    toggleState(id = "nextBtnprac", condition = rvPrac$page < practiceLength + 1)
-    hide(selector = ".page")
-    show(sprintf("step%s", rvPrac$page))
-  })
-  
   # Observers for real simulation----------------------------------------------
   
   # Triggered when a user clicks the begin ranch game button after practice 
@@ -112,19 +104,14 @@ function(input, output, session) {
   })
   
   # Observer to advance simulation pages
-  observe({
-    toggleState(id = "prevBtn", condition = rv$page > 1)
-    toggleState(id = "nextBtn", condition = rv$page < simLength + 1)
-    hide(selector = ".page")
-    show(sprintf("step%s", rv$page))
-  })
+  
+  
+  observeEvent(input$prevBtn, navPage(-1))
+  observeEvent(input$nextBtn, navPage(1))
   
   
   
   
- 
-  
-
   navPage <- function(direction) {
     rv$page <- rv$page + direction
   }
@@ -183,8 +170,7 @@ function(input, output, session) {
        p("Please copy and paste your completion code into the designated box in the qualtrics survey.
          Once you have the code entered, you can close this window."))
   })
-  observeEvent(input$prevBtn, navPage(-1))
-  observeEvent(input$nextBtn, navPage(1))
+
   observeEvent(input$prevBtnprac, navPagePrac(-1))
   observeEvent(input$nextBtnprac, navPagePrac(1))
   observeEvent(input$saveState, {

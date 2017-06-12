@@ -340,3 +340,18 @@ getWinterInfo <- function(currentYear){
     p(paste0("You paid: $", myOuts[currentYear, cost.ins], " for insurance"))
   )
 }
+
+Observer to advance practice pages
+observe({
+  toggleState(id = "prevBtnprac", condition = rvPrac$page > 1)
+  toggleState(id = "nextBtnprac", condition = rvPrac$page < practiceLength + 1)
+  hide(selector = ".page")
+  show(sprintf("step%s", rvPrac$page))
+})
+
+observe({
+  toggleState(id = "prevBtn", condition = rv$page > 1)
+  toggleState(id = "nextBtn", condition = rv$page < simLength + 1)
+  hide(selector = ".page")
+  show(sprintf("step%s", rv$page))
+})
