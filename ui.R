@@ -90,7 +90,9 @@ tabsetPanel(id = "mainPanels",
              textInput("fileName", "Enter File Name"),
              actionButton("saveState", "Save Current Inputs and Outputs"),
              br(),
-             textInput("name", "Enter your name or alias")
+             textInput("name", "Enter your name or alias"),
+             actionButton("saveStateWeb", "Save Web Inputs and Outputs"),
+             actionButton("saveStateWeb", "Save Web Inputs and Outputs")
              # actionButton("saveInputs", "Save all Input")
            )),
   

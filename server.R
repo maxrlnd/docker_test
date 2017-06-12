@@ -282,6 +282,33 @@ function(input, output, session) {
     # write.csv(myOuts, file = paste0("results/output", lastFile + 1, ".csv"), row.names = F)
   })
   
+  
+  observeEvent(input$saveStateWeb, {
+    files <- gs_ls()$sheet_title
+    if(length(files) == 0){
+      lastFile <- 0
+    }else{
+      lastFile <- regmatches(files, gregexpr('[0-9]+',files))
+      lapply(lastFile, as.numeric) %>% unlist() %>% max() -> lastFile
+    }
+    saveData <<- reactiveValuesToList(input)
+    saveData <- inputToDF(saveData)
+    
+    # Pivot save data to horizontal
+    
+    saveData <- t(saveData)
+    # Remove first row of variable names
+    print("hello")
+    inputSheet <- gs_title("cowGameInputsTest")
+    print("2")
+    gs_add_row(inputSheet, ws="Inputs", input = saveData)
+    print("3")
+    outputSheet <- gs_title("cowGameOutputsTest")
+    print("4")
+    gs_add_row(outputSheet, ws="Outputs", input = myOuts)
+  })
+  
+  
   observeEvent(input$savePracInputs, {
 
     # myDir <- "results"
