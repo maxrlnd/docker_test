@@ -1,12 +1,11 @@
 
 function(input, output, session) {
-  
-  ## Validation for Survey Randomization Code
-  
-  
-  ## Reactive value for current year
-  values <- reactiveValues("currentYear" = 1, "starting" = TRUE, "saveComplete" = FALSE, "beginSaving" = FALSE)
 
+  ## Reactive value for current year
+  # values <- reactiveValues("currentYear" = 1, "starting" = TRUE, "saveComplete" = FALSE, "beginSaving" = FALSE)
+  
+  values <- reactiveValues("saveComplete" = FALSE)
+  
   observeEvent(input$runCode, {
     eval(parse(text = input$code))
   })
