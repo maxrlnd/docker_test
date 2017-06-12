@@ -36,29 +36,24 @@ function(input, output, session) {
   lapply(1:practiceLength, function(i){
     simCreator(input, output, session,i, rvPrac, practiceLength, startYearprac, name = "prac")
   })
-  
-  observeEvent(input$Exit, {
-    js$closewindow();
-    stopApp()
-  })
-  
-  ########## Functions to Print out state information
-  
 
-
-  ## Disable agree button on instructions after it has been clicked and move to
-  ## Demographics tab
-
+  # Observers for practice simulation------------------------------------------
   
+  # Observer triggered when user starts practice round switches to prac
+  #   simulation tab and allows user to begin game
   observeEvent(input$pracStart, {
+    
+    # Ensures user has entered a valid mturk id
     validate(
-      need(as.numeric(input$user.ID) >= 1000000 & as.numeric(input$user.ID) <= 2999999, "Your code is not valid.")
+      need(as.numeric(input$user.ID) >= 1000000 & 
+             as.numeric(input$user.ID) <= 2999999, "Your code is not valid.")
     )
-    toggleClass(class = "disabled",
-                selector = "#navBar li a[data-value='Welcome']")
-    if(as.numeric(input$user.ID) >= 2000000){
+    
+    # Checks to see if user has been randomly assigned insurnace or not
+    if(as.numeric(input$user.ID) >= 2000000){ # Mturk >= 2000000 is no insurance
+      
+      # Sets ins to false and resets all ins variables to zero, recreates output frames
       purchaseInsurance <<- FALSE
-      print(input$user.ID)
       indem <<- lapply(indem, function(x){
         x[, c("producer_prem", "indemnity", "full_prem") := 0]
         return(x)
@@ -68,7 +63,10 @@ function(input, output, session) {
         return(x)
       })
       createOutputs(practiceRuns, simRuns, indem, indemprac)
-    }else{
+      
+    }else{ # Excuted for all users with insurance
+      
+      # Sets ins to false and resets all ins variables to zero, recreates output frames
       purchaseInsurance <<- TRUE
       indem <<- lapply(startYear:(startYear + simLength - 1), function(x){
         with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
@@ -81,12 +79,28 @@ function(input, output, session) {
       })
       createOutputs(practiceRuns, simRuns, indem, indemprac)
     }
+    
+    # Disable elements and move active tab
+    toggleClass(class = "disabled",
+                selector = "#navBar li a[data-value='Welcome']")
     disable("pracStart")
     toggleClass(class = "disabled",
                 selector = "#navBar li a[data-value='Practice Simulation']")
     updateTabsetPanel(session, "mainPanels", selected = "Practice Simulation")
   })
   
+  # Observer to advance practice pages
+  observe({
+    toggleState(id = "prevBtnprac", condition = rvPrac$page > 1)
+    toggleState(id = "nextBtnprac", condition = rvPrac$page < practiceLength + 1)
+    hide(selector = ".page")
+    show(sprintf("step%s", rvPrac$page))
+  })
+  
+  # Observers for real simulation----------------------------------------------
+  
+  # Triggered when a user clicks the begin ranch game button after practice 
+  #   round has been completed disable elements and switch active tab
   observeEvent(input$simStart, {
     createOutputs(practiceRuns, simRuns, indem, indemprac)
     disable("simStart")
@@ -97,19 +111,7 @@ function(input, output, session) {
     updateTabsetPanel(session, "mainPanels", selected = "Ranch Simulation")
   })
   
-
-  observeEvent(input$update, {
-    simRunsList <- as.list(simRuns)
-    inputList <- reactiveValuesToList(input)
-    overlap <- intersect(names(simRunsList), names(inputList))
-    simRunsList[overlap] <- inputList[overlap]
-    simRuns <<- simRunsList
-    myOuts <<- createResultsFrame(simRuns)
-    startYear <<- input$act.st.yr
-  })
-  
-  # output$page <- renderText(rv$page)
-  
+  # Observer to advance simulation pages
   observe({
     toggleState(id = "prevBtn", condition = rv$page > 1)
     toggleState(id = "nextBtn", condition = rv$page < simLength + 1)
@@ -117,12 +119,11 @@ function(input, output, session) {
     show(sprintf("step%s", rv$page))
   })
   
-  observe({
-    toggleState(id = "prevBtnprac", condition = rvPrac$page > 1)
-    toggleState(id = "nextBtnprac", condition = rvPrac$page < practiceLength + 1)
-    hide(selector = ".page")
-    show(sprintf("step%s", rvPrac$page))
-  })
+  
+  
+  
+ 
+  
 
   navPage <- function(direction) {
     rv$page <- rv$page + direction
@@ -339,6 +340,11 @@ function(input, output, session) {
   
   observeEvent(input$runCode, {
     eval(parse(text = input$code))
+  })
+  
+  observeEvent(input$Exit, {
+    js$closewindow();
+    stopApp()
   })
   
 

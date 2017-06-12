@@ -145,6 +145,17 @@ tabPanel("Input",
          )
 )
 
+
+observeEvent(input$update, {
+  simRunsList <- as.list(simRuns)
+  inputList <- reactiveValuesToList(input)
+  overlap <- intersect(names(simRunsList), names(inputList))
+  simRunsList[overlap] <- inputList[overlap]
+  simRuns <<- simRunsList
+  myOuts <<- createResultsFrame(simRuns)
+  startYear <<- input$act.st.yr
+})
+
 output$map <- renderLeaflet({
   leaflet() %>%
     addTiles(
