@@ -89,6 +89,12 @@ function(input, output, session) {
     updateTabsetPanel(session, "mainPanels", selected = "Practice Simulation")
   })
   
+  observeEvent(input$prevBtnprac, navPagePrac(-1))
+  observeEvent(input$nextBtnprac, navPagePrac(1))
+  navPagePrac <- function(direction) {
+    rvPrac$page <- rvPrac$page + direction
+  }
+  
   # Observers for real simulation----------------------------------------------
   
   # Triggered when a user clicks the begin ranch game button after practice 
@@ -103,49 +109,35 @@ function(input, output, session) {
     updateTabsetPanel(session, "mainPanels", selected = "Ranch Simulation")
   })
   
-  # Observer to advance simulation pages
-  
-  
+  # Observers and functions to advance simulation pages
   observeEvent(input$prevBtn, navPage(-1))
   observeEvent(input$nextBtn, navPage(1))
-  
-  
-  
-  
   navPage <- function(direction) {
     rv$page <- rv$page + direction
-  }
+  }  
   
-  navPagePrac <- function(direction) {
-    rvPrac$page <- rvPrac$page + direction
-  }
+  # Output and UI for practice and real simulation--------------------------------------
   
-
-  
-  
+  # Generates output for practice simulation tab
   output$practiceOut <- renderUI({
     if(rvPrac$page <= practiceLength){
       simPageOutput(rvPrac, "prac")  
-    }else{
-      
+    }else{  # Executed when practice simulation has been completed
       fluidRow(
-        
         h4("Done with Practice"),
         hide("infoPanePrac"),
         actionButton("savePracInputs", "Save practice round"),
         uiOutput("practComplete")
         )
-      
     }
   })
   
+  # Generates output for simulation tab
   output$pageOut <- renderUI({
     startTime <<- Sys.time()
   if(rv$page <= simLength){  
     simPageOutput(rv, name = "")
-    
-
-  }else{
+  }else{  # Executed when simulation has been completed
     fluidRow(
       hide("infoPane"),
       column(width = 10,
@@ -163,7 +155,8 @@ function(input, output, session) {
     )
   }
   })
-
+  
+  # Output once data has been saved, provides completetion code
   output$complete <- renderUI({
     req(values$saveComplete)
     h4(p("Your Data has been saved, your completion code is: ", span(sample(10000:99999,1), style="color:green")), 
@@ -171,71 +164,59 @@ function(input, output, session) {
          Once you have the code entered, you can close this window."))
   })
 
-  observeEvent(input$prevBtnprac, navPagePrac(-1))
-  observeEvent(input$nextBtnprac, navPagePrac(1))
+  # Observers to save data-----------------------------------------------------
+  
+  # Observer triggered when user saves current state in non-web mode only used
+  #   in debug mode, saves results locally overwrites previously saved data
   observeEvent(input$saveState, {
-     
       myDir <- "results"
-      
       saveData <<- reactiveValuesToList(input)
-      # save(saveData, file = "newSave.RData")
       saveData <- inputToDF(saveData)
-      #saveData$names <- NULL
-      # Pivot save data to horizontal
-      saveData <- t(saveData)
-      # Remove first row of variable names
 
+      # Remove first row of variable names
       write.csv(saveData, file = paste0("results/input", input$fileName, ".csv"), row.names = F)
       write.csv(myOuts, file = paste0("results/output", input$fileName, ".csv"), row.names = F)
   })
-  
+
+  # Observer to save real simulation inputs  
   observeEvent(input$saveInputs, {
     shinyjs::disable("saveInputs")
-    # myDir <- "results"
-    # if(!dir.exists(myDir)){
-    #   dir.create(myDir)
-    # }
     files <- gs_ls()$sheet_title
-    # files <- files[order(files)]
     
+    # Determines last file number in directory    
     if(length(files) == 0){
       lastFile <- 0
     }else{
-      # lastFile <- files[length(files)]
-      # lastFile <- as.numeric(substr(lastFile, nchar(lastFile), nchar(lastFile)))
       lastFile <- regmatches(files, gregexpr('[0-9]+',files))
       lapply(lastFile, as.numeric) %>% unlist() %>% max() -> lastFile
     }
+    
+    # Prepare inputs for saving
     saveData <<- reactiveValuesToList(input)
-    # save(saveData, file = "newSave.RData")
     saveData <- inputToDF(saveData)
-    #saveData$names <- NULL
+
     # Pivot save data to horizontal
     saveData <- t(saveData)
-    # Remove first row of variable names
+    
+    # Saves data to gsheets
     withProgress(message = "Saving Data", value = 1/3, {
       inputSheet <- gs_title("cowGameInputs")
       gs_add_row(inputSheet, ws="Inputs", input = saveData)
-      #gs_new(title =  ID, 
-      # input = saveData, trim = TRUE, verbose = TRUE)
-      ## These are used to check the output in testing
-      #inputsheet <- gs_title(ID)
-      #insheet <- gs_read(inputsheet)
       incProgress(1/3)
       outputSheet <- gs_title("cowGameOutputs")
       gs_add_row(outputSheet, ws="Outputs", input = myOuts)
+      
       ## This is used to validate in testing
       #outsheet <- outputSheet %>% gs_read(ws = "Outputs")
 
     })
     values$saveComplete <- TRUE
-    # write.csv(saveData, file = paste0("results/input", lastFile + 1, ".csv"), row.names = F)
-    # write.csv(myOuts, file = paste0("results/output", lastFile + 1, ".csv"), row.names = F)
   })
   
-  
+  # Observer to save web inputs mid simulation, only for debug
   observeEvent(input$saveStateWeb, {
     files <- gs_ls()$sheet_title
+    
     if(length(files) == 0){
       lastFile <- 0
     }else{
@@ -261,19 +242,11 @@ function(input, output, session) {
   
   
   observeEvent(input$savePracInputs, {
-
-    # myDir <- "results"
-    # if(!dir.exists(myDir)){
-    #   dir.create(myDir)
-    # }
     files <- gs_ls()$sheet_title
-    # files <- files[order(files)]
-    
+
     if(length(files) == 0){
       lastFile <- 0
     }else{
-      # lastFile <- files[length(files)]
-      # lastFile <- as.numeric(substr(lastFile, nchar(lastFile), nchar(lastFile)))
       lastFile <- regmatches(files, gregexpr('[0-9]+',files))
       lapply(lastFile, as.numeric) %>% unlist() %>% max() -> lastFile
     }
