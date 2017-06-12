@@ -291,23 +291,25 @@ function(input, output, session) {
     # write.csv(myOuts, file = paste0("results/output", lastFile + 1, ".csv"), row.names = F)
   })
   
-
+  # Code for debugging---------------------------------------------------------
   observeEvent(input$reset_button, {
     createOutputs(practiceRuns, simRuns, indem, indemprac)
     js$reset()
   })
-  session$onSessionEnded(function() {
-    createOutputs(practiceRuns, simRuns, indem, indemprac)
-    js$reset()
-    stopApp()
-  })
-  
+
   observeEvent(input$runCode, {
     eval(parse(text = input$code))
   })
   
   observeEvent(input$Exit, {
     js$closewindow();
+    stopApp()
+  })
+  
+  # Code to reset inputs on exit-----------------------------------------------
+  session$onSessionEnded(function() {
+    createOutputs(practiceRuns, simRuns, indem, indemprac)
+    js$reset()
     stopApp()
   })
   
