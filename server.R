@@ -97,21 +97,6 @@ function(input, output, session) {
     updateTabsetPanel(session, "mainPanels", selected = "Ranch Simulation")
   })
   
-  
-  
-  ## Code to dynamically add new tabs
-  output$creationPool <- renderUI({})
-  outputOptions(output, "creationPool", suspendWhenHidden = FALSE)
-  
-  addTabToTabset <- function(Panels, tabsetName){
-    titles <- lapply(Panels, function(Panel){return(Panel$attribs$title)})
-    Panels <- lapply(Panels, function(Panel){Panel$attribs$title <- NULL; return(Panel)})
-    
-    output$creationPool <- renderUI({Panels})
-    session$sendCustomMessage(type = "addTabToTabset", message = list(titles = titles, tabsetName = tabsetName))
-  }
-  
-  
 
   observeEvent(input$update, {
     simRunsList <- as.list(simRuns)
