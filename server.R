@@ -22,46 +22,26 @@ function(input, output, session) {
 
   # Create pratice and simulation tabs-----------------------------------------
   
+  # Each lapply cycles through the simCreator function to create all the ui and
+  #   output for each simulaiton, everything is contained in a single tab and the
+  #   rv reactive values are used to track page number
+  
+  # Create main simulation ui/output
   lapply(1:simLength, function(i){
     simCreator(input, output, session, i, rv, simLength, startYear)
-
-  }) ##End of lapply
+  }) 
   
+  # Create practice simulation ui/output, everything is the same except "prac" 
+  #   is appended to the end of all object names
   lapply(1:practiceLength, function(i){
     simCreator(input, output, session,i, rvPrac, practiceLength, startYearprac, name = "prac")
   })
-  
-  
-  ## Observer for begin button in demographis panel
-  observeEvent(input$demoSub, {
-    # addTabToTabset(createNewYr(1), "mainPanels")
-    disable("demoSub")
-    session$sendCustomMessage("myCallbackHandler", "1")
-  })
-  
-  ## Observer to track the number of quiz attempts
-  observeEvent(input$quizSub, {
-    quizCounter <<- quizCounter + 1
-    if(quizCounter > 3){
-      showModal(exitModal())
-    }
-  })
-
-  
   
   observeEvent(input$Exit, {
     js$closewindow();
     stopApp()
   })
   
-  exitModal <- function(){
-    modalDialog(
-      h4("Unfortunately, you've failed the quiz after three tries and cannot continue with the simulation."),
-      h4("Thank you for participating in this survey."),
-      footer = actionButton("Exit", "Exit")
-    )
-  }
-
   ########## Functions to Print out state information
   
 
