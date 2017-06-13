@@ -1,9 +1,140 @@
 simCreator <- function(input, output, session, i, rv, simLength, startYear, name = ""){
-  # lapply(c("p", "r"), function(j){})
-  ## Reactive taglist for the first set of winter info at the start of each year, updates when
-  ## myOuts updates
+  
+  # orgName preserves the orginal name (either "" for the real simulation 
+  #   or prac for practice), name is used at the end of all objects to
+  #   create a unique output objects for each output and ui element
   orgName <- name
   name <- paste0(name, i)
+  
+  # Reactives for tracking objects---------------------------------------------
+  
+  # Number of calves currently avaialble using normal wean success at start of year
+  #   and then wean success based on available forage at end of year
+  assign(paste0("calvesAvailable", name), reactive({
+    if(!is.null(input[[paste0("insCont", name)]])){  
+      if(input[[paste0("insCont", name)]] == 1){
+        calvesAvailable <- 
+          myOuts[i, herd] * AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1)
+      }else{
+        calvesAvailable <- myOuts[i, herd] * simRuns$normal.wn.succ
+      }
+    }else{
+      calvesAvailable <- myOuts[i, herd] * simRuns$normal.wn.succ
+    }
+    return(calvesAvailable)
+  }))
+  
+  # Tracks current bank balance throughout the year adjusting for insurance and
+  #   funds spent on adaptation
+  assign(paste0("bankBalance", name), reactive({
+    balance <- myOuts[i, assets.cash]
+    if(!is.null(input[[paste0("year", name, "Start")]])){  
+      if(input[[paste0("year", name, "Start")]] == 1){
+        balance <- balance - get(paste0("indem", orgName))[[i]]$producer_prem
+      }
+    }
+    if(!is.null(input[[paste0("year", name, "Summer")]])){  
+      if(input[[paste0("year", name, "Summer")]] == 1){
+        balance <- balance - input[[paste0("d", name, "adaptExpend")]]
+      }
+    }
+    if(!is.null(input[[paste0("insCont", name)]])){  
+      if(input[[paste0("insCont", name)]] == 1){
+        balance <- balance + get(paste0("indem", orgName))[[i]]$indemnity
+      }
+    }
+    if(!is.null(input[[paste0("sell", name)]])){  
+      if(input[[paste0("sell", name)]] == 1){
+        balance <- myOuts[i + 1, assets.cash]
+      }
+    }
+    return(balance)
+    
+    
+  }))
+  
+  # Calculates zone weights for the current year, this shouldn't change 
+  #   throughout the year
+  assign(paste0("currentZones", name), reactive({
+    zones <- station.gauge$zonewt
+    
+    if(i == 1){  # Year 1 calc without prior Gt and zones
+      zones <- zones * (1 - (0)/simRuns$forage.constant)
+      
+      
+    }else{  # Code for all subsequent years
+      zones <- myOuts[i, zone.change] * zones * 
+        (1 - (myOuts[i, Gt])/simRuns$forage.constant)
+    }
+    
+    return(zones)
+  }))
+  
+  # Reactive to track forage for each year
+  assign(paste0("totalForage", name), reactive({
+    
+    ## Establish current state
+    myYear <- startYear + i - 1
+    herd <- myOuts[i, herd]
+    zones <- get(paste0("currentZones", name))()
+    
+    # Calculate available forage produced on the land using Nov-Nov as a year
+    # forageProduction = 1 is full feed for a cow-calf pair
+    forage.production <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
+
+    # Calculate adaptation intensity based on forage production
+    adaptInten <- CalculateAdaptationIntensity(forage.production)
+    
+    # Calculate adaptation cost
+    fullAdaptCost <-getAdaptCost(adpt_choice = "feed", pars = simRuns, 
+                                 days.act = 180, current_herd = herd, intens.adj = adaptInten)
+    
+    # Calculate how much of the needed adaptation is being done
+    adaptPercent <- ifelse(fullAdaptCost == 0, 0, input[[paste0("d", name, "adaptExpend")]]/fullAdaptCost * (1 - forage.production))
+
+    # Output new forage that includes forage and adaptation feed
+    totalForage <- forage.production + adaptPercent
+  }))
+  
+  # Reactive to track herd size for each year should not change once
+  #   each year has begun
+  assign(paste0("herdSize", name), reactive({
+    
+    # Get cows being sold based on slide position
+    cows <- input[[paste0("cow", name, "Sale")]]
+    
+    if(i == 1){  # Year 1 calculation
+      herd <- myOuts[i, herd]
+      shinyHerd(herd_1 = herd, cull_1 = cows, herd_2 = herd,  # Assumes that herd size has been stable for previous two years
+                calves_2 = herd * simRuns$normal.wn.succ * (1 - simRuns$calf.sell),
+                deathRate = simRuns$death.rate)
+    }else{  #  Herd size for all subsequent years (i > 1)
+      herd <- myOuts[i, herd]
+      herd_2 <- myOuts[i - 1, herd]
+      wean_2 <- myOuts[i - 1, wn.succ]
+      calvesSold <- myOuts[i - 1, calves.sold]
+      
+      shinyHerd(herd_1 = herd, cull_1 = cows, herd_2 = herd_2, 
+                calves_2 = herd_2 * wean_2 * (1 - calvesSold),
+                deathRate = simRuns$death.rate)
+    }
+  }))
+  
+  # Reactive to track revenues for calf and cow sales
+  assign(paste0("revenues", name), reactive({
+    
+    # Get cows being sold based on slide position
+    cows <- input[[paste0("cow", name, "Sale")]]
+    calves <- input[[paste0("calves", name, "Sale")]]
+    totalForage <- get(paste0("totalForage", name))()
+    weanWeight <- round(calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 0)
+    
+    # Calculate revenues for the current year based on slider position
+    revenues <- cows * simRuns$p.cow + calves *  weanWeight * simRuns$p.wn[1]
+    
+  }))
+  
+  # UI elements to display outputs for each year-------------------------------
   
   assign(paste0("reactiveWinter", name), reactive({
     input[[paste0("sell", i-1)]]
@@ -199,136 +330,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
       )
         }))
   
-  assign(paste0("calvesAvailable", name), reactive({
-    if(!is.null(input[[paste0("insCont", name)]])){  
-      if(input[[paste0("insCont", name)]] == 1){
-        calvesAvailable <- 
-          myOuts[i, herd] * AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1)
-      }else{
-        calvesAvailable <- myOuts[i, herd] * simRuns$normal.wn.succ
-      }
-    }else{
-      calvesAvailable <- myOuts[i, herd] * simRuns$normal.wn.succ
-    }
-    return(calvesAvailable)
-  }))
-  
-  assign(paste0("bankBalance", name), reactive({
-    balance <- myOuts[i, assets.cash]
-    if(!is.null(input[[paste0("year", name, "Start")]])){  
-      if(input[[paste0("year", name, "Start")]] == 1){
-        balance <- balance - get(paste0("indem", orgName))[[i]]$producer_prem
-      }
-    }
-    if(!is.null(input[[paste0("year", name, "Summer")]])){  
-      if(input[[paste0("year", name, "Summer")]] == 1){
-        balance <- balance - input[[paste0("d", name, "adaptExpend")]]
-      }
-    }
-    if(!is.null(input[[paste0("insCont", name)]])){  
-      if(input[[paste0("insCont", name)]] == 1){
-        balance <- balance + get(paste0("indem", orgName))[[i]]$indemnity
-      }
-    }
-    if(!is.null(input[[paste0("sell", name)]])){  
-      if(input[[paste0("sell", name)]] == 1){
-        balance <- myOuts[i + 1, assets.cash]
-      }
-    }
-    return(balance)
-    
-        
-  }))
-  
-  ## Creates a reactive to track the current zone weights for each year
-  assign(paste0("currentZones", name), reactive({
-    zones <- station.gauge$zonewt
-    
-    ## Code for the first year when the previous zones/GT haven't been determined
-    if(i == 1){
-      zones <- zones * (1 - (0)/simRuns$forage.constant)
-      
-      ## Code for all subsequent years
-    }else{
-      zones <- myOuts[i, zone.change] * zones * 
-        (1 - (myOuts[i, Gt])/simRuns$forage.constant)
-    }
-    
-    return(zones)
-  }))
-  
-  ## Reactive to track forage for each year
-  assign(paste0("totalForage", name), reactive({
-    
-    ## Establish current state
-    myYear <- startYear + i - 1
-    herd <- myOuts[i, herd]
-    zones <- get(paste0("currentZones", name))()
-    
-    ## Calculate available forage produced on the land using Nov-Nov as a year
-    ## forageProduction = 1 is full feed for a cow-calf pair
-    forage.production <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
-    # print(paste("forage production", forage.production))
-    
-    ## Calculate adaptation intensity based on forage production
-    adaptInten <- CalculateAdaptationIntensity(forage.production)
-    
-    ## Calculate adaptation cost
-    fullAdaptCost <-getAdaptCost(adpt_choice = "feed", pars = simRuns, 
-                                 days.act = 180, current_herd = herd, intens.adj = adaptInten)
-    
-    ## Calculate how much of the needed adaptation is being done
-    adaptPercent <- ifelse(fullAdaptCost == 0, 0, input[[paste0("d", name, "adaptExpend")]]/fullAdaptCost * (1 - forage.production))
-    # print(paste("adaptPercent", adaptPercent))
-    
-    ## Output new forage that includes forage and adaptation feed
-    totalForage <- forage.production + adaptPercent
-  }))
-  
-  ## Reactive to track herd size for each year
-  assign(paste0("herdSize", name), reactive({
-    
-    ## Get cows being sold based on slide position
-    cows <- input[[paste0("cow", name, "Sale")]]
-    
-    ## Calculate herd size for the first year in the simulation (i = 1)
-    if(i == 1){
-      herd <- myOuts[i, herd]
-      shinyHerd(herd_1 = herd, cull_1 = cows, herd_2 = herd,  # Assumes that herd size has been stable for previous two years
-                calves_2 = herd * simRuns$normal.wn.succ * (1 - simRuns$calf.sell),
-                deathRate = simRuns$death.rate)
-      
-      
-      ## Herd size for all subsequent years (i > 1)
-    }else{
-      herd <- myOuts[i, herd]
-      herd_2 <- myOuts[i - 1, herd]
-      wean_2 <- myOuts[i - 1, wn.succ]
-      calvesSold <- myOuts[i - 1, calves.sold]
-      
-      shinyHerd(herd_1 = herd, cull_1 = cows, herd_2 = herd_2, 
-                calves_2 = herd_2 * wean_2 * (1 - calvesSold),
-                deathRate = simRuns$death.rate)
-    }
-  }))
-  
-  ## Reactive to track revenues for calf and cow sales
-  assign(paste0("revenues", name), reactive({
-    
-    ## Get cows being sold based on slide position
-    cows <- input[[paste0("cow", name, "Sale")]]
-    calves <- input[[paste0("calves", name, "Sale")]]
-    totalForage <- get(paste0("totalForage", name))()
-    weanWeight <- round(calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 0)
-    
-    ## Calculate revenues for the current year based on slider position
-    revenues <- cows * simRuns$p.cow + calves *  weanWeight * simRuns$p.wn[1]
-    
-  }))
-  
-  #################UI Functions of Year Tabs###################
-  
-  ## UI for winter Info
+  # UI for winter Info
   output[[paste0("winterInfo", name)]] <- renderUI({
     tagList(
       h3(paste0("Year ", i, " of ", simLength, ": Ranching Simulation")),
@@ -337,8 +339,10 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     )
   })
   
-  ## Start Button
+  # Start Button
   output[[paste0("start", name)]] <- renderUI({
+    
+    # clean user input for insurance payment to ignore , $ 
     userPay <- gsub(",", "", input[[paste0("insurancePremium", name)]])
     userPay <- tryCatch(as.numeric(gsub("\\$", "", userPay)),
                         warning = function(war)return(0))
