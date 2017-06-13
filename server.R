@@ -43,12 +43,6 @@ function(input, output, session) {
   #   simulation tab and allows user to begin game
   observeEvent(input$pracStart, {
     
-    # Ensures user has entered a valid mturk id
-    validate(
-      need(as.numeric(input$user.ID) >= 1000000 & 
-             as.numeric(input$user.ID) <= 2999999, "Your code is not valid.")
-    )
-    
     # Checks to see if user has been randomly assigned insurnace or not
     if(as.numeric(input$user.ID) >= 2000000){ # Mturk >= 2000000 is no insurance
       
@@ -130,6 +124,14 @@ function(input, output, session) {
         uiOutput("practComplete")
         )
     }
+  })
+  
+  output$practiceStart <- renderUI({
+    validate(
+      need(as.numeric(input$user.ID) >= 1000000 & 
+             as.numeric(input$user.ID) <= 2999999, "Please enter a valid code.")
+    )
+    actionButton("pracStart", "Begin Practice Ranch Game")
   })
   
   # Generates output for simulation tab
