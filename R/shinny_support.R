@@ -254,6 +254,7 @@ updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales
   myOuts[currentYear, rev.int := ifelse(myOuts[pastYear, assets.cash] > 0, 
                                         myOuts[pastYear, assets.cash] * simRuns$invst.int,
                                         0)]
+  myOuts[currentYear, household.exp := simRuns$household.exp]
   myOuts[currentYear, rev.tot := myOuts[currentYear, rev.ins] + myOuts[currentYear, rev.int] + myOuts[currentYear, rev.calf]]
   myOuts[currentYear, cost.op := CalculateBaseOpCosts(herd = currentHerd, cow.cost = simRuns$cow.cost)]
   myOuts[currentYear, cost.ins := indem$producer_prem]
@@ -263,7 +264,8 @@ updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales
                                           0)]
 
   myOuts[currentYear, cost.tot := myOuts[currentYear, cost.op] + myOuts[currentYear, cost.ins] +
-                                    myOuts[currentYear, cost.adpt] + myOuts[currentYear, cost.int]]
+                                    myOuts[currentYear, cost.adpt] + myOuts[currentYear, cost.int] + 
+                                    myOuts[currentYear, household.exp]]
   myOuts[currentYear, profit := myOuts[currentYear, rev.tot] - myOuts[currentYear, cost.tot]]
   myOuts[currentYear, taxes := ifelse(myOuts[currentYear, profit] > 0, myOuts[currentYear, profit] * (0.124+0.15+0.04), 0)]
   myOuts[currentYear, aftax.inc := myOuts[currentYear, profit] - myOuts[currentYear, taxes]]
@@ -277,8 +279,8 @@ updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales
   myOuts[currentYear, wn.succ := wean]
   myOuts[currentYear, total.forage := totalForage]
   myOuts[currentYear, herd := round(newHerd, 0)]
-  myOuts[currentYear, calves.sold := ifelse(floor(currentHerd * wean) == 0, 0, calfSale / floor(currentHerd * wean))]
-  myOuts[currentYear, cows.culled := ifelse(currentHerd == 0, 0, cowSales / currentHerd)]
+  myOuts[currentYear, calves.sold := calfSale]
+  myOuts[currentYear, cows.culled := cowSales]
   myOuts[currentYear, zone.change := sum(zones)]
   if(!debugMode){
     print(paste("forage production", whatIfForage(station.gauge, zones, myOuts[currentYear, yr], currentHerd, carryingCapacity, 10, 11, "normal")))
