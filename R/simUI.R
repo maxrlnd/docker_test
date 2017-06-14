@@ -528,12 +528,12 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
        if(purchaseInsurance == TRUE){
          h4("Other revenues and costs that will affect your income for the year include:
             operating costs, additional feed costs, insurance payments and revenues, 
-            interest earned or paid, and taxes.")
+            interest earned or paid, household expenses and taxes.")
        },
        if(purchaseInsurance == FALSE){
          h4("Other revenues and costs that will affect your income for the year include:
-            operating costs, additional feed costs, 
-            interest earned or paid, and taxes.")
+            operating costs, additional feed costs, interest earned or paid, 
+            household expenses, and taxes.")
        },
       # h5(p("Rain-index insurance payouts: $",
       #      span(prettyNum(get(paste0("indem", orgName))[[i]]$indemnity, digits = 2, big.mark = ",", scientific = FALSE),
