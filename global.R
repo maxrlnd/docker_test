@@ -66,12 +66,16 @@ carryingCapacity <- constvars$carrying.cap * acres
 startYear <- 1999
 startYearprac <- 1951
 
+## Set simulation length
+simLength <- 10
+practiceLength <- 5
+
 ## create state variables for practice runs
 practiceVars <- getSimVars(
   station.gauge,
   constvars,
   start_year = startYearprac,
-  sim_length = 5,
+  sim_length = practiceLength,
   use.forage = T,
   random.acres=FALSE,
   random.productivity=FALSE,
@@ -82,7 +86,7 @@ simvars <- getSimVars(
   station.gauge,
   constvars,
   start_year = startYear,
-  sim_length = 10,
+  sim_length = simLength,
   use.forage = T,
   random.acres=FALSE,
   random.productivity=FALSE,
@@ -94,9 +98,7 @@ practiceRuns$p.wn <- rep(1.30, length(practiceRuns$p.wn))
 simRuns <- (append(append(station.gauge, constvars), (simvars)))
 simRuns$p.wn <- rep(1.30, length(simRuns$p.wn))
 
-## Set simulation length
-simLength <- 10
-practiceLength <- 5
+
 
 
 
