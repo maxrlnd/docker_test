@@ -1,10 +1,4 @@
 #### Setup ####
-library(shiny)
-library(markdown)
-library(leaflet)
-library(RColorBrewer)
-library(shinyjs)
-library(shinyBS)
 source("R/load.R")
 source("R/shinny_support.R")
 source("R/simUI.R")
