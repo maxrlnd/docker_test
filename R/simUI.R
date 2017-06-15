@@ -113,9 +113,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
       herd_2 <- myOuts[i - 1, herd]
       wean_2 <- myOuts[i - 1, wn.succ]
       calvesSold <- myOuts[i - 1, calves.sold]
-      
       shinyHerd(herd_1 = herd, cull_1 = cows, herd_2 = herd_2, 
-                calves_2 = herd_2 * wean_2 * (1 - calvesSold),
+                calves_2 = herd_2 * wean_2 - calvesSold,
                 deathRate = simRuns$death.rate)
     }
   }))
@@ -741,10 +740,10 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
         
         # Herd size for the year after next
         herdy2 <- shinyHerd(herd_1 = herdy1,  # t-1 for year 2 is next years herd size
-                            cull_1 = myOuts[1, cows.culled] * herdy1,  # we don't know how many cows they will cull next year. assume stability/default of 16% (draw from )
+                            cull_1 = myOuts[1, cows.culled],  # we don't know how many cows they will cull next year. assume stability/default of 16% (draw from )
                             herd_2 = herdy0,  # t-2 for year 2 is this year
                             calves_2 = (floor(herdy0 * AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1)) - calves),  # Calves in the herd this year minus those that are sold via the slider input
-                            deathRate = simRuns$death.rate)  
+                            deathRate = simRuns$death.rate) 
         
         years <- c("This Year","Next Year","In Two Years")
         herd.projection <- data.table("Year" = years, "Herd Size" = c(herdy0, herdy1, herdy2))
