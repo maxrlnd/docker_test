@@ -379,7 +379,11 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     if(!is.null(input[[paste0("year", name, "Summer")]])){
       if(input[[paste0("year", name, "Summer")]]){
         if(myOuts[i, herd] == 0){
-          get(paste0("indem", orgName))[[i]]$indemnity <<- 0
+          if(orgName == "prac"){
+            indemprac[[i]]$indemnity <<- 0
+          }else{
+            indem[[i]]$indemnity <<- 0
+          }
         }
         currentIndem <- prettyNum(get(paste0("indem", orgName))[[i]]$indemnity, digits = 0, big.mark=",",scientific=FALSE)
         tagList(
