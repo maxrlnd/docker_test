@@ -248,7 +248,7 @@ updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales
   myOuts[currentYear, rev.calf := CalculateExpSales(herd = NA, wn.succ = NA, 
                                                      wn.wt = calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 
                                                      calf.sell = calfSale, p.wn = simRuns$p.wn[pastYear])]
-  myOuts[currentYear, timeElapse := (Sys.time() - time)]
+  myOuts[currentYear, timeElapse := (Sys.time() - yearStartTime)]
   myOuts[currentYear, mTurkID := ID]
   myOuts[currentYear, rev.ins := indem$indemnity]
   myOuts[currentYear, rev.int := ifelse(myOuts[pastYear, assets.cash] > 0, 
@@ -441,6 +441,7 @@ appendRangeHealth <- function(healthValue, rangeHealthList){
 }
 
 simPageOutput <- function(rv, name = ""){
+  yearStartTime <<- Sys.time()
   page <- paste0(name, rv$page)
   fluidRow(
     column(9,
