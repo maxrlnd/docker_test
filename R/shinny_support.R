@@ -248,6 +248,7 @@ updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales
   myOuts[currentYear, rev.calf := CalculateExpSales(herd = NA, wn.succ = NA, 
                                                      wn.wt = calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 
                                                      calf.sell = calfSale, p.wn = simRuns$p.wn[pastYear])]
+  myOuts[currentYear, simStartTime := startTime]
   myOuts[currentYear, timeElapse := (Sys.time() - yearStartTime)]
   myOuts[currentYear, mTurkID := ID]
   myOuts[currentYear, rev.ins := indem$indemnity]
