@@ -136,7 +136,6 @@ function(input, output, session) {
   
   # Generates output for simulation tab
   output$pageOut <- renderUI({
-    startTime <<- Sys.time()
   if(rv$page <= simLength){  
     simPageOutput(rv, name = "")
   }else{  # Executed when simulation has been completed
@@ -214,9 +213,9 @@ function(input, output, session) {
       inputSheet <- gs_title("cowGameInputs")
       gs_add_row(inputSheet, ws="Inputs", input = saveData)
       incProgress(1/3)
-      gs_new(title="fullgametest", trim=TRUE, verbose= TRUE, input= myOuts)
-      # outputSheet <- gs_title("cowGameOutputs")
-      # gs_add_row(outputSheet, ws="Outputs", input = myOuts)
+      # gs_new(title="fullgametest", trim=TRUE, verbose= TRUE, input= myOuts)
+      outputSheet <- gs_title("cowGameOutputs")
+      gs_add_row(outputSheet, ws="Sheet1", input = myOuts)
       
       ## This is used to validate in testing
       #outsheet <- outputSheet %>% gs_read(ws = "Outputs")
