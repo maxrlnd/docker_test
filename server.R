@@ -119,6 +119,13 @@ function(input, output, session) {
     }else{  # Executed when practice simulation has been completed
       fluidRow(
         h4("Done with Practice"),
+        h4(paste0("Congratulations! You've completed ", practiceLength, " years of ranching.")),
+        br(),
+        p(paste0("Through ranching you accumulated $", round(myOuts$assets.cash[practiceLength + 1], 0), " in cash" )),
+        p(paste0("You also have a herd worth $", round(myOuts$assets.cow[practiceLength + 1], 0), ".")),
+        p(paste0("Your total net worth is $", round(myOuts$net.wrth[practiceLength + 1], 0), ". With a conversation rate of $500,000
+                 of simulation money to $1 of MTurk bonus money, you've earned $", 
+                 round(myOuts$net.wrth[practiceLength + 1] * 1/simRuns$mturk.conv, 2),".")),
         hide("infoPanePrac"),
         actionButton("savePracInputs", "Save practice round"),
         uiOutput("practComplete")
