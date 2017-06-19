@@ -113,15 +113,15 @@ getJulyInfo <- function(currentYear, name, startYear){
     if(ForageValue >= 110){
       p(span("Your rainfall so far for this year has been above average at",style = "font-size:normal"),
         span(ForageValue, style = "font-weight:bold;font-size:large;color:green"), "%", 
-        span("of the amount needed for optimal grass growth", style = "font-size:normal"))  
+        span("of the amount needed for optimal grass growth.", style = "font-size:normal"))  
       } else if(ForageValue<110 & ForageValue>100){
-     p(span("Your rainfall so far for this year has been average at",style = "color:blue"), 
+     p(span("Your rainfall so far for this year has been average at",style = "font-size:normal"), 
        span(ForageValue, style = "font-weight:bold;font-size:large;color:green"), "%",
-       span("of the amount needed for optimal grass growth", style = "font-size:normal")) 
+       span("of the amount needed for optimal grass growth.", style = "font-size:normal")) 
     } else {
      p(span("Your rainfall so far has been below average at", style = "font-size:normal"),
        span(ForageValue, style = "font-weight:bold;font-size:large;color:red"), "%",
-       span("of the amount needed for optimal grass growth", style = "font-size:normal")) 
+       span("of the amount needed for optimal grass growth.", style = "font-size:normal")) 
     },
     br(),
     plotOutput(paste0("rainGraph", name)),
