@@ -119,6 +119,14 @@ function(input, output, session) {
     }else{  # Executed when practice simulation has been completed
       fluidRow(
         h4("Done with Practice"),
+        h4(paste0("Congratulations! You've completed ", practiceLength, " years of ranching.")),
+        br(),
+        h4(p(paste0("Through ranching you accumulated $", round(myOuts$assets.cash[practiceLength + 1], 0), " in cash." ))),
+        h4(p(paste0("You also have a herd worth of$", round(myOuts$assets.cow[practiceLength + 1], 0), "."))),
+        h4(p(paste0("Your total net worth is $", round(myOuts$net.wrth[practiceLength + 1], 0), ". With a conversation rate of $500,000
+                 of simulation money to $1 of MTurk bonus money, you've earned $", 
+                 round(myOuts$net.wrth[practiceLength + 1] * 1/simRuns$mturk.conv, 2),"."))),
+        h4(p(paste0("This is a practice simulation, so the money you have earned in this simulation does not count."))),
         hide("infoPanePrac"),
         actionButton("savePracInputs", "Save practice round"),
         uiOutput("practComplete")
@@ -136,7 +144,6 @@ function(input, output, session) {
   
   # Generates output for simulation tab
   output$pageOut <- renderUI({
-    startTime <<- Sys.time()
   if(rv$page <= simLength){  
     simPageOutput(rv, name = "")
   }else{  # Executed when simulation has been completed
@@ -214,8 +221,9 @@ function(input, output, session) {
       inputSheet <- gs_title("cowGameInputs")
       gs_add_row(inputSheet, ws="Inputs", input = saveData)
       incProgress(1/3)
+      # gs_new(title="fullgametest", trim=TRUE, verbose= TRUE, input= myOuts)
       outputSheet <- gs_title("cowGameOutputs")
-      gs_add_row(outputSheet, ws="Outputs", input = myOuts)
+      gs_add_row(outputSheet, ws="Sheet1", input = myOuts)
       
       ## This is used to validate in testing
       #outsheet <- outputSheet %>% gs_read(ws = "Outputs")
@@ -281,8 +289,10 @@ function(input, output, session) {
       #inputsheet <- gs_title(ID)
       #insheet <- gs_read(inputsheet)
       incProgress(1/3)
+      # gs_new(title= "practiceGameOutputs", trim= TRUE, verbose=TRUE, input=myOuts)
+      outputTable <- myOuts[1:6]
       outputSheet <- gs_title("practiceGameOutputs")
-      gs_add_row(outputSheet, ws="Outputs", input = myOuts)
+      gs_add_row(outputSheet, ws="Sheet1", input = outputTable)
       ## This is used to validate in testing
       #outsheet <- outputSheet %>% gs_read(ws = "Outputs")
       
