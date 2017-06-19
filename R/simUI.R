@@ -172,6 +172,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
                 
                 
                 " cows, not including calves ",bsButton("calfdesc", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "calfdesc", title = "Calf Description",content = paste0("Calves are born in early spring and are raised on milk from their mother until they reach a weight of about 600 pounds.Once the calves stop taking milk from their mothers they arecalled weaned calves."))," or yearlings.",bsButton("yearlingdesc", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "yearlingdesc", title = "Yearling Description",content = paste0("These are cows that are weaned, but not yet reproducing")),"")),
+      tags$li(p("The current annual operating cost for your herd is $", span(prettyNum(myOuts[i, herd]*simRuns$cow.cost, big.mark=",",scientific=FALSE), style = "font-weight:bold;font-size:large"))),
+      
       
       if(prettyNum(myOuts[i, assets.cash], digits = 0)<0){
         tags$li(p("Your bank balance is $", span(prettyNum(myOuts[i, assets.cash], digits = 0,
