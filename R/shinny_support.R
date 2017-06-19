@@ -272,7 +272,7 @@ updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales
   myOuts[currentYear, aftax.inc := myOuts[currentYear, profit] - myOuts[currentYear, taxes]]
   myOuts[currentYear, cap.sales := cowSales * simRuns$p.cow]
   myOuts[currentYear, cap.taxes := myOuts[currentYear, cap.sales] * simRuns$cap.tax.rate]
-  myOuts[currentYear, assets.cow := newHerd * simRuns$p.cow]
+  myOuts[currentYear, assets.cow := round(newHerd, 0) * simRuns$p.cow]
   myOuts[currentYear, assets.cash := myOuts[pastYear, assets.cash] + myOuts[currentYear, aftax.inc] +
                                       myOuts[currentYear, cap.sales] - myOuts[currentYear, cap.purch] -
                                       myOuts[currentYear, cap.taxes]]
