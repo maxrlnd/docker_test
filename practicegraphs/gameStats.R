@@ -39,9 +39,9 @@ numbers$index[75:79] = 16
 numbers$index[80:84] = 17
 numbers$index[85:89] = 18
 numbers$mTurkID = numbers$index
-numbers$insured = 0
-numbers$insured[which(numbers$cost.ins > 0)] = 1
-numbers$insured = factor(numbers$insured)
+numbers$Insured = "No"
+numbers$Insured[which(numbers$cost.ins > 0)] = "Yes"
+numbers$Insured = factor(numbers$Insured)
 
 #Precipitation Data
 load("C:/Users/Travis/Google Drive/Risk Project/ranch_market_weather/data/monthlyNOAA.RData")
@@ -50,8 +50,8 @@ gameStats = function(numbers){
   "
   Take in the decision model results and outputs a dataframe with a graph of a variable of choice 
   Things to do:
-    add a legend for indexed, not indexed, insured and not insured
-    add an insured aggregate option
+    add a legend for indexed, not indexed, Insured and not Insured
+    add an Insured aggregate option
     somehow add precipitation?
       Which grid is CPER in?
       select appropriate years
@@ -78,12 +78,12 @@ gameStats = function(numbers){
       if(how=="indexed"|how=="2"){ 
         yr = "yr"
         mTurkID= "mTurkID"
-        timeseries = ggplot(data = numbers,aes_string(x=yr,y=variable,group = mTurkID,color="insured",fill="insured"))
+        timeseries = ggplot(data = numbers,aes_string(x=yr,y=variable,group = mTurkID,color="Insured",fill="Insured"))
       }else{
         variable = as.name(variable)
-        numbers2 = numbers%>%group_by(yr)%>%mutate(newvar=sum(variable))%>%distinct(newvar) 
+        numbers2 = numbers%>%group_by(Insured,yr)%>%mutate(newvar=mean(variable))%>%distinct(newvar) 
         yr = "yr"
-        timeseries = ggplot(data = numbers2,aes_string(x=yr,y=variable))
+        timeseries = ggplot(data = numbers2,aes_string(x=yr,y="newvar",group = "Insured",color = "Insured"))
       }
       plot = timeseries+
         geom_line(lwd=1.25)+
