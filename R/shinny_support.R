@@ -1,4 +1,4 @@
-getJulyInfo <- function(currentYear, name, startYear){
+getJulyInfo <- function(currentYear, name, startYear, myOuts){
   
   "
   Function: getJulyInfo
@@ -145,7 +145,7 @@ getJulyInfo <- function(currentYear, name, startYear){
   )
 }
 
-getCowSell <- function(totalForage, wean, currentYear, name){
+getCowSell <- function(totalForage, wean, currentYear, name, myOuts){
   "
   Function: getCowSell
   Description: create ui for a user to select how many cow and calves to sell
@@ -217,88 +217,6 @@ getCowSell <- function(totalForage, wean, currentYear, name){
       )
 }
 
-updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales, newHerd, zones, adaptInten, currentYear, ID, time){
-  "
-  Function: updateOuts
-  Description: Function to update myOuts after a year of the simulation has been completed
-  
-  Inputs:
-  wean = weaning success of calves
-  totalForage = percent of forage available after adaption has been applied
-  calfSale = number of calves being sold
-  indem = data.table containing premimum and indemnity info
-  adaptExpend = amount spent on adaptation
-  cowSales = number of cows being sold
-  newHerd = size of next year's herd based on cowsales and calf sales from 2ya
-  zones = zone information based on precip/adaptation/over grazing from previous year
-  adaptInten = intensity of adaptation
-  currentYear = the current year
-  ID = mTurk user entered ID
-  Outputs:
-  myOuts = data.table of all outputs
-  "
-  
-
-  currentHerd <- myOuts[currentYear, herd]
-  pastYear <- currentYear
-  currentYear <- currentYear + 1
-  myOuts[currentYear, yr := startYear + pastYear - 1]
-  adaptInten <- 
-    CalculateAdaptationIntensity(whatIfForage(station.gauge, zones, myOuts[currentYear, yr], currentHerd, carryingCapacity, 10, 11, "normal"))
-  
-  myOuts[currentYear, rev.calf := CalculateExpSales(herd = NA, wn.succ = NA, 
-                                                     wn.wt = calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 
-                                                     calf.sell = calfSale, p.wn = simRuns$p.wn[pastYear])]
-  myOuts[currentYear, simStartTime := startTime]
-  myOuts[currentYear, timeElapse := (Sys.time() - yearStartTime)]
-  myOuts[currentYear, mTurkID := ID]
-  myOuts[currentYear, rev.ins := indem$indemnity]
-  myOuts[currentYear, rev.int := ifelse(myOuts[pastYear, assets.cash] > 0, 
-                                        myOuts[pastYear, assets.cash] * simRuns$invst.int,
-                                        0)]
-  myOuts[currentYear, household.exp := simRuns$household.exp]
-  myOuts[currentYear, rev.tot := myOuts[currentYear, rev.ins] + myOuts[currentYear, rev.int] + myOuts[currentYear, rev.calf]]
-  myOuts[currentYear, cost.op := CalculateBaseOpCosts(herd = currentHerd, cow.cost = simRuns$cow.cost)]
-  myOuts[currentYear, cost.ins := indem$producer_prem]
-  myOuts[currentYear, cost.adptexpend := adaptExpend]
-  myOuts[currentYear, cost.int := ifelse(myOuts[pastYear, assets.cash] < 0,
-                                          myOuts[pastYear, assets.cash] * -1 * simRuns$loan.int,
-                                          0)]
-
-  myOuts[currentYear, cost.tot := myOuts[currentYear, cost.op] + myOuts[currentYear, cost.ins] +
-                                    myOuts[currentYear, cost.adpt] + myOuts[currentYear, cost.int] + 
-                                    myOuts[currentYear, household.exp]]
-  myOuts[currentYear, profit := myOuts[currentYear, rev.tot] - myOuts[currentYear, cost.tot]]
-  myOuts[currentYear, taxes := ifelse(myOuts[currentYear, profit] > 0, myOuts[currentYear, profit] * (0.124+0.15+0.04), 0)]
-  myOuts[currentYear, aftax.inc := myOuts[currentYear, profit] - myOuts[currentYear, taxes]]
-  myOuts[currentYear, cap.sales := cowSales * simRuns$p.cow]
-  myOuts[currentYear, cap.taxes := myOuts[currentYear, cap.sales] * simRuns$cap.tax.rate]
-  myOuts[currentYear, assets.cow := round(newHerd, 0) * simRuns$p.cow]
-  myOuts[currentYear, assets.cash := myOuts[pastYear, assets.cash] + myOuts[currentYear, aftax.inc] +
-                                      myOuts[currentYear, cap.sales] - myOuts[currentYear, cap.purch] -
-                                      myOuts[currentYear, cap.taxes]]
-  myOuts[currentYear, net.wrth := myOuts[currentYear, assets.cash] + myOuts[currentYear, assets.cow]]
-  myOuts[currentYear, wn.succ := wean]
-  myOuts[currentYear, total.forage := totalForage]
-  myOuts[currentYear, herd := round(newHerd, 0)]
-  myOuts[currentYear, calves.sold := calfSale]
-  myOuts[currentYear, cows.culled := cowSales]
-  myOuts[currentYear, zone.change := sum(zones)]
-  if(!debugMode){
-    print(paste("forage production", whatIfForage(station.gauge, zones, myOuts[currentYear, yr], currentHerd, carryingCapacity, 10, 11, "normal")))
-    print(paste("adapt expend", adaptExpend))
-    print(paste("adapt inten", adaptInten))
-    print(paste("adapt needed", getAdaptCost(adpt_choice = "feed",
-                                                       pars = simRuns,
-                                                       days.act = 180,
-                                                       current_herd = currentHerd,
-                                                       intens.adj = adaptInten)))
-    print(paste("total forage", totalForage))
-    print(paste("Gt", myOuts[currentYear, Gt]))
-  }
-  myOuts[currentYear, Gt := 1 - (totalForage)]
-  myOuts[currentYear, forage.potential := sum(zones)]
-}
 
 
 shinyInsMat <- function(yy, clv, acres, pfactor, insPurchase, tgrd){
@@ -394,12 +312,12 @@ createOutputs <- function(practiceRuns, simRuns, indem, indemprac){
   practiceOuts[1, cost.ins := indemprac[[1]]$producer_prem]
   myOuts <- createResultsFrame(simRuns)
   myOuts[1, cost.ins := indem[[1]]$producer_prem]
-  practiceOuts <<- practiceOuts
-  myOuts <<- myOuts
-  rangeHealthList <<- rep(NA, 11)
+  practiceOuts <- practiceOuts
+  myOuts <- myOuts
+  # rangeHealthList <- rep(NA, 11)
 }
 
-rangeHealth <- function(currentYear){
+rangeHealth <- function(currentYear, myOuts){
   #source("R/shinny_support.R")
   ## Calcualte available forage for normal, high, and low precip over remaining months
   ## Establish current state variables 
@@ -435,12 +353,6 @@ rangeHealth <- function(currentYear){
 
 }
 
-appendRangeHealth <- function(healthValue, rangeHealthList){
-  rangeProd <- healthValue
-  
-  first_na <- which(is.na(rangeHealthList))[1]
-  rangeHealthList[first_na] <<- rangeProd
-}
 
 simPageOutput <- function(rv, name = ""){
   yearStartTime <<- Sys.time()
