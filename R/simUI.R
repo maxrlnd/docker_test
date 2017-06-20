@@ -957,7 +957,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
     oldOuts[currentYear, rev.tot := oldOuts[currentYear, rev.ins] + oldOuts[currentYear, rev.int] + oldOuts[currentYear, rev.calf]]
     oldOuts[currentYear, cost.op := CalculateBaseOpCosts(herd = currentHerd, cow.cost = simRuns$cow.cost)]
     oldOuts[currentYear, cost.ins := indem$producer_prem]
-    oldOuts[currentYear, cost.adptexpend := adaptExpend]
+    oldOuts[currentYear, cost.adpt := adaptExpend]
     oldOuts[currentYear, cost.int := ifelse(oldOuts[pastYear, assets.cash] < 0,
                                             oldOuts[pastYear, assets.cash] * -1 * simRuns$loan.int,
                                             0)]
