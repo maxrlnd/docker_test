@@ -1,6 +1,34 @@
 
 function(input, output, session) {
-
+  
+  
+  
+  ## Calcualte indemnities for all years of the simulation
+  indem <- lapply(startYear:(startYear + simLength - 1), function(x){
+    with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
+                              pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+  })
+  
+  indemprac <- lapply(startYearprac:(startYearprac + practiceLength - 1), function(x){
+    with(practiceRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
+                                   pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+  })
+  
+  ## Calculate binary variable for hypothetical payout based on the weather
+  ## If 
+  indemnity <- lapply(indem, "[[", 3) # Pulling the value of the indemnity from the (list of) dataframes
+  whatifIndem <- sapply(indemnity > 0, ifelse, 1, 0)  # Creating a binary variable where a year is eligible for a payout if you have insurance
+  
+  indemnityprac <- lapply(indemprac, "[[", 3) # Pulling the value of the indemnity from the (list of) dataframes
+  whatifIndemprac <- sapply(indemnityprac > 0, ifelse, 1, 0)
+  
+  
+  ## Create results frames for practice and simulation
+  createOutputs(practiceRuns, simRuns, indem, indemprac)
+  
+  ## Is insurance purchased?
+  purchaseInsurance <- T
+  
   # Set reactive values--------------------------------------------------------
   # Reactive values used to track when inputs/outputs are saved at the end of practice round
   #  and regular round. Once values become TRUE simulation contineus
