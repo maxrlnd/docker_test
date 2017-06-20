@@ -72,16 +72,17 @@ getJulyInfo <- function(currentYear, name, startYear){
            c("Month", "FPvalue"))
 
   #Combining Subsetted NOAA precipitation data with Forage Potential Values
-  CombinedForageandRain = data.frame(SubsetNOAAyear, ForageMonthly)
+  CombinedForageandRain <- data.frame(SubsetNOAAyear, ForageMonthly)
   
   #Removing second column of months
   CombinedForageandRain[,c("Month.1")] <- NULL
   
   #Creating Weighted Values for all months
-  CombinedForageandRain$`Weighted Values` = CombinedForageandRain$RainfallP*CombinedForageandRain$FPvalue
+  CombinedForageandRain$`Weighted Values` <- CombinedForageandRain$RainfallP*CombinedForageandRain$FPvalue
   
-  #Finding the overall percentage of rainfall from January to June, Novermber to December. Also Rounds it to a whole number. 
-  ForageValue = round(sum(CombinedForageandRain$`Weighted Values`[c(1:5,11,12)])/sum(CombinedForageandRain$FPvalue[c(1:5,11,12)]),digits = 0)
+  #Finding the overall percentage of rainfall from January to June, November to December. Also Rounds it to a whole number. 
+  ForageValue <- round(sum(CombinedForageandRain$`Weighted Values`[c(1:6,11,12)]) /
+                         sum(CombinedForageandRain$FPvalue[c(1:6,11,12)]), digits = 0)
   
 
     #do weighted average(value*forage potential )
