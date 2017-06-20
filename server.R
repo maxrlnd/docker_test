@@ -2,9 +2,8 @@
 function(input, output, session) {
   
   
-  
   ## Calcualte indemnities for all years of the simulation
-  indem <- lapply(startYear:(startYear + simLength - 1), function(x){
+  indem lapply(startYear:(startYear + simLength - 1), function(x){
     with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
                               pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
   })
@@ -22,9 +21,11 @@ function(input, output, session) {
   indemnityprac <- lapply(indemprac, "[[", 3) # Pulling the value of the indemnity from the (list of) dataframes
   whatifIndemprac <- sapply(indemnityprac > 0, ifelse, 1, 0)
   
-  
-  ## Create results frames for practice and simulation
-  createOutputs(practiceRuns, simRuns, indem, indemprac)
+  practiceOuts <- createResultsFrame(practiceRuns)
+  practiceOuts[1, cost.ins := indemprac[[1]]$producer_prem]
+  myOuts <- createResultsFrame(simRuns)
+  myOuts[1, cost.ins := indem[[1]]$producer_prem]
+  rangeHealthList <- rep(NA, 11)
   
   ## Is insurance purchased?
   purchaseInsurance <- T
@@ -84,7 +85,7 @@ function(input, output, session) {
         x[, c("producer_prem", "indemnity", "full_prem") := 0]
         return(x)
       })
-      createOutputs(practiceRuns, simRuns, indem, indemprac)
+      myOuts[1, cost.ins := indemprac[[1]]$producer_prem]
       
     }else{ # Excuted for all users with insurance
       
@@ -99,7 +100,7 @@ function(input, output, session) {
         with(practiceRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
                                        pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
       })
-      createOutputs(practiceRuns, simRuns, indem, indemprac)
+      myOuts[1, cost.ins := indemprac[[1]]$producer_prem]
     }
     
     # Disable elements and move active tab
