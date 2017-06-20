@@ -1,6 +1,36 @@
 
 function(input, output, session) {
-
+  
+  
+  ## Calcualte indemnities for all years of the simulation
+  indem <- lapply(startYear:(startYear + simLength - 1), function(x){
+    with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
+                              pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+  })
+  
+  indemprac <- lapply(startYearprac:(startYearprac + practiceLength - 1), function(x){
+    with(practiceRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
+                                   pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
+  })
+  
+  ## Calculate binary variable for hypothetical payout based on the weather
+  ## If 
+  indemnity <- lapply(indem, "[[", 3) # Pulling the value of the indemnity from the (list of) dataframes
+  whatifIndem <- sapply(indemnity > 0, ifelse, 1, 0)  # Creating a binary variable where a year is eligible for a payout if you have insurance
+  
+  indemnityprac <- lapply(indemprac, "[[", 3) # Pulling the value of the indemnity from the (list of) dataframes
+  whatifIndemprac <- sapply(indemnityprac > 0, ifelse, 1, 0)
+  
+  practiceOuts <- createResultsFrame(practiceRuns)
+  practiceOuts[1, cost.ins := indemprac[[1]]$producer_prem]
+  myOuts <- createResultsFrame(simRuns)
+  myOuts[1, cost.ins := indem[[1]]$producer_prem]
+  # rangeHealthList <- rep(0, simLength)
+  # rangeHealthListprac <- rep(0, practiceLength)
+  
+  ## Is insurance purchased?
+  purchaseInsurance <- T
+  
   # Set reactive values--------------------------------------------------------
   # Reactive values used to track when inputs/outputs are saved at the end of practice round
   #  and regular round. Once values become TRUE simulation contineus
@@ -18,6 +48,7 @@ function(input, output, session) {
     toggleClass(class = "disabled",
                  selector = "#navBar li a[data-value='Ranch Simulation']")
   }
+  
 
 
   # Create pratice and simulation tabs-----------------------------------------
@@ -28,13 +59,13 @@ function(input, output, session) {
   
   # Create main simulation ui/output
   lapply(1:simLength, function(i){
-    simCreator(input, output, session, i, rv, simLength, startYear)
+    simCreator(input, output, session, i, rv, simLength, startYear, myOuts, indem, purchaseInsurance, whatifIndem)
   }) 
   
   # Create practice simulation ui/output, everything is the same except "prac" 
   #   is appended to the end of all object names
   lapply(1:practiceLength, function(i){
-    simCreator(input, output, session,i, rvPrac, practiceLength, startYearprac, name = "prac")
+    simCreator(input, output, session,i, rvPrac, practiceLength, startYearprac, myOuts, indemprac, purchaseInsurance, whatifIndemprac, name = "prac")
   })
 
   # Observers for practice simulation------------------------------------------
@@ -56,12 +87,13 @@ function(input, output, session) {
         x[, c("producer_prem", "indemnity", "full_prem") := 0]
         return(x)
       })
-      createOutputs(practiceRuns, simRuns, indem, indemprac)
-      
+      myOuts[1, cost.ins := indemprac[[1]]$producer_prem]
+      print("its F")
     }else{ # Excuted for all users with insurance
       
       # Sets ins to false and resets all ins variables to zero, recreates output frames
       purchaseInsurance <<- TRUE
+      print("its T")
       indem <<- lapply(startYear:(startYear + simLength - 1), function(x){
         with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
                                   pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
@@ -71,7 +103,7 @@ function(input, output, session) {
         with(practiceRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
                                        pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
       })
-      createOutputs(practiceRuns, simRuns, indem, indemprac)
+      myOuts[1, cost.ins := indemprac[[1]]$producer_prem]
     }
     
     # Disable elements and move active tab
@@ -83,7 +115,10 @@ function(input, output, session) {
     updateTabsetPanel(session, "mainPanels", selected = "Practice Simulation")
   })
   
-  observeEvent(input$prevBtnprac, navPagePrac(-1))
+  observeEvent(input$prevBtnprac,{ 
+    navPagePrac(-1)
+    # rangeHealthList <<- appendRangeHealth(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)), rangeHealthList, rv$page)
+    })
   observeEvent(input$nextBtnprac, navPagePrac(1))
   navPagePrac <- function(direction) {
     rvPrac$page <- rvPrac$page + direction
@@ -94,7 +129,8 @@ function(input, output, session) {
   # Triggered when a user clicks the begin ranch game button after practice 
   #   round has been completed disable elements and switch active tab
   observeEvent(input$simStart, {
-    createOutputs(practiceRuns, simRuns, indem, indemprac)
+    myOuts <<- createResultsFrame(simRuns)
+    myOuts[1, cost.ins := indem[[1]]$producer_prem]
     disable("simStart")
     toggleClass(class = "disabled",
                 selector = "#navBar li a[data-value='Practice Simulation']")
@@ -340,7 +376,6 @@ function(input, output, session) {
     stopApp()
   })
   
-
 }
 
 

@@ -1,4 +1,5 @@
-simCreator <- function(input, output, session, i, rv, simLength, startYear, name = ""){
+simCreator <- function(input, output, session, i, rv, simLength, startYear, myOuts, indem, purchaseInsurance,
+                     whatifIndem, name = ""){
   
   # orgName preserves the orginal name (either "" for the real simulation 
   #   or prac for practice), name is used at the end of all objects to
@@ -30,7 +31,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     balance <- myOuts[i, assets.cash]
     if(!is.null(input[[paste0("year", name, "Start")]])){  
       if(input[[paste0("year", name, "Start")]] == 1){
-        balance <- balance - get(paste0("indem", orgName))[[i]]$producer_prem
+        balance <- balance - indem[[i]]$producer_prem
       }
     }
     if(!is.null(input[[paste0("year", name, "Summer")]])){  
@@ -40,7 +41,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     }
     if(!is.null(input[[paste0("insCont", name)]])){  
       if(input[[paste0("insCont", name)]] == 1){
-        balance <- balance + get(paste0("indem", orgName))[[i]]$indemnity
+        balance <- balance + indem[[i]]$indemnity
       }
     }
     if(!is.null(input[[paste0("sell", name)]])){  
@@ -140,13 +141,11 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     if(myOuts[i, herd] == 0){
       myOuts[i, cost.ins := 0]
     }
-    ID<<- input$user.ID
+    ID <<- input$user.ID
     myOuts[1, mTurkID := ID]
     
-    # Append range health value to a list 
-    {appendRangeHealth(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)), rangeHealthList)}
     # Compute health info for sidebar display
-    span(rangeHealth(i),style = "color:white")
+    span(rangeHealth(i, myOuts),style = "color:white")
     delay(10,session$sendCustomMessage(type = "scrollCallbackTop", 0))
     tagList(
       tags$head(tags$style(HTML(
@@ -225,7 +224,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
         uiOutput(paste0("premCheck", name))   
       },
       tags$hr(style="border-color: darkgray;"),
-      span(rangeHealth(i),style = "color:white"),
+      span(rangeHealth(i, myOuts),style = "color:white"),
       
       # Create an output for the sidebar widget on overall ranch status
       output[[paste0("infoPane", orgName)]] <- renderUI({
@@ -334,6 +333,12 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   
   # UI for winter Info
   output[[paste0("winterInfo", name)]] <- renderUI({
+    # Append range health value to a list 
+    # print("before")
+    # print(rangeHealthList)
+    # 
+    # print("after")
+    # print(rangeHealthList)
     tagList(
       h3(paste0("Year ", i, " of ", simLength, ": Ranching Simulation")),
       p("Remember, at the end of the simulation, you'll convert your net worth to a real MTurk bonus. Read the information carefully to make the best decisions."),
@@ -349,7 +354,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     userPay <- tryCatch(as.numeric(gsub("\\$", "", userPay)),
                         warning = function(war)return(0))
     if(!debugMode){
-      req(userPay == round(get(paste0("indem", orgName))[[i]]$producer_prem, 0), genericWrong)
+      req(userPay == round(indem[[i]]$producer_prem, 0), genericWrong)
     }
     actionButton(paste0("year", name, "Start"), "Next")
   })
@@ -359,7 +364,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     if(!is.null(input[[paste0("year", name, "Start")]])){  
       if(input[[paste0("year", name, "Start")]] == 1){
         tagList(
-          getJulyInfo(i, name, startYear)
+          getJulyInfo(i, name, startYear, myOuts)
         )
       }
     }
@@ -372,7 +377,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
                         warning = function(war)return(0))
     req(userPay)
     validate(
-      need(userPay == round(get(paste0("indem", orgName))[[i]]$producer_prem, 0), genericWrong)
+      need(userPay == round(indem[[i]]$producer_prem, 0), genericWrong)
     )
   })
   
@@ -382,17 +387,17 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
       if(input[[paste0("year", name, "Summer")]]){
         if(myOuts[i, herd] == 0){
           if(orgName == "prac"){
-            indemprac[[i]]$indemnity <<- 0
+            indem[[i]]$indemnity <<- 0
           }else{
             indem[[i]]$indemnity <<- 0
           }
         }
-        currentIndem <- prettyNum(get(paste0("indem", orgName))[[i]]$indemnity, digits = 0, big.mark=",",scientific=FALSE)
+        currentIndem <- prettyNum(indem[[i]]$indemnity, digits = 0, big.mark=",",scientific=FALSE)
         tagList(
           br(),
           br(),
           h3(paste0("Year ", i, ": End of Growing Season")),
-          if(get(paste0("whatifIndem", orgName))[i] == 1){
+          if(whatifIndem[rv$page] == 1){
             tagList(
               p("You didn't get much rain this summer! In the graph below you can see how much
                 it has rained since you decided whether or not to purchase hay (July and August). 
@@ -452,13 +457,13 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
               if(purchaseInsurance == TRUE) {
                 h4(paste0("After your expenditures on hay and insurance, your new bank balance is: $", 
                           prettyNum(myOuts[i, assets.cash] - 
-                                      get(paste0("indem", orgName))[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
+                                      indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
                                     digits = 0, big.mark=",",scientific=FALSE)))  
               },
               if(purchaseInsurance == FALSE) {
                 h4(paste0("After your expenditures on hay, your new bank balance is: $", 
                           prettyNum(myOuts[i, assets.cash] - 
-                                      get(paste0("indem", orgName))[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
+                                      indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
                                     digits = 0, big.mark=",",scientific=FALSE)))
               },
               actionButton(paste0("insCont", name), "Next")
@@ -482,7 +487,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     # print(get(paste0("totalForage", name))())
     # print( AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1))
     tagList(
-      getCowSell(get(paste0("totalForage", name))(), AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1), i, name),
+      getCowSell(get(paste0("totalForage", name))(), AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1), i, name, myOuts),
       plotOutput(paste0("cowPlot", name)),
       br(),
       p("Herd prediction details",bsButton("herdetails", label = "", icon = icon("question"), style = "info", class="inTextTips", size = "extra-small"),bsPopover(id = "herdetails", title = "Herd Prediction",content = paste0("Keep in mind that yearlings (weaned calves that are not yet producing calves) are not counted in these herd size numbers. You do not have the option to sell yearlings in this game. These herd size predictions also assume that you go back to normal culling and calf sale rates next year. For these reasons, your herd may not go all the way to 0 if you sell off all of your cows and calves."), 
@@ -498,7 +503,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   
   output[[paste0("profits", name)]] <- renderUI({
     req(input[[paste0("insCont", name)]])
-    profit <- get(paste0("revenues", name))() + get(paste0("indem", orgName))[[i]]$indemnity - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", name, "adaptExpend")]] - get(paste0("indem", orgName))[[i]]$producer_prem
+    profit <- get(paste0("revenues", name))() + indem[[i]]$indemnity - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", name, "adaptExpend")]] - indem[[i]]$producer_prem
      tagList(
        tags$head(tags$style(HTML(
     ".inTextTips{
@@ -583,8 +588,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
       #           style = "font-weight:bold:font-size:Xlarge;color:red"))),
       # 
       # br(),
-      if(get(paste0("revenues", name))() + get(paste0("indem", orgName))[[i]]$indemnity
-         - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", name, "adaptExpend")]] - get(paste0("indem", orgName))[[i]]$producer_prem > 0){
+      if(get(paste0("revenues", name))() + indem[[i]]$indemnity
+         - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", name, "adaptExpend")]] - indem[[i]]$producer_prem > 0){
 
         h4(p("",
              span(prettyNum(profit - profit * (0.124 + 0.15 + 0.04),
@@ -596,8 +601,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
       }
       else{
         h4(p("Total profits: $",
-             span(prettyNum(get(paste0("revenues", name))() + get(paste0("indem", orgName))[[i]]$indemnity
-                            - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", name, "adaptExpend")]] - get(paste0("indem", orgName))[[i]]$producer_prem,
+             span(prettyNum(get(paste0("revenues", name))() + indem[[i]]$indemnity
+                            - myOuts[i, herd] * simRuns$cow.cost - input[[paste0("d", name, "adaptExpend")]] - indem[[i]]$producer_prem,
                             digits = 2, big.mark = ",", scientific = FALSE),
 
                   style = "font-weight:bold:font-size:Xlarge;color:white")
@@ -658,23 +663,23 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
                           warning = function(war)return(0))
       if(!debugMode){
         validate(
-          need(userIns == round(get(paste0("indem", orgName))[[i]]$indemnity, 0), genericWrong)
+          need(userIns == round(indem[[i]]$indemnity, 0), genericWrong)
         )
       }
       
       fluidRow(
         
-        if(myOuts[i, assets.cash] + get(paste0("indem", orgName))[[i]]$indemnity - 
-           get(paste0("indem", orgName))[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]] > 0){
+        if(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+           indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]] > 0){
           h4(p("After your expenditures on hay and your insurance check, your new bank balance is: $", 
-               span(prettyNum(myOuts[i, assets.cash] + get(paste0("indem", orgName))[[i]]$indemnity - 
-                                get(paste0("indem", orgName))[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
+               span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+                                indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
                               digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:green")))
         }
         else{
           h4(p("After your expenditures on hay and your insurance check, your new bank balance is: $", 
-               span(prettyNum(myOuts[i, assets.cash] + get(paste0("indem", orgName))[[i]]$indemnity - 
-                                get(paste0("indem", orgName))[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
+               span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+                                indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
                               digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:red")))
           
         }
@@ -691,7 +696,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
   output[[paste0("postDepositButt", name)]] <- renderUI({
     
     if(!is.null(input[[paste0("year", name, "Summer")]])){
-      if(get(paste0("indem", orgName))[[i]]$indemnity == 0){
+      if(indem[[i]]$indemnity == 0){
         tagList(
           actionButton(paste0("insCont", name), "Next")
         )
@@ -703,7 +708,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
           userIns <- tryCatch(as.numeric(gsub("\\$", "", userIns)),
                               warning = function(war)return(0))
           
-          if(!debugMode){req(userIns == round(get(paste0("indem", orgName))[[i]]$indemnity, 0))}
+          if(!debugMode){req(userIns == round(indem[[i]]$indemnity, 0))}
           tagList(
             actionButton(paste0("insCont", name), "Next")
           )
@@ -790,8 +795,9 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     setnames(PlotYear, c("Year"))
     PlotYear[, Year := startYear:(startYear + nrow(PlotYear) - 1)]
     PlotYear <- melt(PlotYear, id.vars = "Year")
-    PlotYear[,rangeHealthList := rangeHealthList[1:simLength]]
-    PlotYear[is.na(rangeHealthList), rangeHealthList := 0]
+    PlotYear[,myRangeHealthList := myOuts[1:simLength, rangeHealth]]
+    PlotYear[rv$page, myRangeHealthList := ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0))]
+    # PlotYear[is.na(myRangeHealthList), myRangeHealthList := 0]
     
     PlotYear$YearNumbers <- paste("Yr", seq(1,simLength))
     PlotYear$YearNumbers <- factor(PlotYear$YearNumbers, 
@@ -800,12 +806,12 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     #PlotYear$YearNumbers <- factor(PlotYear$YearNumbers, 
                                    #levels = paste("Yr", seq_along(unique(PlotYear$Year))))
     
-    ggplot(PlotYear, aes(x = YearNumbers, y = rangeHealthList)) + 
+    ggplot(PlotYear, aes(x = YearNumbers, y = myRangeHealthList)) + 
       geom_bar(stat = "identity", fill = "olivedrab") + 
       ggtitle("Range Health") + 
       labs(x = "Year" ,y = "Range Condition (%)") +
       theme(text = element_text(size = 20)) +
-      geom_text(aes(label = paste(rangeHealthList, sep = "", "%")), size = 8, color =  "#ffffff", vjust = 5)
+      geom_text(aes(label = paste(myRangeHealthList, sep = "", "%")), size = 8, color =  "#ffffff", vjust = 5)
     
     
   })
@@ -884,9 +890,9 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     disable(paste0("cow", name, "Sale"))
     myOuts <<- updateOuts(wean = AdjWeanSuccess(get(paste0("totalForage", name))(), T, simRuns$normal.wn.succ, 1), 
                           totalForage = get(paste0("totalForage", name))(), calfSale = input[[paste0("calves", name, "Sale")]],
-                          indem = get(paste0("indem", orgName))[[i]], adaptExpend = input[[paste0("d", name, "adaptExpend")]], cowSales = input[[paste0("cow", name, "Sale")]], 
+                          indem = indem[[i]], adaptExpend = input[[paste0("d", name, "adaptExpend")]], cowSales = input[[paste0("cow", name, "Sale")]], 
                           newHerd = get(paste0("herdSize", name))(), zones = get(paste0("currentZones", name))(), 
-                          currentYear = i, ID = ID, time = startTime)
+                          currentYear = i, ID = ID, time = startTime, oldOuts = myOuts)
   })
   
   
@@ -901,5 +907,96 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, name
     shinyjs::disable(paste0("insCont", name))
     delay(100,session$sendCustomMessage(type = "scrollCallbackCow", paste0("cowSell", i)))
   })
+  
+  # appendRangeHealth <- function(healthValue, rangeHealthList, currentYear){
+  #   rangeHealthList[currentYear] <- healthValue
+  #   # print(rangeHealthList)
+  #   return(rangeHealthList)
+  # }
+  
+  updateOuts <- function(wean, totalForage, calfSale, indem, adaptExpend, cowSales, newHerd, zones, adaptInten, currentYear, ID, time, oldOuts){
+    "
+    Function: updateOuts
+    Description: Function to update myOuts after a year of the simulation has been completed
+    
+    Inputs:
+    wean = weaning success of calves
+    totalForage = percent of forage available after adaption has been applied
+    calfSale = number of calves being sold
+    indem = data.table containing premimum and indemnity info
+    adaptExpend = amount spent on adaptation
+    cowSales = number of cows being sold
+    newHerd = size of next year's herd based on cowsales and calf sales from 2ya
+    zones = zone information based on precip/adaptation/over grazing from previous year
+    adaptInten = intensity of adaptation
+    currentYear = the current year
+    ID = mTurk user entered ID
+    Outputs:
+    myOuts = data.table of all outputs
+    "
+    
+    
+    currentHerd <- oldOuts[currentYear, herd]
+    pastYear <- currentYear
+    currentYear <- currentYear + 1
+    oldOuts[currentYear, yr := startYear + pastYear - 1]
+    adaptInten <- 
+      CalculateAdaptationIntensity(whatIfForage(station.gauge, zones, oldOuts[currentYear, yr], currentHerd, carryingCapacity, 10, 11, "normal"))
+    
+    oldOuts[currentYear, rev.calf := CalculateExpSales(herd = NA, wn.succ = NA, 
+                                                       wn.wt = calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 
+                                                       calf.sell = calfSale, p.wn = simRuns$p.wn[pastYear])]
+    oldOuts[currentYear, simStartTime := startTime]
+    oldOuts[currentYear, timeElapse := (Sys.time() - yearStartTime)]
+    oldOuts[currentYear, mTurkID := ID]
+    oldOuts[currentYear, rev.ins := indem$indemnity]
+    oldOuts[currentYear, rev.int := ifelse(oldOuts[pastYear, assets.cash] > 0, 
+                                           oldOuts[pastYear, assets.cash] * simRuns$invst.int,
+                                           0)]
+    oldOuts[currentYear, household.exp := simRuns$household.exp]
+    oldOuts[currentYear, rev.tot := oldOuts[currentYear, rev.ins] + oldOuts[currentYear, rev.int] + oldOuts[currentYear, rev.calf]]
+    oldOuts[currentYear, cost.op := CalculateBaseOpCosts(herd = currentHerd, cow.cost = simRuns$cow.cost)]
+    oldOuts[currentYear, cost.ins := indem$producer_prem]
+    oldOuts[currentYear, cost.adpt := adaptExpend]
+    oldOuts[currentYear, cost.int := ifelse(oldOuts[pastYear, assets.cash] < 0,
+                                            oldOuts[pastYear, assets.cash] * -1 * simRuns$loan.int,
+                                            0)]
+    
+    oldOuts[currentYear, cost.tot := oldOuts[currentYear, cost.op] + oldOuts[currentYear, cost.ins] +
+              oldOuts[currentYear, cost.adpt] + oldOuts[currentYear, cost.int] + 
+              oldOuts[currentYear, household.exp]]
+    oldOuts[currentYear, profit := oldOuts[currentYear, rev.tot] - oldOuts[currentYear, cost.tot]]
+    oldOuts[currentYear, taxes := ifelse(oldOuts[currentYear, profit] > 0, oldOuts[currentYear, profit] * (0.124+0.15+0.04), 0)]
+    oldOuts[currentYear, aftax.inc := oldOuts[currentYear, profit] - oldOuts[currentYear, taxes]]
+    oldOuts[currentYear, cap.sales := cowSales * simRuns$p.cow]
+    oldOuts[currentYear, cap.taxes := oldOuts[currentYear, cap.sales] * simRuns$cap.tax.rate]
+    oldOuts[currentYear, assets.cow := round(newHerd, 0) * simRuns$p.cow]
+    oldOuts[currentYear, assets.cash := oldOuts[pastYear, assets.cash] + oldOuts[currentYear, aftax.inc] +
+              oldOuts[currentYear, cap.sales] - oldOuts[currentYear, cap.purch] -
+              oldOuts[currentYear, cap.taxes]]
+    oldOuts[currentYear, net.wrth := oldOuts[currentYear, assets.cash] + oldOuts[currentYear, assets.cow]]
+    oldOuts[currentYear, wn.succ := wean]
+    oldOuts[currentYear, total.forage := totalForage]
+    oldOuts[currentYear, herd := round(newHerd, 0)]
+    oldOuts[currentYear, calves.sold := calfSale]
+    oldOuts[currentYear, cows.culled := cowSales]
+    oldOuts[currentYear, zone.change := sum(zones)]
+    oldOuts[pastYear, rangeHealth := ifelse((oldOuts[currentYear, zone.change] * 100) > 100, 100, round(oldOuts[currentYear, zone.change] * 100, 0))]
+    if(!debugMode){
+      print(paste("forage production", whatIfForage(station.gauge, zones, oldOuts[currentYear, yr], currentHerd, carryingCapacity, 10, 11, "normal")))
+      print(paste("adapt expend", adaptExpend))
+      print(paste("adapt inten", adaptInten))
+      print(paste("adapt needed", getAdaptCost(adpt_choice = "feed",
+                                               pars = simRuns,
+                                               days.act = 180,
+                                               current_herd = currentHerd,
+                                               intens.adj = adaptInten)))
+      print(paste("total forage", totalForage))
+      print(paste("Gt", oldOuts[currentYear, Gt]))
+    }
+    oldOuts[currentYear, Gt := 1 - (totalForage)]
+    oldOuts[currentYear, forage.potential := sum(zones)]
+    return(oldOuts)
+  }
 }
 
