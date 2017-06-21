@@ -283,7 +283,7 @@ createResultsFrame <- function(pars = NULL){
                    "cap.sales", "cap.purch", "cap.taxes", "assets.cow", 
                    "assets.cash", "net.wrth", "wn.succ", "forage.production", 
                    "herd", "calves.sold", "cows.culled", "zone.change", "Gt",
-                   "forage.potential")
+                   "forage.potential", "rangeHealth")
   ## fills in rows using initial variables from pars
   if(!is.null(pars)){
     sim_results <- data.table(matrix(0, pars$sim_length + 1, length(resultNames)))
