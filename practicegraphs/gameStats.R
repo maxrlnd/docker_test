@@ -54,10 +54,11 @@ gameStats = function(numbers,year1,year2){
   require(stringr)
   require(ggplot2)
   require(ggthemes)
-  names(numbers) = c("Year","Adaptation_Choice","Calf_Revenue","Insurance_Revenue","Interest_Revenue", "Total_Revenue","Operating_Costs","Insurance_Costs","Adaptation_Costs","Interest_Costs","Total_Costs","Profit","Taxes","After_Tax_Income", "Captial_Sale","Capital_Purchases","Capital_Taxes","Herd_Value","Bank_Balance","Net_Worth","Weaning_Percentage","Forage_Production","Herd_Size","Calves_Sold","Cows_Sold","Forage_Potential_Change", "Grazing_Pressure","Forage_Potential","Range_Health","mTurkID", "Sim_Start_Time", "Elapsed_Time", "Household_Expenses", "Hay_Expenses","Total_Forage_Potential","Index","Insured")
+  names(numbers) = c("Year","Adaptation_Choice","Calf_Revenue","Insurance_Revenue","Interest_Revenue", "Total_Revenue","Operating_Costs","Insurance_Costs ","Adaptation_Costs","Interest_Costs","Total_Costs","Profit","Taxes","After_Tax_Income", "Captial_Sales","Capital_Purchases","Capital_Taxes","Herd_Value","Bank_Balance","Net_Worth","Weaning_Percentage","Forage_Production","Herd_Size","Calves_Sold","Cows_Sold","Forage_Potential_Change", "Grazing_Pressure","Forage_Potential","Range_Health","mTurkID", "Sim_Start_Time", "Elapsed_Time", "Household_Expenses", "Hay_Expenses","Total_Forage_Potential","Index","Insured")
   continue = "y"
   cat("Follow the prompts to generate a chart and a tibble for any variable in the dataset. Type 'q' to break out of the function")
   numbers=tbl_df(numbers)
+  dollars = c(3:20,33,34)
   while (TRUE){
     if (continue == tolower("y")){  
       print(paste("Variables for the results dataset"))
@@ -66,8 +67,9 @@ gameStats = function(numbers,year1,year2){
       variable = readline(prompt = "Enter the number for the variable that you want a time series of? ")      
       if (tolower(variable =="q")){break}
       index = as.numeric(variable)
+      if(index%in%dollars){unit = "($)"}else{unit=""}
       variable = as.character(names[index,])
-      how = readline(prompt = "Aggregate or indexed?(Type the word or '1' or '2') ")        
+      how = readline(prompt = "Aggregate or indexed?(Type the word or '1' or '2') ")
       if(how=="indexed"|how=="2"){ 
         lwd = 1.25
         yr = "Year"
@@ -85,13 +87,13 @@ gameStats = function(numbers,year1,year2){
         geom_line(lwd=lwd)+
         #geom_smooth()+
         scale_x_continuous(breaks=seq(year1,year2,by = 1)) +
-        ylab(toupper(variable))+
+        ylab(paste(toupper(variable),unit))+
         xlab("YEAR")+
         #theme_fivethirtyeight()+
         #theme_economist() #+ scale_colour_economist() +
         #theme_stata() + scale_colour_stata()+
         theme_minimal()+ 
-        ggtitle("Results")+      
+        ggtitle(paste("Results -",variable))+      
         scale_fill_manual(values=c("orange","red"))+
         theme(
           axis.text.x = element_text( hjust = 1,face="bold"),#angle = 90,
@@ -114,3 +116,4 @@ gameStats = function(numbers,year1,year2){
   }
 } 
 gameStats(numbers,1951,1955)
+
