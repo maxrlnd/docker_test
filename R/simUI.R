@@ -353,7 +353,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
     userPay <- gsub(",", "", input[[paste0("insurancePremium", name)]])
     userPay <- tryCatch(as.numeric(gsub("\\$", "", userPay)),
                         warning = function(war)return(0))
-    if(!debugMode){
+    if(!debugMode & purchaseInsurance == T){
       req(userPay == round(indem[[i]]$producer_prem, 0), genericWrong)
     }
     actionButton(paste0("year", name, "Start"), "Next")
@@ -657,35 +657,46 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
   
   
   output[[paste0("postDeposit", name)]] <- renderUI({
-    if(input[[paste0("insuranceDeposit", name)]] != ""){
-      userIns <- gsub(",", "", input[[paste0("insuranceDeposit", name)]])
-      userIns <- tryCatch(as.numeric(gsub("\\$", "", userIns)),
-                          warning = function(war)return(0))
-      if(!debugMode){
-        validate(
-          need(userIns == round(indem[[i]]$indemnity, 0), genericWrong)
-        )
+    accountPrint <- F
+    if(purchaseInsurance){
+      if(input[[paste0("insuranceDeposit", name)]] != ""){
+        userIns <- gsub(",", "", input[[paste0("insuranceDeposit", name)]])
+        userIns <- tryCatch(as.numeric(gsub("\\$", "", userIns)),
+                            warning = function(war)return(0))
+        if(!debugMode & purchaseInsurance){
+          validate(
+            need(userIns == round(indem[[i]]$indemnity, 0), genericWrong)
+          )
+        }
+        accountPrint <- T
+      }
+    }else{
+      accountPrint <- T
+    }
+    req(accountPrint)
+    if(purchaseInsurance){
+      txtInsert <-  "and your insurance check, "
+    }else{
+      txtInsert <- ""
+    }
+    accountTxt <- paste0("After your expenditures on hay ", txtInsert, "your new bank balance is: $")
+    fluidRow(
+      if(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+         indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]] > 0){
+        h4(p(accountTxt, 
+             span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+                              indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
+                            digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:green")))
+      }
+      else{
+        h4(p(accountTxt, 
+             span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+                              indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
+                            digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:red")))
+        
       }
       
-      fluidRow(
-        
-        if(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
-           indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]] > 0){
-          h4(p("After your expenditures on hay and your insurance check, your new bank balance is: $", 
-               span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
-                                indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
-                              digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:green")))
-        }
-        else{
-          h4(p("After your expenditures on hay and your insurance check, your new bank balance is: $", 
-               span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
-                                indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
-                              digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:red")))
-          
-        }
-        
-      )
-    }
+    )
   })
   
   output[[paste0("insSpace", name)]] <- renderUI({
