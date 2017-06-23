@@ -53,11 +53,13 @@ ggplot(cperGameOutputs, aes(herd)) +
 
 xyplot(net.wrth ~ Insurance, data = cperGameOutputs)
 
-xyplot(rangeHealth ~ herd, data = cperGameOutputs)
+xyplot(cost.tot ~ Insurance, data = cperGameOutputs)
 
 
 
 ttest = t.test(cperGameOutputs$Insurance, cperGameOutputs$net.wrth)
+ttest = t.test(cperGameOutputs$rangeHealth, cperGameOutputs$calves.sold)
+
 
 cor(cperGameOutputs$Insurance, cperGameOutputs$net.wrth)
 
