@@ -233,8 +233,8 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
           
           width = 220, height = "auto",
           wellPanel(
-            p(h3("Ranch Overview")), 
-            br(), 
+            p(h2("Ranch Overview")),
+            p(h3("Year ", i, "of ", simLength)),
             p(h4("Cattle Status:")), 
             if(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0))<100){
               
