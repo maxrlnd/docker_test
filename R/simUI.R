@@ -251,7 +251,15 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
                       trigger = "hover", 
                       options = list(container = "body")),
             
-            p("Weaning Percentage(%): ", prettyNum((myOuts[rv$page, wn.succ]*100), digits= 0 , big.mark=",", scientific=FALSE)),
+            p("Weaning Percent: ", prettyNum((myOuts[rv$page, wn.succ]*100), digits= 0 , big.mark=",", scientific=FALSE),"%",
+            bsButton("weanPercentage", label="", icon = icon("question"), style="info", class="quest", size = "extra-small")),
+            bsPopover(id="weanPercentage", 
+                      title="Weaning Percentage", 
+                      content = paste0("placeholder for weaning percentage info"), 
+                      placement = "top",
+                      trigger = "hover",
+                      options = list(container = "body")
+                      ),
             
             p("Cattle in herd:",prettyNum(myOuts[rv$page, herd], digits = 0, big.mark=",", scientific=FALSE), 
               # Tooltip creation, a button with an icon and the popover for the "tip"
