@@ -236,6 +236,21 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
             p(h3("Ranch Overview")), 
             br(), 
             p(h4("Cattle Status:")), 
+            if(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0))<100){
+              
+              p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="color:red"), 
+                bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+            }else{
+              p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="color:green"),
+                bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+              
+            },
+            bsPopover(id = "infohealth", title = "Range Health",
+                      content = paste0("There is a delicate balance between the size of a ranch and the number of cattle that graze it. Overgrazing will lead to many problems that reduce the health and productivity of your rangeland. Without a healthy rangeland, you will incur increasingly higher hay costs and see lower cattle weights at sale. Also, these problems are exacerbated under dry conditions and drought, so be especially careful when this occurs and adjust your herd size with the weather."),
+                      placement = "left", 
+                      trigger = "hover", 
+                      options = list(container = "body")),
+            
             p("Cattle in herd:",prettyNum(myOuts[rv$page, herd], digits = 0, big.mark=",", scientific=FALSE), 
               # Tooltip creation, a button with an icon and the popover for the "tip"
               bsButton("infocows", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
@@ -245,6 +260,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
                       trigger = "hover", 
                       options = list(container = "body")
             ),
+            
             
             p("Calves in herd:", prettyNum(get(paste0("calvesAvailable", name))(), digits = 0, big.mark=",", scientific=FALSE),
               
@@ -266,20 +282,6 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
             bsPopover(id = "infocash", title = "Cash Assets",
                       content = paste0("If your balance falls below zero, you will automatically borrow money at 6.5% interest."),
                       placement = "bottom", 
-                      trigger = "hover", 
-                      options = list(container = "body")),
-            if(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0))<100){
-              
-              p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="color:red"), 
-                bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
-            }else{
-              p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="color:green"),
-                bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
-              
-            },
-            bsPopover(id = "infohealth", title = "Range Health",
-                      content = paste0("There is a delicate balance between the size of a ranch and the number of cattle that graze it. Overgrazing will lead to many problems that reduce the health and productivity of your rangeland. Without a healthy rangeland, you will incur increasingly higher hay costs and see lower cattle weights at sale. Also, these problems are exacerbated under dry conditions and drought, so be especially careful when this occurs and adjust your herd size with the weather."),
-                      placement = "left", 
                       trigger = "hover", 
                       options = list(container = "body")),
             
