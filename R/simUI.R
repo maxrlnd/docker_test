@@ -413,13 +413,13 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
               },
               br(),
               if(purchaseInsurance == TRUE) {
-                h4(p("Rainfall was below normal levels during the growing season, 
-                     so you have received a check for $", span((currentIndem),
+                h4(p("Rainfall was below normal levels during the growing season. This means that for the months most important for grass growth (May-August), rainfall was below 90% of the average. Because of this below normal rainfall level,
+                      you have received a check for $", span((currentIndem),
                                                              style="font-weight:bold;font-size:large;color:green"), 
                      " from your rain insurance policy."))
               },
               if(purchaseInsurance == FALSE) {
-                h4("Rainfall was below normal levels during the growing season.")
+                h4("Rainfall was below normal levels during the growing season. This means that for the months most important for grass growth (May-August), rainfall was below 90% of the average.")
               },
               if(purchaseInsurance == TRUE) {
                 textInput(paste0("insuranceDeposit", name), 
@@ -451,10 +451,10 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
                 it has rained since you decided whether or not to purchase hay (July and August)."),
               plotOutput(paste0("rainGraphSep", name)),
               if(purchaseInsurance == TRUE) {
-                h4("Rainfall was close to or above normal levels during the growing season, so you did not receive a check for your rain insurance policy.")
+                h4("Rainfall was close to or above normal levels during the growing season. This means that for the months most important for grass growth (May-August), rainfall was at least 90% of the average.")
               },
               if(purchaseInsurance == FALSE) {
-                h4("Rainfall was close to or above normal levels during the growing season.")
+                h4("Rainfall was close to or above normal levels during the growing season. This means that for the months most important for grass growth (May-August), rainfall was at least 90% of the average.")
               },
               if(purchaseInsurance == TRUE) {
                 h4(paste0("After your expenditures on hay and insurance, your new bank balance is: $", 
