@@ -1,6 +1,6 @@
 simCreator <- function(input, output, session, i, rv, simLength, startYear, myOuts, indem, purchaseInsurance,
                      whatifIndem, name = ""){
-  
+  pageScroll <- F
   # orgName preserves the orginal name (either "" for the real simulation 
   #   or prac for practice), name is used at the end of all objects to
   #   create a unique output objects for each output and ui element
@@ -355,9 +355,10 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
     userPay <- gsub(",", "", input[[paste0("insurancePremium", name)]])
     userPay <- tryCatch(as.numeric(gsub("\\$", "", userPay)),
                         warning = function(war)return(0))
-    if(!debugMode){
+    if(!debugMode & purchaseInsurance == T){
       req(userPay == round(indem[[i]]$producer_prem, 0), genericWrong)
     }
+    rv$scrollPage <- T
     actionButton(paste0("year", name, "Start"), "Next")
   })
   
@@ -636,6 +637,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
   output[[paste0("nextButton", name)]] <- renderUI({
     if(!is.null(input[[paste0("sell", name)]])){
       if(input[[paste0("sell", name)]] == 1){
+        rv$scrollPage <- T
         tagList(
           actionButton(paste0("nextBtn", orgName), "Begin Next Year >")
         )
@@ -659,35 +661,47 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
   
   
   output[[paste0("postDeposit", name)]] <- renderUI({
-    if(input[[paste0("insuranceDeposit", name)]] != ""){
-      userIns <- gsub(",", "", input[[paste0("insuranceDeposit", name)]])
-      userIns <- tryCatch(as.numeric(gsub("\\$", "", userIns)),
-                          warning = function(war)return(0))
-      if(!debugMode){
-        validate(
-          need(userIns == round(indem[[i]]$indemnity, 0), genericWrong)
-        )
+    accountPrint <- F
+    if(purchaseInsurance){
+      if(input[[paste0("insuranceDeposit", name)]] != ""){
+        userIns <- gsub(",", "", input[[paste0("insuranceDeposit", name)]])
+        userIns <- tryCatch(as.numeric(gsub("\\$", "", userIns)),
+                            warning = function(war)return(0))
+        if(!debugMode & purchaseInsurance){
+          validate(
+            need(userIns == round(indem[[i]]$indemnity, 0), genericWrong)
+          )
+        }
+        accountPrint <- T
+      }
+    }else{
+      accountPrint <- T
+    }
+    req(accountPrint)
+    if(purchaseInsurance){
+      txtInsert <-  "and your insurance check, "
+    }else{
+      txtInsert <- ""
+    }
+    accountTxt <- paste0("After your expenditures on hay ", txtInsert, "your new bank balance is: $")
+    rv$scrollPage <- T
+    fluidRow(
+      if(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+         indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]] > 0){
+        h4(p(accountTxt, 
+             span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+                              indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
+                            digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:green")))
+      }
+      else{
+        h4(p(accountTxt, 
+             span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+                              indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
+                            digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:red")))
+        
       }
       
-      fluidRow(
-        
-        if(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
-           indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]] > 0){
-          h4(p("After your expenditures on hay and your insurance check, your new bank balance is: $", 
-               span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
-                                indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
-                              digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:green")))
-        }
-        else{
-          h4(p("After your expenditures on hay and your insurance check, your new bank balance is: $", 
-               span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
-                                indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
-                              digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:red")))
-          
-        }
-        
-      )
-    }
+    )
   })
   
   output[[paste0("insSpace", name)]] <- renderUI({
@@ -882,6 +896,13 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
     shinyjs::disable(paste0("year", name, "Start"))
     delay(100,session$sendCustomMessage(type = "scrollCallbackRain", paste0("rainGraph", i)))
   })
+
+  observeEvent(rv$scrollPage, {
+    req(rv$scrollPage)
+    rv$scrollPage <- F
+    delay(100,session$sendCustomMessage(type = "scrollCallbackBottom", 0))
+  })
+  
   
   ## Disable cow and calf sliders after sell button
   ## Disable sell button
