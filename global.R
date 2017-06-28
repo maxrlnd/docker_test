@@ -1,6 +1,6 @@
 #### Source Scripts ####
 source("R/load.R")
-source("R/shinny_support.R")
+source("R/shinySupportFunctions.R")
 source("R/simUI.R")
 source("R/decisionFunctions.R")
 source("R/InsuranceFunctions.R")
