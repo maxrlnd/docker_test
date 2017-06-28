@@ -2,15 +2,11 @@
 source("R/load.R")
 source("R/shinny_support.R")
 source("R/simUI.R")
-source("R/decisionFunctions.R")
-source("R/InsuranceFunctions.R")
 source("R/forageFunctions.R")
 source("R/adaptationFunctions.R")
-source("R/assetFunctions.R")
 source("R/costRevenueFunctions.R")
 source("R/initialFunctions.R")
 source("R/calfCowFunctions.R")
-source("R/herdFunctions.R")
 
 
 ## Code to disable tab
