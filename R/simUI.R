@@ -162,7 +162,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
         border-color: rgb(255,255,255);
         background-color: rgb(255, 255, 255);"))),
       br(),
-      h3(paste0("Year ", i,": Winter Finance Assessment")),
+      h3(paste0("Year ", i,": Winter Ranch Report")),
       p("Before calving season begins, it is time to take account of your herd, range, and financial health."),
       br(),
       plotOutput(paste0("worthPlot", name)),
