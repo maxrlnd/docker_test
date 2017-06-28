@@ -1,4 +1,4 @@
-#### Setup ####
+#### Source Scripts ####
 source("R/load.R")
 source("R/shinny_support.R")
 source("R/simUI.R")
@@ -13,6 +13,7 @@ source("R/calfCowFunctions.R")
 source("R/herdFunctions.R")
 
 
+#### Javascript Setup ####
 ## Code to disable tab
 jscode <- '
 shinyjs.init = function() {
@@ -33,7 +34,10 @@ cursor: default !important;
 color: white !important;
 }
 '
-# Populate a new environment with station gauge info.
+
+#### Variable Assignments ####
+
+# Populate a new environment with rainfall gauge info.
 # Default location is CPER site
 station.gauge <- getStationGauge()
 
@@ -99,11 +103,7 @@ simRuns <- (append(append(station.gauge, constvars), (simvars)))
 simRuns$p.wn <- rep(1.30, length(simRuns$p.wn))
 
 
-
-
-## Counter to keep track of quiz
-quizCounter <- 0
-
+#### Additional Settings ####
 ## Create JS to switch between year tabs
 yearHandler <- paste0('if(typeMessage == ', 1:simLength, '){
   console.log("got here");
