@@ -208,10 +208,10 @@ getCowSell <- function(totalForage, wean, currentYear, name, myOuts){
               If your herd is larger than this you risk damaging your range and producing less grass for your herd."))),
     br(),
     sliderInput(paste0("calves", name, "Sale"), "How many calves do you want to sell?",
-                min = 0, max = calvesAvailable, value =  standardCalfSale, step = 1, width = "600px"),
-    # p(bsButton("calfherd", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"),bsPopover(id = "calfherd", title = "Calf Description",content = paste0("selling or keeping calves will affect your herd size in two years, when those calves could become mother cows."))),
+                min = round(calvesAvailable/2), max = calvesAvailable, value =  standardCalfSale, step = 1, width = "100%"),
+    
     sliderInput(paste0("cow", name, "Sale"), "How many cows do you want to sell?",
-                min = 0, max = myOuts[currentYear, herd], value = standardCowSale, step = 1, width = "600px"),
+                min = 0, max = myOuts[currentYear, herd], value = standardCowSale, step = 1, width = "100%"),
     br()
     
       )
