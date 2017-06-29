@@ -57,7 +57,7 @@ getJulyInfo <- function(currentYear, name, startYear, myOuts){
   #creating code for above/below/average rainfall
   
   #subsetting NOAA monthly precipitation values based on myYear - the current year the simulation is running on
-  SubsetNOAAyear <- subset(monthlyNOAA_long, Year == myYear)
+  SubsetNOAAyear <- subset(monthlyNOAA_long, Year == 2012)
   
   #renaming "variable" column to "Month", value to percentage of rainfall 
   names(SubsetNOAAyear)[names(SubsetNOAAyear) == "variable"] <- "Month"
@@ -84,6 +84,21 @@ getJulyInfo <- function(currentYear, name, startYear, myOuts){
   ForageValue <- round(sum(CombinedForageandRain$`Weighted Values`[c(1:6,11,12)]) /
                          sum(CombinedForageandRain$FPvalue[c(1:6,11,12)]), digits = 0)
   
+  ForageValueAll <- round(sum(CombinedForageandRain$`Weighted Values`)/
+                         sum(CombinedForageandRain$FPvalue), digits = 0)
+  ForageValueAllp <<-if(ForageValueAll >= 110){
+    p(span("Your rainfall for this year has been above average at",style = "font-size:normal"),
+      span(ForageValueAll, style = "font-weight:bold;font-size:large;color:green"), "%", 
+      span("of the amount needed for optimal grass growth.", style = "font-size:normal"))  
+  } else if(ForageValueAll<110 & ForageValueAll>100){
+    p(span("Your rainfall for this year has been average at",style = "font-size:normal"), 
+      span(ForageValueAll, style = "font-weight:bold;font-size:large;color:green"), "%",
+      span("of the amount needed for optimal grass growth.", style = "font-size:normal")) 
+  } else {
+    p(span("Your rainfall for this year has been below average at", style = "font-size:normal"),
+      span(ForageValueAll, style = "font-weight:bold;font-size:large;color:red"), "%",
+      span("of the amount needed for optimal grass growth.", style = "font-size:normal")) 
+  }
 
     #do weighted average(value*forage potential )
 
