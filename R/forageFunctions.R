@@ -1,7 +1,7 @@
 
 # Forage Functions -------------------------------------------------------
 
-foragePWt <- function(station.gauge, styear, herd, carryingCap,
+getForagePotential <- function(station.gauge, styear, herd, carryingCap,
                       decision = FALSE, decisionMonth = 5, farmYearStart = 11){
   
   "

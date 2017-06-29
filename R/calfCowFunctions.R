@@ -79,7 +79,7 @@ calfWeanWeight <- function(styr, sim_length){
   ## In a dynamic model we may want to decrement these based on previous decisions
   ## but that might be best done elsewhere in the code
   forage.weights = unlist(lapply(seq(styr, styr + (sim_length - 1)),function(i){
-    foragePWt(station.gauge, i, herd, carryingCap)
+    getForagePotential(station.gauge, i, herd, carryingCap)
   }))
   
   ## Calculate wean weight for each year of the simulation

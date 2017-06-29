@@ -241,8 +241,8 @@ getStationGauge<-function(target.loc="CPER"){
     ## Zone weights
     mlra.idx <- COOP_in_MRLA(target.coop) # MLRA index
     zonewt <- getMRLAWeights(wrc.state) # zone weights
-    stzone <- which(zonewt[, 1] == mlra.idx) # not a great workaround...should fix 'foragePwt' function instead
-    zonewt <- zonewt[, -1] # not a great workaround...should fix 'foragePwt' function instead
+    stzone <- which(zonewt[, 1] == mlra.idx) # not a great workaround...should fix 'getForagePotential' function instead
+    zonewt <- zonewt[, -1] # not a great workaround...should fix 'getForagePotential' function instead
     
     ## Station precip gauge
     stgg <- target.coop$precip
