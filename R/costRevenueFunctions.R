@@ -1,8 +1,8 @@
 # Costs and Revenues ------------------------------------------------------
 # Baseline Costs and Revenues
-CalculateExpSales <- function(herd, wn.succ, calf.sell, wn.wt, p.wn) {
+calculateExpSales <- function(herd, wn.succ, calf.sell, wn.wt, p.wn) {
   "
-  Function: CalculateExpSales
+  Function: calculateExpSales
   Description: Calculates expected calf revenues for non-drought year
   
   Inputs:
@@ -24,10 +24,6 @@ CalculateExpSales <- function(herd, wn.succ, calf.sell, wn.wt, p.wn) {
   return(base.sales)
 }
 
-CalculateBaseOpCosts <- function(herd, cow.cost) {
-  base.op.cost <- herd * cow.cost
-  return(base.op.cost)
-}
 
 # Option 1: Buy feed
 CalculateFeedCost <- function(kHayLbs, kOthLbs, p.hay,p.oth, days.feed, herd, intens.adj) {

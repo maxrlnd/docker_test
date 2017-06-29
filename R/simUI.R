@@ -966,7 +966,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
     adaptInten <- 
       calculateAdaptationIntensity(whatIfForage(station.gauge, zones, oldOuts[currentYear, yr], currentHerd, carryingCapacity, 10, 11, "normal"))
     
-    oldOuts[currentYear, rev.calf := CalculateExpSales(herd = NA, wn.succ = NA, 
+    oldOuts[currentYear, rev.calf := calculateExpSales(herd = NA, wn.succ = NA, 
                                                        wn.wt = calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 
                                                        calf.sell = calfSale, p.wn = simRuns$p.wn[pastYear])]
     oldOuts[currentYear, simStartTime := startTime]
@@ -978,7 +978,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
                                            0)]
     oldOuts[currentYear, household.exp := simRuns$household.exp]
     oldOuts[currentYear, rev.tot := oldOuts[currentYear, rev.ins] + oldOuts[currentYear, rev.int] + oldOuts[currentYear, rev.calf]]
-    oldOuts[currentYear, cost.op := CalculateBaseOpCosts(herd = currentHerd, cow.cost = simRuns$cow.cost)]
+    oldOuts[currentYear, cost.op := currentHerd * simRuns$cow.cost]
     oldOuts[currentYear, cost.ins := indem$producer_prem]
     oldOuts[currentYear, cost.adpt := adaptExpend]
     oldOuts[currentYear, cost.int := ifelse(oldOuts[pastYear, assets.cash] < 0,

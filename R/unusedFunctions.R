@@ -93,3 +93,8 @@ CalculateDaysAction <- function(act.st.yr, act.st.m, act.end.yr, act.end.m, drou
   days.act.vect <- days.act * drought.action #Creates a vector of days of action
   days.act.vect
 }
+
+CalculateBaseOpCosts <- function(herd, cow.cost) {
+  base.op.cost <- herd * cow.cost
+  return(base.op.cost)
+}
