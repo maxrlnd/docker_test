@@ -84,7 +84,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
     forage.production <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 10, 11, "normal")
 
     # Calculate adaptation intensity based on forage production
-    adaptInten <- CalculateAdaptationIntensity(forage.production)
+    adaptInten <- calculateAdaptationIntensity(forage.production)
     
     # Calculate adaptation cost
     fullAdaptCost <-getAdaptCost(adpt_choice = "feed", pars = simRuns, 
@@ -964,7 +964,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
     currentYear <- currentYear + 1
     oldOuts[currentYear, yr := startYear + pastYear - 1]
     adaptInten <- 
-      CalculateAdaptationIntensity(whatIfForage(station.gauge, zones, oldOuts[currentYear, yr], currentHerd, carryingCapacity, 10, 11, "normal"))
+      calculateAdaptationIntensity(whatIfForage(station.gauge, zones, oldOuts[currentYear, yr], currentHerd, carryingCapacity, 10, 11, "normal"))
     
     oldOuts[currentYear, rev.calf := CalculateExpSales(herd = NA, wn.succ = NA, 
                                                        wn.wt = calfDroughtWeight(simRuns$normal.wn.wt, totalForage), 

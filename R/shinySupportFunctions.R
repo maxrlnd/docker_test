@@ -35,7 +35,7 @@ getJulyInfo <- function(currentYear, name, startYear, myOuts){
   forageList[3] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "low")
   
   ## Calculate cost of Adaptaiton
-  adaptInten <- sapply(forageList, CalculateAdaptationIntensity)
+  adaptInten <- sapply(forageList, calculateAdaptationIntensity)
   adaptInten <- c(adaptInten, 1)
   fullAdaptCost <- sapply(adaptInten, getAdaptCost, adpt_choice = "feed", pars = simRuns, 
                            days.act = 180, current_herd = herd)
@@ -360,7 +360,7 @@ rangeHealth <- function(currentYear, myOuts){
   forageList[3] <- whatIfForage(station.gauge, zones, myYear, herd, carryingCapacity, 7, 11, "low")
   
   ## Calculate cost of Adaptaiton
-  adaptInten <- sapply(forageList, CalculateAdaptationIntensity)
+  adaptInten <- sapply(forageList, calculateAdaptationIntensity)
   adaptInten <- c(adaptInten, 1)
   fullAdaptCost <- sapply(adaptInten, getAdaptCost, adpt_choice = "feed", pars = simRuns, 
                            days.act = 180, current_herd = herd)
