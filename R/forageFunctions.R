@@ -202,24 +202,3 @@ COOP_in_MRLA<-function(coop){
   return(as.numeric(as.character(((coop.pt %over% mlra)$MLRARSYM))))
   
 }
-
-forageWeights2Intervals<-function(fpwt){
-  
-  "
-  Helper function for binning monthly
-  forage weights into 2-month intervals
-  matching the RMA insurance.
-  "
-  
-  fpwt_iv=c()
-  for(m in 1:11){
-    
-    fpwt_iv=c(fpwt_iv,(sum(fpwt[m],fpwt[m+1])/2)) # need to calc mean manually - not sure why
-    names(fpwt_iv[m])=paste0("i",m)
-    
-  }
-  
-  return(fpwt_iv)
-  
-}
-
