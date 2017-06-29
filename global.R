@@ -2,15 +2,12 @@
 source("R/load.R")
 source("R/shinySupportFunctions.R")
 source("R/simUI.R")
-source("R/decisionFunctions.R")
-source("R/InsuranceFunctions.R")
 source("R/forageFunctions.R")
 source("R/adaptationFunctions.R")
-source("R/assetFunctions.R")
 source("R/costRevenueFunctions.R")
 source("R/initialFunctions.R")
 source("R/calfCowFunctions.R")
-source("R/herdFunctions.R")
+source("R/assetFunctions.R")
 
 
 #### Javascript Setup ####
@@ -113,7 +110,7 @@ yearHandler <- paste0('if(typeMessage == ', 1:simLength, '){
 NUM_PAGES <- 5
 currentPage <- 1
 
-debugMode <<- FALSE
+debugMode <<- TRUE
 
 `%then%` <- shiny:::`%OR%`
 genericWrong <- "This is incorrect please try again"

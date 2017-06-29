@@ -290,6 +290,8 @@ createResultsFrame <- function(pars = NULL){
     setnames(sim_results, resultNames )
     sim_results[1, herd := pars$herd]
     sim_results[1, assets.cow := with(pars, CalcCowAssets(t = 1, herd = herd, p.cow = p.cow))]
+    #The line directly below sets bank balance to 90000. column 19 is assets.cash. 
+    sim_results[1,19] = 90000
     sim_results[1, net.wrth := assets.cow + assets.cash]
     sim_results[, adapt_choice := as.character(adapt_choice)]
     sim_results[1, adapt_choice := "noadpt"]
