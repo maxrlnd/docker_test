@@ -57,7 +57,7 @@ getJulyInfo <- function(currentYear, name, startYear, myOuts){
   #creating code for above/below/average rainfall
   
   #subsetting NOAA monthly precipitation values based on myYear - the current year the simulation is running on
-  SubsetNOAAyear <- subset(monthlyNOAA_long, Year == 2012)
+  SubsetNOAAyear <- subset(monthlyNOAA_long, Year == myYear)
   
   #renaming "variable" column to "Month", value to percentage of rainfall 
   names(SubsetNOAAyear)[names(SubsetNOAAyear) == "variable"] <- "Month"
