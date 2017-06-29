@@ -1,0 +1,53 @@
+\documentclass[11pt]{article}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\title{Mathematical representation of the drought decision model - Shiny Version}
+\author{Trisha Shrum}
+%\date{}                                           % Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+%\section{}
+%\subsection{}
+ 
+\section{Scripts}
+
+\subsection{global.R}
+\begin{enumerate}
+\item Sources other scripts
+\item Javascript coding
+\item Populate a new environment with rainfall gauge info: \verb!getStationGauge()!
+\item Populate a new environment with constant (user) variables: \verb!getConstantVars()!
+\item Setting additional variables: acres, start years, simulation lengths
+\item Create state variables for practice and full runs: \verb!getSimVars()!
+\item Create lists of variables for practice and full runs: \verb!practiceRuns!, \verb!simRuns!
+\item Establish additional settings
+\end{enumerate}  
+ 
+\subsection{load.R}
+Loads necessary packages
+
+\subsection{shinySupport.R}
+\begin{enumerate}
+\item \verb!getJulyInfo! function: Calculates available and predicted forage in July, creates a
+    UI to display info and allows user to select adaptation level.
+    \begin{itemize}
+    \item Called in \verb!simUI.R!
+    \end{itemize}
+\item \verb!getCowSell! function: Creates a UI for the user to select how many cows and calves to sell. Called in \verb!simUI.R!.
+\item \verb!shinyInsurance! function: Calculates premium and indemnification for a specific year and
+  grid cell. Currently returns are summed but this could be done on a index interval basis instead.
+\end{enumerate}
+
+
+
+
+ \end{document}
