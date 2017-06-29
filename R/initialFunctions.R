@@ -1,6 +1,6 @@
 # Variable Assignment Functions -------------------------------------------
 
-getConstantVars<-function(){
+getConstantVars <- function(){
   
   "
   Reads in constant variables into a
@@ -15,9 +15,7 @@ getConstantVars<-function(){
   return(cvars.list)
 }
 
-
-
-getSimVars = function(station.gauge,
+getSimVars <- function(station.gauge,
                       constvars,
                       start_year = 'random', 
                       sim_length = 5,
@@ -146,7 +144,7 @@ getSimVars = function(station.gauge,
 
 # Weather Functions -------------------------------------------------------
 
-getStationGauge<-function(target.loc="CPER"){
+getStationGauge <- function(target.loc="CPER"){
   
   "
   Author: Joe
