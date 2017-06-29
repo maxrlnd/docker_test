@@ -47,7 +47,56 @@ Loads necessary packages
   grid cell. Currently returns are summed but this could be done on a index interval basis instead.
 \end{enumerate}
 
+\subsection{forageFunctions.R}
 
+\begin{itemize}
+	\item \verb!getForagePotential! function: Returns an index representing
+  annual forage production for a given gridcell or station gauge's annual precipitation record. Called in \verb!calfCowFunctions.R!.
+	\item \verb!whatIfForage! function: calculates expected forage for a given scenario. Called in \verb!shinySupportFunctions.R! and \verb!simUI.R!.
+	\item \verb!getMLRAWeights! function: Computes forage potential weights using the
+  mean of plant growth curves by MRLA for a specified state. Called in \verb!initialFunctions.R!.
+  	\item \verb!COOP_in_MLRA! function: Returns the MLRA in which a specified
+  coop site is located. Called in \verb!initialFunctions.R!.
+\end{itemize}
+
+\subsection{adaptationFunctions.R}
+
+\begin{itemize}
+	\item \verb!calculateAdaptationIntensity! function: Takes forage potential and an adaptation intensity factor to provide a scalar of drought action. If forage potential is above 1 (no drought), then this variable goes to 0 (no adaptation). Called in \verb!shinySupportFunctions.R! and \verb!simUI.R!.
+\end{itemize}
+
+\subsection{costRevenueFunctions.R}
+
+\begin{itemize}
+	\item \verb!calculateExpSales! function: Calculates expected calf revenues for non-drought year. 
+	\item \verb!calculateFeedCost! function: Calculates the costs of purchasing additional feed. Called in \verb!getAdaptCost! in \verb!costRevenueFunctions.R!. 
+	\item \verb!CalculateRentPastCost! function: Calculates the costs of renting pasture and trucking pairs. Called in \verb!getAdaptCost! in \verb!costRevenueFunctions.R!.
+	\item \verb!getAdaptCost! function: Calculates the cost of adaptation based on strategy, intensity needed, days, and herd size. Called in \verb!shinySupportFunctions.R! and \verb!simUI.R!.
+\end{itemize}
+
+\subsection{initialFunctions.R}
+
+\begin{itemize}
+	\item \verb!getConstantVars! function: Reads in constant variables into a
+  \verb!constvars! environment using the  file \verb!data/constant_vars.csv!. Called in \verb!global.R!.
+  	\item \verb!getSimVars! function: Creates list of simulation variables. Called in \verb!global.R!.
+  	\item \verb!getStationGauge! function: Returns precipitation record and locational attributes for the target location. Default is Central Plains Experimental Range (CPER) but alternative locations at COOP sites across Colorado may be specified. Called in \verb!global.R!.
+  	\item \verb!createResultsFrame! function: This function creates a theoretical previous result from the year before the simulation begins right now this assumes that there was no drought the year before the simulation and revenues were 0. These assumptions are likely unrealistic and can be adjusted to accomodate different scenarios. Called in \verb!shinySupportFunctions.R! and \verb!server.R!.
+\end{itemize}
+
+\subsection{calfCowFunctions.R}
+
+\begin{itemize}
+	\item \verb!AdjWeanSuccess! function: Adusts weaning success downward for the year of the drought and the following year. Called in \verb!simUI.R!.
+	\item \verb!calfDroughtWeight! function: If forage potential is less than 1, then the calf weight is less than the optimal weight. Called in \verb!shinySupportFunctions.R! and \verb!simUI.R!.
+	\item \verb!calfWeanWeight! function: Computes calf weights based on station/grid cell forage potential for a n-year period. Called in \verb!initialFunctions.R!.
+	\item \verb!shinyHerd! function: calculates the size of herd for the shiny app. Called in \verb!simUI.R!.
+\end{itemize}
+
+\subsection{assetFunctions.R}
+\begin{itemize}
+	\item \verb!CalcCowAssets! function: Calculates the cow assets for each year. Called in \verb!initialFunctions!.
+\end{itemize}
 
 
  \end{document}
