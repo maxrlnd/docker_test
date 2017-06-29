@@ -37,7 +37,7 @@ function(input, output, session) {
   values <- reactiveValues("saveComplete" = FALSE, "practSaveComplete" = FALSE)
   
   # Reactive value used to track what page to display, once value changes display page changes
-  rv <- reactiveValues(page = 1)
+  rv <- reactiveValues(page = 1, scrollPage = F)
   rvPrac <- reactiveValues(page = 1)
   
 

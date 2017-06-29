@@ -1,6 +1,6 @@
 simCreator <- function(input, output, session, i, rv, simLength, startYear, myOuts, indem, purchaseInsurance,
                      whatifIndem, name = ""){
-  
+  pageScroll <- F
   # orgName preserves the orginal name (either "" for the real simulation 
   #   or prac for practice), name is used at the end of all objects to
   #   create a unique output objects for each output and ui element
@@ -236,6 +236,21 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
             p(h3("Ranch Overview")), 
             br(), 
             p(h4("Cattle Status:")), 
+            if(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0))<100){
+              
+              p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="color:red"), 
+                bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+            }else{
+              p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="color:green"),
+                bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
+              
+            },
+            bsPopover(id = "infohealth", title = "Range Health",
+                      content = paste0("There is a delicate balance between the size of a ranch and the number of cattle that graze it. Overgrazing will lead to many problems that reduce the health and productivity of your rangeland. Without a healthy rangeland, you will incur increasingly higher hay costs and see lower cattle weights at sale. Also, these problems are exacerbated under dry conditions and drought, so be especially careful when this occurs and adjust your herd size with the weather."),
+                      placement = "left", 
+                      trigger = "hover", 
+                      options = list(container = "body")),
+            
             p("Cattle in herd:",prettyNum(myOuts[rv$page, herd], digits = 0, big.mark=",", scientific=FALSE), 
               # Tooltip creation, a button with an icon and the popover for the "tip"
               bsButton("infocows", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small")),
@@ -245,6 +260,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
                       trigger = "hover", 
                       options = list(container = "body")
             ),
+            
             
             p("Calves in herd:", prettyNum(get(paste0("calvesAvailable", name))(), digits = 0, big.mark=",", scientific=FALSE),
               
@@ -268,20 +284,6 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
                       placement = "bottom", 
                       trigger = "hover", 
                       options = list(container = "body")),
-            if(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0))<100){
-              
-              p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="color:red"), 
-                bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
-            }else{
-              p("Range health(%):", span(ifelse(round(sum(get(paste0("currentZones", name))()) * 100, 0) > 100, 100, round(sum(get(paste0("currentZones", name))()) * 100, 0)),style="color:green"),
-                bsButton("infohealth", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
-              
-            },
-            bsPopover(id = "infohealth", title = "Range Health",
-                      content = paste0("There is a delicate balance between the size of a ranch and the number of cattle that graze it. Overgrazing will lead to many problems that reduce the health and productivity of your rangeland. Without a healthy rangeland, you will incur increasingly higher hay costs and see lower cattle weights at sale. Also, these problems are exacerbated under dry conditions and drought, so be especially careful when this occurs and adjust your herd size with the weather."),
-                      placement = "left", 
-                      trigger = "hover", 
-                      options = list(container = "body")),
             
             #if((prettyNum(myOuts[i, assets.cash], digits = 0,
                           #big.mark=",", scientific=FALSE))>=0){
@@ -296,10 +298,10 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
                       #trigger = "hover", 
                       #options = list(container = "body")),
             if((prettyNum((myOuts[rv$page, net.wrth] - myOuts[rv$page, assets.cash]), digits = 0,big.mark=",", scientific=FALSE)) > 0){
-              p("Value of herd: $", span(prettyNum((myOuts[rv$page, net.wrth] - myOuts[rv$page, assets.cash]), digits = 0,big.mark=",", scientific=FALSE), style="color:green"), 
+              p("Value of herd: $", span(prettyNum((myOuts[rv$page, assets.cow]), digits = 0,big.mark=",", scientific=FALSE), style="color:green"), 
                 bsButton("herdval", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
             }else{
-              p("Value of herd: $", span(prettyNum((myOuts[rv$page, net.wrth] - myOuts[rv$page, assets.cash]), digits = 0,big.mark=",", scientific=FALSE), style="color:red"), 
+              p("Value of herd: $", span(prettyNum((myOuts[rv$page, assets.cow]), digits = 0,big.mark=",", scientific=FALSE), style="color:red"), 
                 bsButton("herdval", label = "", icon = icon("question"), style = "info", class="quest", size = "extra-small"))
             },
             bsPopover(id = "herdval", title = "Value of herd",
@@ -353,9 +355,10 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
     userPay <- gsub(",", "", input[[paste0("insurancePremium", name)]])
     userPay <- tryCatch(as.numeric(gsub("\\$", "", userPay)),
                         warning = function(war)return(0))
-    if(!debugMode){
+    if(!debugMode & purchaseInsurance == T){
       req(userPay == round(indem[[i]]$producer_prem, 0), genericWrong)
     }
+    rv$scrollPage <- T
     actionButton(paste0("year", name, "Start"), "Next")
   })
   
@@ -411,13 +414,13 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
               },
               br(),
               if(purchaseInsurance == TRUE) {
-                h4(p("Rainfall was below normal levels during the growing season, 
-                     so you have received a check for $", span((currentIndem),
+                h4(p("Rainfall was below normal levels during the growing season. This means that for the months most important for grass growth (May-August), rainfall was below 90% of the average. Because of this below normal rainfall level,
+                      you have received a check for $", span((currentIndem),
                                                              style="font-weight:bold;font-size:large;color:green"), 
                      " from your rain insurance policy."))
               },
               if(purchaseInsurance == FALSE) {
-                h4("Rainfall was below normal levels during the growing season.")
+                h4("Rainfall was below normal levels during the growing season. This means that for the months most important for grass growth (May-August), rainfall was below 90% of the average.")
               },
               if(purchaseInsurance == TRUE) {
                 textInput(paste0("insuranceDeposit", name), 
@@ -449,10 +452,10 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
                 it has rained since you decided whether or not to purchase hay (July and August)."),
               plotOutput(paste0("rainGraphSep", name)),
               if(purchaseInsurance == TRUE) {
-                h4("Rainfall was close to or above normal levels during the growing season, so you did not receive a check for your rain insurance policy.")
+                h4("Rainfall was close to or above normal levels during the growing season. This means that for the months most important for grass growth (May-August), rainfall was at least 90% of the average.")
               },
               if(purchaseInsurance == FALSE) {
-                h4("Rainfall was close to or above normal levels during the growing season.")
+                h4("Rainfall was close to or above normal levels during the growing season. This means that for the months most important for grass growth (May-August), rainfall was at least 90% of the average.")
               },
               if(purchaseInsurance == TRUE) {
                 h4(paste0("After your expenditures on hay and insurance, your new bank balance is: $", 
@@ -634,6 +637,7 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
   output[[paste0("nextButton", name)]] <- renderUI({
     if(!is.null(input[[paste0("sell", name)]])){
       if(input[[paste0("sell", name)]] == 1){
+        rv$scrollPage <- T
         tagList(
           actionButton(paste0("nextBtn", orgName), "Begin Next Year >")
         )
@@ -657,35 +661,47 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
   
   
   output[[paste0("postDeposit", name)]] <- renderUI({
-    if(input[[paste0("insuranceDeposit", name)]] != ""){
-      userIns <- gsub(",", "", input[[paste0("insuranceDeposit", name)]])
-      userIns <- tryCatch(as.numeric(gsub("\\$", "", userIns)),
-                          warning = function(war)return(0))
-      if(!debugMode){
-        validate(
-          need(userIns == round(indem[[i]]$indemnity, 0), genericWrong)
-        )
+    accountPrint <- F
+    if(purchaseInsurance){
+      if(input[[paste0("insuranceDeposit", name)]] != ""){
+        userIns <- gsub(",", "", input[[paste0("insuranceDeposit", name)]])
+        userIns <- tryCatch(as.numeric(gsub("\\$", "", userIns)),
+                            warning = function(war)return(0))
+        if(!debugMode & purchaseInsurance){
+          validate(
+            need(userIns == round(indem[[i]]$indemnity, 0), genericWrong)
+          )
+        }
+        accountPrint <- T
+      }
+    }else{
+      accountPrint <- T
+    }
+    req(accountPrint)
+    if(purchaseInsurance){
+      txtInsert <-  "and your insurance check, "
+    }else{
+      txtInsert <- ""
+    }
+    accountTxt <- paste0("After your expenditures on hay ", txtInsert, "your new bank balance is: $")
+    rv$scrollPage <- T
+    fluidRow(
+      if(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+         indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]] > 0){
+        h4(p(accountTxt, 
+             span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+                              indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
+                            digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:green")))
+      }
+      else{
+        h4(p(accountTxt, 
+             span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
+                              indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
+                            digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:red")))
+        
       }
       
-      fluidRow(
-        
-        if(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
-           indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]] > 0){
-          h4(p("After your expenditures on hay and your insurance check, your new bank balance is: $", 
-               span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
-                                indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
-                              digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:green")))
-        }
-        else{
-          h4(p("After your expenditures on hay and your insurance check, your new bank balance is: $", 
-               span(prettyNum(myOuts[i, assets.cash] + indem[[i]]$indemnity - 
-                                indem[[i]]$producer_prem - input[[paste0("d", name, "adaptExpend")]], 
-                              digits = 0, big.mark=",",scientific=FALSE), style = "font-weight:bold:font-size:Xlarge;color:red")))
-          
-        }
-        
-      )
-    }
+    )
   })
   
   output[[paste0("insSpace", name)]] <- renderUI({
@@ -880,6 +896,13 @@ simCreator <- function(input, output, session, i, rv, simLength, startYear, myOu
     shinyjs::disable(paste0("year", name, "Start"))
     delay(100,session$sendCustomMessage(type = "scrollCallbackRain", paste0("rainGraph", i)))
   })
+
+  observeEvent(rv$scrollPage, {
+    req(rv$scrollPage)
+    rv$scrollPage <- F
+    delay(100,session$sendCustomMessage(type = "scrollCallbackBottom", 0))
+  })
+  
   
   ## Disable cow and calf sliders after sell button
   ## Disable sell button
