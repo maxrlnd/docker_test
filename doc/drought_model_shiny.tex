@@ -35,7 +35,7 @@
 \subsection{load.R}
 Loads necessary packages
 
-\subsection{shinySupport.R}
+\subsection{shinySupportFunctions.R}
 \begin{enumerate}
 \item \verb!getJulyInfo! function: Calculates available and predicted forage in July, creates a
     UI to display info and allows user to select adaptation level.
@@ -97,6 +97,61 @@ Loads necessary packages
 \begin{itemize}
 	\item \verb!CalcCowAssets! function: Calculates the cow assets for each year. Called in \verb!initialFunctions!.
 \end{itemize}
+
+
+\section{Function Details}
+
+\subsection{AdjWeanSuccess}
+
+\subsection{Current State}
+\begin{itemize}
+\item Function: \verb!AdjWeanSuccess!
+	\begin{itemize}
+	\item Description: Adjusts weaning success downward for the year of the drought and the following year based on a modified logistic equation. 
+	\item Inputs: \verb!stgg!, \verb!zonewt!, \verb!stzone!, \verb!styear!, \verb!noadpt!, \verb!normal.wn.succ!, \verb!t!
+	\item Output: \verb!wn.succ! (tx1 vector of weaning success in percentage of cows that will have calves that survive to be fully weaned)
+	\item Assumptions: This equation is based on what I consider to be ``reasonable" estimates of weaning success based on forage potential. These fall roughly in line with body condition scores from the \textit{Nutrient Requirements of Beef Cattle}, but are only ballpark estimates.
+	\end{itemize}
+\end{itemize}
+
+If drought adaptation is not undertaken and $\alpha < 1$:
+\begin{align}
+wn_1 &= \bar{wn} * \frac{1}{1 + e^{2(-1 + \alpha_1)}} \\
+wn_2 &= \bar{wn} * \frac{1}{1 + e^{(-1 + \alpha_1)}} \\
+wn_3 &= \bar{wn} \\
+wn_4 &= \bar{wn} \\
+wn_5 &= \bar{wn} \\
+\end{align}
+
+Otherwise: 
+\begin{equation}
+wn_t = \bar{wn}
+\end{equation}
+
+\subsubsection{Desired Future State}
+
+The weaning percentage default and maximum is 88\%. \\
+
+If forage production falls below 1 in year $t=1$, then weaning percentage falls slightly in year $t=1$ and more drastically in year $t=2$. If forage production falls below 1 in a year $t=1$ where weaning percentage was already decremented because of previous forage production deficits or insufficient culling, then weaning percentage falls further in years $t=1,2$ than it would have if the starting point was at the maximum weaning percentage. \\
+
+Where \verb!wn.succ! is the weaning success going into a given year (say, t = 5) and \verb!forage.production! $< 1$:
+for year t=5, the final weaning success for the full year is given by: 
+
+\verb!wn.succ <- wn.succ * (1 / (1 + exp(-(1 + forage.production_t5)*2)))! \\
+
+For the year t=5, if the \verb!forage.production_t6! $\ge 1$:
+
+\verb!wn.succ <- wn.succ * (1 / (1 + exp(-(1 + forage.production_t5))))! \\
+
+If forage production is below 1 for more than year in a row, then the wn.succ is decremented twice. Once with the first year decrement, and once with the second year decrement.
+
+year 1 and 2 have low forage, but recovers to 1 or more in year 3:
+\verb!wn.succ_2 <-  wn.succ * (1 / (1 + exp(-(1 + forage.production_1))))  * (1 / (1 + exp(-(1 + forage.production_2)*2)))! 
+\verb!wn.succ_3 <-  wn.succ * (1 / (1 + exp(-(1 + forage.production_2))))! \\
+
+
+
+
 
 
  \end{document}
