@@ -2,15 +2,12 @@
 source("R/load.R")
 source("R/shinny_support.R")
 source("R/simUI.R")
-source("R/decisionFunctions.R")
-source("R/InsuranceFunctions.R")
 source("R/forageFunctions.R")
 source("R/adaptationFunctions.R")
-source("R/assetFunctions.R")
 source("R/costRevenueFunctions.R")
 source("R/initialFunctions.R")
 source("R/calfCowFunctions.R")
-source("R/herdFunctions.R")
+source("R/assetFunctions.R")
 
 
 ## Code to disable tab
@@ -101,41 +98,6 @@ simRuns$p.wn <- rep(1.30, length(simRuns$p.wn))
 
 
 
-
-## Calcualte indemnities for all years of the simulation
-indem <- lapply(startYear:(startYear + simLength - 1), function(x){
-  with(simRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
-                            pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
-})
-
-indemprac <- lapply(startYearprac:(startYearprac + practiceLength - 1), function(x){
-  with(practiceRuns, shinyInsMat(yy = x, clv = clv, acres = acres,
-                                 pfactor = pfactor, insPurchase  =  insp, tgrd = tgrd))
-})
-
-## Calculate binary variable for hypothetical payout based on the weather
-## If 
-indemnity <- lapply(indem, "[[", 3) # Pulling the value of the indemnity from the (list of) dataframes
-whatifIndem <- sapply(indemnity > 0, ifelse, 1, 0)  # Creating a binary variable where a year is eligible for a payout if you have insurance
-
-indemnityprac <- lapply(indemprac, "[[", 3) # Pulling the value of the indemnity from the (list of) dataframes
-whatifIndemprac <- sapply(indemnityprac > 0, ifelse, 1, 0)
-
-
-## Create results frames for practice and simulation
-createOutputs(practiceRuns, simRuns, indem, indemprac)
-
-## Is insurance purchased?
-# purchaseInsurance <- sample(c(T, F), 1)
-purchaseInsurance <- T
-# 
-# if(!purchaseInsurance){
-#   indem <- lapply(indem, function(x){
-#     x[, c("producer_prem", "indemnity", "full_prem") := 0]
-#     return(x)
-#   })
-# }
-
 ## Counter to keep track of quiz
 quizCounter <- 0
 
@@ -148,7 +110,7 @@ yearHandler <- paste0('if(typeMessage == ', 1:simLength, '){
 NUM_PAGES <- 5
 currentPage <- 1
 
-debugMode <<- T
+debugMode <<- TRUE
 
 `%then%` <- shiny:::`%OR%`
 genericWrong <- "This is incorrect please try again"
